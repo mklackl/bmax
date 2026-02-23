@@ -272,8 +272,8 @@ export function normalizeRalphStatus(data: unknown): RalphLoopStatus {
   return {
     loopCount,
     status,
-    tasksCompleted: 0,
-    tasksTotal: 0,
+    tasksCompleted: typeof data.tasks_completed === "number" ? data.tasks_completed : 0,
+    tasksTotal: typeof data.tasks_total === "number" ? data.tasks_total : 0,
   };
 }
 

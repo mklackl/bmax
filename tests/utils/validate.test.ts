@@ -399,13 +399,15 @@ describe("normalizeRalphStatus", () => {
       max_calls_per_hour: 200,
       last_action: "implemented auth module",
       status: "running",
+      tasks_completed: 5,
+      tasks_total: 12,
     };
     const result = normalizeRalphStatus(bashData);
     expect(result).toEqual({
       loopCount: 7,
       status: "running",
-      tasksCompleted: 0,
-      tasksTotal: 0,
+      tasksCompleted: 5,
+      tasksTotal: 12,
     });
   });
 
@@ -454,8 +456,30 @@ describe("normalizeRalphStatus", () => {
     expect(result.status).toBe("running");
   });
 
-  it("always sets tasksCompleted and tasksTotal to 0", () => {
+  it("reads task counts when present in bash data", () => {
+    const result = normalizeRalphStatus({
+      loop_count: 5,
+      status: "running",
+      tasks_completed: 3,
+      tasks_total: 10,
+    });
+    expect(result.tasksCompleted).toBe(3);
+    expect(result.tasksTotal).toBe(10);
+  });
+
+  it("defaults tasksCompleted and tasksTotal to 0 when not present", () => {
     const result = normalizeRalphStatus({ loop_count: 5, status: "running" });
+    expect(result.tasksCompleted).toBe(0);
+    expect(result.tasksTotal).toBe(0);
+  });
+
+  it("defaults task counts to 0 when values are non-numeric", () => {
+    const result = normalizeRalphStatus({
+      loop_count: 5,
+      status: "running",
+      tasks_completed: "three",
+      tasks_total: null,
+    });
     expect(result.tasksCompleted).toBe(0);
     expect(result.tasksTotal).toBe(0);
   });
