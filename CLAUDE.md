@@ -50,7 +50,7 @@ The instructions file depends on the configured platform — see `src/platform/`
 
 ## Slash Commands
 
-bmalph installs 47 BMAD slash commands. Key commands:
+bmalph installs 50 slash commands (45 BMAD + 5 bmalph). Key commands:
 
 | Command                 | Description                         |
 | ----------------------- | ----------------------------------- |

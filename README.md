@@ -229,6 +229,18 @@ BMAD (add Epic 2) → bmalph implement → Ralph sees changes + picks up Epic 2
 | --------- | ------------------------------------- |
 | `--force` | Override pre-flight validation errors |
 
+### check-updates options
+
+| Flag     | Description    |
+| -------- | -------------- |
+| `--json` | Output as JSON |
+
+### status options
+
+| Flag     | Description    |
+| -------- | -------------- |
+| `--json` | Output as JSON |
+
 ### upgrade options
 
 | Flag        | Description               |
@@ -238,7 +250,7 @@ BMAD (add Epic 2) → bmalph implement → Ralph sees changes + picks up Epic 2
 
 ## Slash Commands
 
-bmalph installs 47 BMAD slash commands. Command delivery varies by platform:
+bmalph installs 50 slash commands (45 BMAD + 5 bmalph). Command delivery varies by platform:
 
 - **Claude Code** — installed as files in `.claude/commands/` (invoke with `/command-name`)
 - **OpenAI Codex** — inlined in `AGENTS.md` (reference agents by name)
@@ -275,15 +287,23 @@ Use `bmalph implement` (or `/bmalph-implement` in Claude Code) to transition fro
 project/
 ├── _bmad/                     # BMAD agents, workflows, core
 │   ├── _config/               # Generated configuration
-│   │   └── config.yaml        # Platform config
+│   │   ├── config.yaml        # Platform config
+│   │   ├── task-manifest.csv  # Combined task manifest
+│   │   ├── workflow-manifest.csv # Combined workflow manifest
+│   │   └── bmad-help.csv      # Combined help manifest
 │   ├── core/
 │   │   ├── agents/            # Master agent
 │   │   ├── tasks/             # Workflow tasks
-│   │   └── workflows/         # Brainstorming, party-mode, etc.
+│   │   ├── workflows/         # Brainstorming, party-mode, etc.
+│   │   ├── module.yaml        # Core module metadata
+│   │   └── module-help.csv    # Core module help entries
 │   └── bmm/
 │       ├── agents/            # Analyst, PM, Architect, Dev, QA, etc.
+│       ├── data/              # Templates (project-context-template.md)
 │       ├── workflows/         # Phase 1-4 workflows
-│       └── teams/             # Agent team definitions
+│       ├── teams/             # Agent team definitions
+│       ├── module.yaml        # BMM module metadata
+│       └── module-help.csv    # BMM module help entries
 ├── _bmad-output/              # BMAD planning artifacts (generated)
 │   ├── planning-artifacts/    # PRD, architecture, stories
 │   ├── implementation-artifacts/ # Sprint plans (optional)
@@ -297,12 +317,14 @@ project/
 │   ├── drivers/               # Platform driver scripts
 │   │   ├── claude-code.sh     # Claude Code driver (uses `claude`)
 │   │   └── codex.sh           # OpenAI Codex driver (uses `codex exec`)
-│   ├── lib/                   # Circuit breaker, response analyzer
+│   ├── lib/                   # Shell libraries
+│   ├── docs/generated/        # Generated documentation
 │   ├── specs/                 # Copied from _bmad-output during transition
 │   ├── logs/                  # Loop execution logs
 │   ├── PROMPT.md              # Iteration prompt template
 │   ├── PROJECT_CONTEXT.md     # Extracted project context (after bmalph implement)
 │   ├── SPECS_CHANGELOG.md     # Spec diff since last run (after bmalph implement)
+│   ├── SPECS_INDEX.md         # Prioritized spec file index (after bmalph implement)
 │   ├── @AGENT.md              # Agent build instructions
 │   └── @fix_plan.md           # Generated task list (after bmalph implement)
 ├── bmalph/                    # State management
