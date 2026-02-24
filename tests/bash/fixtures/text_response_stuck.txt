@@ -1,0 +1,8 @@
+Attempting to build the project...
+Error: Cannot find module 'express'
+ERROR: Build failed with exit code 1
+Error occurred during compilation of src/index.ts
+Exception: TypeError - undefined is not a function
+Fatal error: Maximum call stack size exceeded
+Error: ENOENT: no such file or directory, open 'config.json'
+error: Process exited with code 1

@@ -8,3 +8,7 @@ coverage/
 .refs/
 .DS_Store
 Thumbs.db
+
+# Bats test helpers (installed via scripts/setup-bats.sh or CI)
+tests/bash/test_helper/bats-support/
+tests/bash/test_helper/bats-assert/

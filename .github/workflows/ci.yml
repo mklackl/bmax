@@ -59,6 +59,19 @@ jobs:
       - name: E2E tests
         run: npm run test:e2e
 
+      - name: Install bats and helpers
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats
+          mkdir -p tests/bash/test_helper
+          git clone --depth 1 https://github.com/bats-core/bats-support tests/bash/test_helper/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-assert tests/bash/test_helper/bats-assert
+
+      - name: Bash tests
+        if: matrix.os == 'ubuntu-latest'
+        run: bats tests/bash/*.bats tests/bash/drivers/*.bats
+
       - name: Upload coverage to Codecov
         if: matrix.node-version == 22 && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v5

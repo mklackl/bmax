@@ -1,0 +1,15 @@
+{
+  "result": "Attempted to commit changes but permission was denied.",
+  "sessionId": "session-perm-001",
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_input": {
+        "command": "git commit -m 'feat: add authentication module'"
+      }
+    },
+    {
+      "tool_name": "AskUserQuestion"
+    }
+  ]
+}

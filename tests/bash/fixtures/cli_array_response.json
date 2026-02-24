@@ -1,0 +1,16 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "session_id": "session-xyz-789"
+  },
+  {
+    "type": "assistant",
+    "content": "Working on implementation..."
+  },
+  {
+    "type": "result",
+    "result": "All changes implemented.\n\n---RALPH_STATUS---\nSTATUS: COMPLETE\nEXIT_SIGNAL: true\n---END_RALPH_STATUS---",
+    "sessionId": "session-xyz-789"
+  }
+]

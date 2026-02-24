@@ -1,0 +1,9 @@
+{
+  "result": "I've implemented the requested changes.\n\n---RALPH_STATUS---\nSTATUS: COMPLETE\nEXIT_SIGNAL: true\n---END_RALPH_STATUS---",
+  "sessionId": "session-abc-123",
+  "metadata": {
+    "files_changed": 5,
+    "has_errors": false,
+    "completion_status": "complete"
+  }
+}

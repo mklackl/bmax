@@ -1,0 +1,10 @@
+{
+  "status": "IN_PROGRESS",
+  "exit_signal": false,
+  "work_type": "IMPLEMENTATION",
+  "files_modified": 2,
+  "error_count": 0,
+  "summary": "Working on database migrations",
+  "confidence": 30,
+  "loop_number": 3
+}
