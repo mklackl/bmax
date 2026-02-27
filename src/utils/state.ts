@@ -197,9 +197,6 @@ export function getPhaseInfo(phase: number): PhaseInfo {
   return info[phase] ?? { name: "Unknown", agent: "Unknown", commands: [] };
 }
 
-/** @deprecated Use RalphLoopStatus from validate.ts instead */
-export type RalphStatus = RalphLoopStatus;
-
 const DEFAULT_RALPH_STATUS: RalphLoopStatus = {
   loopCount: 0,
   status: "not_started",

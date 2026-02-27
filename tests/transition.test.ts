@@ -8,7 +8,6 @@ import {
   generateFixPlan,
   generatePrompt,
   runTransition,
-  validateArtifacts,
   detectTechStack,
   customizeAgentMd,
   hasFixPlanProgress,
@@ -1638,73 +1637,7 @@ cargo run
     });
   });
 
-  describe("validateArtifacts", () => {
-    let testDir: string;
-
-    beforeEach(async () => {
-      testDir = join(
-        tmpdir(),
-        `bmalph-validate-${Date.now()}-${Math.random().toString(36).slice(2)}`
-      );
-      await mkdir(testDir, { recursive: true });
-    });
-
-    afterEach(async () => {
-      try {
-        await rm(testDir, { recursive: true, force: true });
-      } catch {
-        // Windows file locking
-      }
-    });
-
-    it("warns when no PRD file exists", async () => {
-      await writeFile(join(testDir, "stories.md"), "# Stories");
-      const warnings = await validateArtifacts(["stories.md"], testDir);
-      expect(warnings).toContainEqual(expect.stringMatching(/PRD/i));
-    });
-
-    it("warns when no architecture file exists", async () => {
-      await writeFile(join(testDir, "stories.md"), "# Stories");
-      const warnings = await validateArtifacts(["stories.md"], testDir);
-      expect(warnings).toContainEqual(expect.stringMatching(/architect/i));
-    });
-
-    it("does not warn when PRD and architecture exist", async () => {
-      await writeFile(join(testDir, "prd.md"), "# PRD");
-      await writeFile(join(testDir, "architecture.md"), "# Arch");
-      const warnings = await validateArtifacts(["prd.md", "architecture.md"], testDir);
-      expect(warnings).not.toContainEqual(expect.stringMatching(/PRD/i));
-      expect(warnings).not.toContainEqual(expect.stringMatching(/architect/i));
-    });
-
-    it("warns when readiness report contains NO-GO", async () => {
-      await writeFile(join(testDir, "prd.md"), "# PRD");
-      await writeFile(join(testDir, "architecture.md"), "# Arch");
-      await writeFile(join(testDir, "readiness-report.md"), "Status: NO-GO");
-      const warnings = await validateArtifacts(
-        ["prd.md", "architecture.md", "readiness-report.md"],
-        testDir
-      );
-      expect(warnings).toContainEqual(expect.stringMatching(/NO.?GO/i));
-    });
-
-    it("handles NO GO with space", async () => {
-      await writeFile(join(testDir, "readiness.md"), "Status: NO GO");
-      const warnings = await validateArtifacts(["readiness.md"], testDir);
-      expect(warnings).toContainEqual(expect.stringMatching(/NO.?GO/i));
-    });
-
-    it("does not warn for GO status without NO prefix", async () => {
-      await writeFile(join(testDir, "prd.md"), "# PRD");
-      await writeFile(join(testDir, "architecture.md"), "# Arch");
-      await writeFile(join(testDir, "readiness-report.md"), "Status: GO\nAll clear.");
-      const warnings = await validateArtifacts(
-        ["prd.md", "architecture.md", "readiness-report.md"],
-        testDir
-      );
-      expect(warnings).not.toContainEqual(expect.stringMatching(/NO.?GO/i));
-    });
-  });
+  // NOTE: validateArtifacts tests were removed — validation is now handled by runPreflight
 
   describe("parseFixPlan", () => {
     it("extracts completed and pending story IDs with titles", () => {

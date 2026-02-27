@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   installProject,
   copyBundledAssets,
-  mergeClaudeMd,
   mergeInstructionsFile,
   isInitialized,
   previewInstall,
@@ -771,56 +770,56 @@ describe("installer", () => {
     });
   });
 
-  describe("mergeClaudeMd", () => {
+  describe("mergeInstructionsFile", () => {
     it("creates CLAUDE.md if it does not exist", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("## BMAD-METHOD Integration");
     });
 
     it("appends to existing CLAUDE.md", async () => {
       await writeFile(join(testDir, "CLAUDE.md"), "# My Project\n\nExisting content.\n");
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("# My Project");
       expect(content).toContain("## BMAD-METHOD Integration");
     });
 
     it("does not duplicate on second run", async () => {
-      await mergeClaudeMd(testDir);
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       const matches = content.match(/## BMAD-METHOD Integration/g);
       expect(matches).toHaveLength(1);
     });
 
     it("references /bmalph slash command", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("/bmalph");
     });
 
     it("does not reference deprecated plan --phase command", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).not.toContain("--phase");
       expect(content).not.toContain("bmalph plan");
     });
 
     it("references /bmalph-status slash command", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("/bmalph-status");
     });
 
     it("references /bmalph-implement for transition", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("/bmalph-implement");
     });
 
     it("documents all 4 phases", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("Analysis");
       expect(content).toContain("Planning");
@@ -829,13 +828,13 @@ describe("installer", () => {
     });
 
     it("references /bmad-help for command discovery", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("/bmad-help");
     });
 
     it("lists available agent slash commands", async () => {
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("/analyst");
       expect(content).toContain("/architect");
@@ -865,7 +864,7 @@ This user content must survive the upgrade.
 More user content here.
 `;
       await writeFile(join(testDir, "CLAUDE.md"), claudeMd);
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
 
       // Project header preserved
@@ -897,7 +896,7 @@ More user content here.
 Old stale content with /tea agent reference.
 `;
       await writeFile(join(testDir, "CLAUDE.md"), staleSection);
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       // Section should be refreshed with new content
       expect(content).toContain("/qa");
@@ -1277,7 +1276,7 @@ Some trailing content without a heading.
 This must be preserved.
 `;
       await writeFile(join(testDir, "CLAUDE.md"), claudeMd);
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
 
       // BMAD section should be refreshed
@@ -1303,7 +1302,7 @@ Important user notes.
 Old BMAD stuff.
 `;
       await writeFile(join(testDir, "CLAUDE.md"), claudeMd);
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
 
       expect(content).toContain("# My Project");
@@ -1329,7 +1328,7 @@ Content A.
 Content B.
 `;
       await writeFile(join(testDir, "CLAUDE.md"), claudeMd);
-      await mergeClaudeMd(testDir);
+      await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
 
       expect(content).toContain("## User Section A");

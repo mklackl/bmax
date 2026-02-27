@@ -528,20 +528,8 @@ export async function mergeInstructionsFile(
   await atomicWriteFile(instructionsPath, existing + snippet);
 }
 
-/**
- * @deprecated Use `mergeInstructionsFile(projectDir)` instead.
- * Kept for backward compatibility during migration.
- */
-export async function mergeClaudeMd(projectDir: string): Promise<void> {
-  return mergeInstructionsFile(projectDir);
-}
-
 export async function isInitialized(projectDir: string): Promise<boolean> {
   return exists(join(projectDir, CONFIG_FILE));
-}
-
-export async function hasExistingBmadDir(projectDir: string): Promise<boolean> {
-  return exists(join(projectDir, "_bmad"));
 }
 
 export async function previewInstall(

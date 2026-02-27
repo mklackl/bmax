@@ -27,7 +27,7 @@ export {
 export { detectTechStack, customizeAgentMd } from "./tech-stack.js";
 
 // Artifacts
-export { findArtifactsDir, validateArtifacts } from "./artifacts.js";
+export { findArtifactsDir } from "./artifacts.js";
 
 // Context
 export {

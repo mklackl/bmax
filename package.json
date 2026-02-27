@@ -1,7 +1,7 @@
 {
   "name": "bmalph",
   "version": "2.4.0",
-  "description": "Unified AI Development Framework - BMAD phases with Ralph execution loop for Claude Code",
+  "description": "Unified AI Development Framework - BMAD phases with Ralph execution loop",
   "type": "module",
   "bin": {
     "bmalph": "./bin/bmalph.js"
@@ -32,7 +32,11 @@
     "ai",
     "development",
     "framework",
-    "agents"
+    "agents",
+    "bmad",
+    "ralph",
+    "autonomous",
+    "coding-assistant"
   ],
   "author": "Lars Cowe",
   "license": "MIT",

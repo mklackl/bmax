@@ -1,4 +1,3 @@
-import { readFile } from "fs/promises";
 import { join } from "path";
 import { debug } from "../utils/logger.js";
 import { exists } from "../utils/file-system.js";
@@ -20,34 +19,4 @@ export async function findArtifactsDir(projectDir: string): Promise<string | nul
   }
   debug(`No artifacts found. Checked: ${candidates.join(", ")}`);
   return null;
-}
-
-/** @deprecated Use `runPreflight` from `./preflight.js` instead. Kept for backward compatibility. */
-export async function validateArtifacts(files: string[], artifactsDir: string): Promise<string[]> {
-  const warnings: string[] = [];
-
-  const hasPrd = files.some((f) => /prd/i.test(f));
-  if (!hasPrd) {
-    warnings.push("No PRD document found in planning artifacts");
-  }
-
-  const hasArchitecture = files.some((f) => /architect/i.test(f));
-  if (!hasArchitecture) {
-    warnings.push("No architecture document found in planning artifacts");
-  }
-
-  // Check readiness report for NO-GO
-  const readinessFile = files.find((f) => /readiness/i.test(f));
-  if (readinessFile) {
-    try {
-      const content = await readFile(join(artifactsDir, readinessFile), "utf-8");
-      if (/NO[-\s]?GO/i.test(content)) {
-        warnings.push("Readiness report indicates NO-GO status");
-      }
-    } catch {
-      warnings.push("Could not read readiness report — NO-GO status unverified");
-    }
-  }
-
-  return warnings;
 }

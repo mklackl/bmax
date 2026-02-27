@@ -10,10 +10,8 @@ vi.mock("inquirer", () => ({
 
 vi.mock("../../src/installer.js", () => ({
   isInitialized: vi.fn(),
-  hasExistingBmadDir: vi.fn().mockResolvedValue(false),
   installProject: vi.fn(),
   mergeInstructionsFile: vi.fn(),
-  mergeClaudeMd: vi.fn(),
   previewInstall: vi.fn(),
   getBundledVersions: vi.fn(() => ({ bmadCommit: "test1234" })),
 }));
@@ -41,6 +39,10 @@ vi.mock("../../src/platform/registry.js", () => ({
     generateInstructionsSnippet: () => "## BMAD-METHOD Integration\n\nSnippet content",
     getDoctorChecks: () => [],
   })),
+}));
+
+vi.mock("../../src/utils/file-system.js", () => ({
+  exists: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("../../src/platform/detect.js", () => ({
@@ -383,12 +385,13 @@ describe("init command", () => {
   });
 
   it("shows migration message when existing _bmad dir detected", async () => {
-    const { isInitialized, hasExistingBmadDir, installProject, mergeInstructionsFile } =
+    const { isInitialized, installProject, mergeInstructionsFile } =
       await import("../../src/installer.js");
     const { writeConfig } = await import("../../src/utils/config.js");
+    const { exists } = await import("../../src/utils/file-system.js");
 
     vi.mocked(isInitialized).mockResolvedValue(false);
-    vi.mocked(hasExistingBmadDir).mockResolvedValue(true);
+    vi.mocked(exists).mockResolvedValue(true);
     vi.mocked(installProject).mockResolvedValue(undefined);
     vi.mocked(mergeInstructionsFile).mockResolvedValue(undefined);
     vi.mocked(writeConfig).mockResolvedValue(undefined);
@@ -402,12 +405,13 @@ describe("init command", () => {
   });
 
   it("does not show migration message for fresh install", async () => {
-    const { isInitialized, hasExistingBmadDir, installProject, mergeInstructionsFile } =
+    const { isInitialized, installProject, mergeInstructionsFile } =
       await import("../../src/installer.js");
     const { writeConfig } = await import("../../src/utils/config.js");
+    const { exists } = await import("../../src/utils/file-system.js");
 
     vi.mocked(isInitialized).mockResolvedValue(false);
-    vi.mocked(hasExistingBmadDir).mockResolvedValue(false);
+    vi.mocked(exists).mockResolvedValue(false);
     vi.mocked(installProject).mockResolvedValue(undefined);
     vi.mocked(mergeInstructionsFile).mockResolvedValue(undefined);
     vi.mocked(writeConfig).mockResolvedValue(undefined);

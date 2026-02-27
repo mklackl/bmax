@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, rm, readFile, access } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { installProject, mergeClaudeMd } from "../../src/installer.js";
+import { installProject, mergeInstructionsFile } from "../../src/installer.js";
 import { writeConfig, readConfig, type BmalphConfig } from "../../src/utils/config.js";
 
 describe("init flow integration", { timeout: 30000 }, () => {
@@ -33,7 +33,7 @@ describe("init flow integration", { timeout: 30000 }, () => {
       createdAt: new Date().toISOString(),
     };
     await writeConfig(testDir, config);
-    await mergeClaudeMd(testDir);
+    await mergeInstructionsFile(testDir);
 
     // Verify config is readable
     const readBack = await readConfig(testDir);
@@ -84,9 +84,9 @@ describe("init flow integration", { timeout: 30000 }, () => {
     expect(readBack).toEqual(config);
   });
 
-  it("mergeClaudeMd references /bmalph slash command", async () => {
+  it("mergeInstructionsFile references /bmalph slash command", async () => {
     await installProject(testDir);
-    await mergeClaudeMd(testDir);
+    await mergeInstructionsFile(testDir);
 
     const claudeMd = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
     expect(claudeMd).toContain("/bmalph");

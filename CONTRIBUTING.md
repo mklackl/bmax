@@ -34,7 +34,10 @@ bmalph/
 │   │   ├── upgrade.ts      # bmalph upgrade
 │   │   ├── doctor.ts       # bmalph doctor
 │   │   ├── check-updates.ts # bmalph check-updates
-│   │   └── status.ts       # bmalph status
+│   │   ├── status.ts       # bmalph status
+│   │   ├── implement.ts    # bmalph implement
+│   │   ├── reset.ts        # bmalph reset
+│   │   └── watch.ts        # bmalph watch
 │   ├── platform/           # Platform abstraction layer
 │   │   ├── types.ts        # PlatformId, PlatformTier, CommandDelivery types
 │   │   ├── registry.ts     # Platform registry (get, list, validate)
@@ -52,11 +55,20 @@ bmalph/
 │   │   ├── story-parsing.ts # Parse BMAD stories
 │   │   ├── fix-plan.ts     # Generate @fix_plan.md
 │   │   ├── artifacts.ts    # Locate BMAD artifacts
+│   │   ├── artifact-scan.ts # Artifact scanning
 │   │   ├── context.ts      # Generate PROJECT_CONTEXT.md
+│   │   ├── preflight.ts    # Pre-flight validation checks
 │   │   ├── tech-stack.ts   # Detect tech stack
 │   │   ├── specs-*.ts      # Spec generation modules
 │   │   ├── types.ts        # Shared transition types
 │   │   └── index.ts        # Module barrel export
+│   ├── watch/              # Live dashboard module
+│   │   ├── dashboard.ts    # Dashboard orchestrator
+│   │   ├── file-watcher.ts # File system polling
+│   │   ├── renderer.ts     # Terminal UI rendering
+│   │   ├── state-reader.ts # Ralph state parsing
+│   │   └── types.ts        # Watch types
+│   ├── reset.ts            # Reset plan-build + execute logic
 │   └── utils/              # Shared utilities
 │       ├── config.ts       # Config file operations
 │       ├── state.ts        # State management
@@ -149,9 +161,9 @@ npm test
 
 ### What Gets Bundled
 
-| Source                  | Destination | Contents                            |
-| ----------------------- | ----------- | ----------------------------------- |
-| BMAD-METHOD/bmad-agent/ | bmad/       | Agents, workflows, personas, config |
+| Source           | Destination | Contents                            |
+| ---------------- | ----------- | ----------------------------------- |
+| BMAD-METHOD/src/ | bmad/       | Agents, workflows, personas, config |
 
 ## Commit Guidelines
 
@@ -196,7 +208,7 @@ npm run lint
 npm run format
 
 # Full check (lint + build + test)
-npm run check
+npm run ci
 ```
 
 ## Pull Request Process
@@ -204,7 +216,7 @@ npm run check
 1. Create feature branch from `main`
 2. Write tests first (TDD)
 3. Implement feature
-4. Ensure all tests pass: `npm run check`
+4. Ensure all tests pass: `npm run ci`
 5. Create PR with clear description (version bumps are automated)
 
 ## Questions?

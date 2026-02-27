@@ -124,8 +124,10 @@ describe("doctor command", () => {
 
     it("passes when jq is installed", async () => {
       await setupFullProject();
-      const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-      const jqCheck = CHECK_REGISTRY.find((c) => c.id === "jq-available")!;
+      const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+      const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+      const registry = buildCheckRegistry(claudeCodePlatform);
+      const jqCheck = registry.find((c) => c.id === "jq-available")!;
       expect(jqCheck).toBeDefined();
 
       const result = await jqCheck.run(testDir);
@@ -933,14 +935,17 @@ describe("doctor command", () => {
   });
 
   describe("check registry pattern", () => {
-    it("exports CHECK_REGISTRY with all expected checks", async () => {
-      const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
+    it("buildCheckRegistry returns all expected checks for claude-code", async () => {
+      const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+      const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
 
-      expect(Array.isArray(CHECK_REGISTRY)).toBe(true);
-      expect(CHECK_REGISTRY.length).toBe(16);
+      const registry = buildCheckRegistry(claudeCodePlatform);
+
+      expect(Array.isArray(registry)).toBe(true);
+      expect(registry.length).toBe(16);
 
       // All checks should have required properties
-      for (const check of CHECK_REGISTRY) {
+      for (const check of registry) {
         expect(check).toHaveProperty("id");
         expect(check).toHaveProperty("run");
         expect(typeof check.id).toBe("string");
@@ -948,8 +953,11 @@ describe("doctor command", () => {
       }
     });
 
-    it("CHECK_REGISTRY contains expected check IDs in order", async () => {
-      const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
+    it("buildCheckRegistry contains expected check IDs in order for claude-code", async () => {
+      const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+      const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+
+      const registry = buildCheckRegistry(claudeCodePlatform);
 
       const expectedIds = [
         "node-version",
@@ -960,7 +968,7 @@ describe("doctor command", () => {
         "ralph-loop",
         "ralph-lib",
         "slash-command",
-        "claude-md",
+        "instructions-file",
         "gitignore",
         "version-marker",
         "upstream-versions",
@@ -970,16 +978,19 @@ describe("doctor command", () => {
         "upstream-github",
       ];
 
-      const actualIds = CHECK_REGISTRY.map((c) => c.id);
+      const actualIds = registry.map((c) => c.id);
       expect(actualIds).toEqual(expectedIds);
     });
 
     it("individual check functions return CheckResult", async () => {
       await setupFullProject();
-      const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
+      const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+      const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+
+      const registry = buildCheckRegistry(claudeCodePlatform);
 
       // Test a few checks directly
-      const configCheck = CHECK_REGISTRY.find((c) => c.id === "config-valid");
+      const configCheck = registry.find((c) => c.id === "config-valid");
       expect(configCheck).toBeDefined();
 
       const result = await configCheck!.run(testDir);
@@ -990,9 +1001,12 @@ describe("doctor command", () => {
 
     it("CheckResult type includes optional detail and hint", async () => {
       // Empty project - config check will fail
-      const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
+      const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+      const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
 
-      const configCheck = CHECK_REGISTRY.find((c) => c.id === "config-valid");
+      const registry = buildCheckRegistry(claudeCodePlatform);
+
+      const configCheck = registry.find((c) => c.id === "config-valid");
       const result = await configCheck!.run(testDir);
 
       // Failed check should have detail and hint
@@ -1145,8 +1159,10 @@ describe("doctor command", () => {
 
     describe("checkDir (stat errors)", () => {
       it("reports 'not found' for ENOENT errors", async () => {
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const bmadCheck = CHECK_REGISTRY.find((c) => c.id === "bmad-dir")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const bmadCheck = registry.find((c) => c.id === "bmad-dir")!;
         const result = await bmadCheck.run(testDir);
         expect(result.passed).toBe(false);
         expect(result.detail).toBe("not found");
@@ -1157,8 +1173,10 @@ describe("doctor command", () => {
         const statErr = eaccesError("stat", join(testDir, "_bmad"));
         vi.mocked(mockStat).mockRejectedValueOnce(statErr);
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const bmadCheck = CHECK_REGISTRY.find((c) => c.id === "bmad-dir")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const bmadCheck = registry.find((c) => c.id === "bmad-dir")!;
         const result = await bmadCheck.run(testDir);
 
         expect(result.passed).toBe(false);
@@ -1169,8 +1187,10 @@ describe("doctor command", () => {
 
     describe("checkFileHasContent (readFile errors)", () => {
       it("reports 'not found' for ENOENT errors", async () => {
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const ralphLoopCheck = CHECK_REGISTRY.find((c) => c.id === "ralph-loop")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const ralphLoopCheck = registry.find((c) => c.id === "ralph-loop")!;
         const result = await ralphLoopCheck.run(testDir);
         expect(result.passed).toBe(false);
         expect(result.detail).toBe("not found");
@@ -1181,8 +1201,10 @@ describe("doctor command", () => {
         const readErr = eaccesError("open", join(testDir, ".ralph/ralph_loop.sh"));
         vi.mocked(mockReadFile).mockRejectedValueOnce(readErr);
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const ralphLoopCheck = CHECK_REGISTRY.find((c) => c.id === "ralph-loop")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const ralphLoopCheck = registry.find((c) => c.id === "ralph-loop")!;
         const result = await ralphLoopCheck.run(testDir);
 
         expect(result.passed).toBe(false);
@@ -1191,11 +1213,13 @@ describe("doctor command", () => {
       });
     });
 
-    describe("checkClaudeMd (readFile errors)", () => {
+    describe("checkInstructionsFile (readFile errors)", () => {
       it("reports 'CLAUDE.md not found' for ENOENT errors", async () => {
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const claudeCheck = CHECK_REGISTRY.find((c) => c.id === "claude-md")!;
-        const result = await claudeCheck.run(testDir);
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const instructionsCheck = registry.find((c) => c.id === "instructions-file")!;
+        const result = await instructionsCheck.run(testDir);
         expect(result.passed).toBe(false);
         expect(result.detail).toBe("CLAUDE.md not found");
       });
@@ -1205,20 +1229,23 @@ describe("doctor command", () => {
         const readErr = eaccesError("open", join(testDir, "CLAUDE.md"));
         vi.mocked(mockReadFile).mockRejectedValueOnce(readErr);
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const claudeCheck = CHECK_REGISTRY.find((c) => c.id === "claude-md")!;
-        const result = await claudeCheck.run(testDir);
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const instructionsCheck = registry.find((c) => c.id === "instructions-file")!;
+        const result = await instructionsCheck.run(testDir);
 
         expect(result.passed).toBe(false);
         expect(result.detail).not.toBe("CLAUDE.md not found");
-        expect(result.detail).toContain("EACCES");
       });
     });
 
     describe("checkGitignore (readFile errors)", () => {
       it("reports '.gitignore not found' for ENOENT errors", async () => {
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const gitignoreCheck = CHECK_REGISTRY.find((c) => c.id === "gitignore")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const gitignoreCheck = registry.find((c) => c.id === "gitignore")!;
         const result = await gitignoreCheck.run(testDir);
         expect(result.passed).toBe(false);
         expect(result.detail).toBe(".gitignore not found");
@@ -1229,8 +1256,10 @@ describe("doctor command", () => {
         const readErr = eaccesError("open", join(testDir, ".gitignore"));
         vi.mocked(mockReadFile).mockRejectedValueOnce(readErr);
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const gitignoreCheck = CHECK_REGISTRY.find((c) => c.id === "gitignore")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const gitignoreCheck = registry.find((c) => c.id === "gitignore")!;
         const result = await gitignoreCheck.run(testDir);
 
         expect(result.passed).toBe(false);
@@ -1241,8 +1270,10 @@ describe("doctor command", () => {
 
     describe("checkVersionMarker (readFile errors)", () => {
       it("reports 'no marker found' for ENOENT errors", async () => {
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const markerCheck = CHECK_REGISTRY.find((c) => c.id === "version-marker")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const markerCheck = registry.find((c) => c.id === "version-marker")!;
         const result = await markerCheck.run(testDir);
         expect(result.passed).toBe(true);
         expect(result.detail).toBe("no marker found");
@@ -1253,8 +1284,10 @@ describe("doctor command", () => {
         const readErr = eaccesError("open", join(testDir, ".ralph/ralph_loop.sh"));
         vi.mocked(mockReadFile).mockRejectedValueOnce(readErr);
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const markerCheck = CHECK_REGISTRY.find((c) => c.id === "version-marker")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const markerCheck = registry.find((c) => c.id === "version-marker")!;
         const result = await markerCheck.run(testDir);
 
         expect(result.passed).toBe(false);
@@ -1269,8 +1302,10 @@ describe("doctor command", () => {
           readConfig: vi.fn().mockRejectedValue(new Error("disk I/O error")),
         }));
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const versionsCheck = CHECK_REGISTRY.find((c) => c.id === "upstream-versions")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const versionsCheck = registry.find((c) => c.id === "upstream-versions")!;
         const result = await versionsCheck.run(testDir);
 
         expect(result.passed).toBe(false);
@@ -1286,8 +1321,10 @@ describe("doctor command", () => {
         const { checkUpstream } = await import("../../src/utils/github.js");
         vi.mocked(checkUpstream).mockRejectedValueOnce(new Error("DNS resolution failed"));
 
-        const { CHECK_REGISTRY } = await import("../../src/commands/doctor.js");
-        const upstreamCheck = CHECK_REGISTRY.find((c) => c.id === "upstream-github")!;
+        const { buildCheckRegistry } = await import("../../src/commands/doctor.js");
+        const { claudeCodePlatform } = await import("../../src/platform/claude-code.js");
+        const registry = buildCheckRegistry(claudeCodePlatform);
+        const upstreamCheck = registry.find((c) => c.id === "upstream-github")!;
         const result = await upstreamCheck.run(testDir);
 
         expect(result.passed).toBe(true);

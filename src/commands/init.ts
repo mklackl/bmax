@@ -5,13 +5,14 @@ import {
   installProject,
   mergeInstructionsFile,
   isInitialized,
-  hasExistingBmadDir,
   previewInstall,
   getBundledVersions,
 } from "../installer.js";
 import { formatDryRunSummary, type DryRunAction } from "../utils/dryrun.js";
 import { validateProjectName } from "../utils/validate.js";
 import { withErrorHandling } from "../utils/errors.js";
+import { exists } from "../utils/file-system.js";
+import { join } from "path";
 import { isPlatformId, getPlatform } from "../platform/registry.js";
 import { detectPlatform } from "../platform/detect.js";
 import type { Platform, PlatformId } from "../platform/types.js";
@@ -90,7 +91,7 @@ async function runInit(options: InitOptions): Promise<void> {
     return;
   }
 
-  if (await hasExistingBmadDir(projectDir)) {
+  if (await exists(join(projectDir, "_bmad"))) {
     console.log(chalk.cyan("Existing BMAD installation detected."));
     console.log("Framework files in _bmad/ will be replaced with the managed version.");
     console.log("Planning artifacts in _bmad-output/ will not be modified.\n");

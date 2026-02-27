@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import { readFile, stat } from "fs/promises";
-import { exists } from "../utils/file-system.js";
 import { join } from "path";
 import { readJsonFile } from "../utils/json.js";
 import { readConfig } from "../utils/config.js";
@@ -540,53 +539,3 @@ export function buildCheckRegistry(platform: Platform): CheckDefinition[] {
 
   return [...CORE_CHECKS, ...platformChecks, ...TRAILING_CHECKS];
 }
-
-/**
- * Static registry for backward compatibility with existing tests.
- * Uses claude-code platform checks (slash-command + claude-md).
- *
- * Note: The check ids here ("slash-command", "claude-md") intentionally differ
- * from the live buildCheckRegistry path which uses platform-provided ids
- * ("instructions-file"). This is for test backward compatibility only.
- *
- * @deprecated Use `buildCheckRegistry(platform)` for platform-aware checks.
- */
-export const CHECK_REGISTRY: CheckDefinition[] = (() => {
-  // Inline claude-code platform checks to avoid async import at module level
-  const slashCommandCheck: CheckDefinition = {
-    id: "slash-command",
-    run: async (projectDir: string) => {
-      if (await exists(join(projectDir, ".claude/commands/bmalph.md"))) {
-        return { label: ".claude/commands/bmalph.md present", passed: true };
-      }
-      return {
-        label: ".claude/commands/bmalph.md present",
-        passed: false,
-        detail: "not found",
-        hint: "Run: bmalph init",
-      };
-    },
-  };
-
-  const claudeMdCheck: CheckDefinition = {
-    id: "claude-md",
-    run: async (projectDir: string) => {
-      const label = "CLAUDE.md contains BMAD snippet";
-      const hint = "Run: bmalph init";
-      try {
-        const content = await readFile(join(projectDir, "CLAUDE.md"), "utf-8");
-        if (content.includes("BMAD-METHOD Integration")) {
-          return { label, passed: true };
-        }
-        return { label, passed: false, detail: "missing BMAD-METHOD Integration section", hint };
-      } catch (err) {
-        if (isEnoent(err)) {
-          return { label, passed: false, detail: "CLAUDE.md not found", hint };
-        }
-        return { label, passed: false, detail: `error: ${formatError(err)}`, hint };
-      }
-    },
-  };
-
-  return [...CORE_CHECKS, slashCommandCheck, claudeMdCheck, ...TRAILING_CHECKS];
-})();

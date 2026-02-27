@@ -12,7 +12,6 @@ vi.mock("../../src/installer.js", () => ({
   isInitialized: vi.fn(),
   copyBundledAssets: vi.fn(),
   mergeInstructionsFile: vi.fn(),
-  mergeClaudeMd: vi.fn(),
   previewUpgrade: vi.fn(),
   getBundledVersions: vi.fn(),
 }));
