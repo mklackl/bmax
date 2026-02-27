@@ -256,8 +256,53 @@ teardown() {
     [[ "$line_count" -le 30 ]]
 }
 
-# Known bug: heading detection (lines 311-321) loops over headings but never
-# extracts sub-items. This test documents that headings don't leak as tasks.
+@test "extract_prd_tasks extracts bullet items under task headings" {
+    cat > "$_WORK_DIR/headed_prd.md" << 'EOF'
+# Product Requirements
+
+## Overview
+This is a web application.
+
+## Tasks
+- Set up authentication module
+- Implement user profile API
+- Add rate limiting to endpoints
+
+## Non-functional Requirements
+Performance should be under 200ms.
+EOF
+
+    run extract_prd_tasks "$_WORK_DIR/headed_prd.md"
+    assert_success
+    assert_output --partial "- [ ] Set up authentication module"
+    assert_output --partial "- [ ] Implement user profile API"
+    assert_output --partial "- [ ] Add rate limiting to endpoints"
+}
+
+@test "extract_prd_tasks extracts items from multiple task headings" {
+    cat > "$_WORK_DIR/multi_headed.md" << 'EOF'
+# Sprint Plan
+
+## Features
+- Build notification system
+- Create admin dashboard
+
+## Backlog
+- Optimize database queries
+- Add monitoring alerts
+
+## Notes
+Just some notes here.
+EOF
+
+    run extract_prd_tasks "$_WORK_DIR/multi_headed.md"
+    assert_success
+    assert_output --partial "- [ ] Build notification system"
+    assert_output --partial "- [ ] Create admin dashboard"
+    assert_output --partial "- [ ] Optimize database queries"
+    assert_output --partial "- [ ] Add monitoring alerts"
+}
+
 @test "extract_prd_tasks does not include section headings as tasks" {
     cat > "$_WORK_DIR/headings.md" << 'EOF'
 # Project Plan
@@ -483,4 +528,95 @@ MOCK
     run import_tasks_from_sources "beads prd" "/nonexistent/prd.md"
     assert_success
     assert_output --partial "integration tests"
+}
+
+# ===========================================================================
+# get_beads_count
+# ===========================================================================
+
+@test "get_beads_count returns count from mock beads" {
+    mkdir -p "$_WORK_DIR/.beads"
+    _mock_cli bd 0 '[{"id": 1, "status": "open"}, {"id": 2, "status": "open"}, {"id": 3, "status": "closed"}]'
+    cd "$_WORK_DIR"
+    run get_beads_count
+    assert_success
+    assert_output "2"
+}
+
+@test "get_beads_count returns 0 and fails when beads unavailable" {
+    cd "$_WORK_DIR"
+    # No .beads directory
+    run get_beads_count
+    assert_failure
+    assert_output "0"
+}
+
+# ===========================================================================
+# get_github_issue_count
+# ===========================================================================
+
+@test "get_github_issue_count returns count from mock gh" {
+    # Create mock gh with multiple behaviors based on args
+    mkdir -p "$RALPH_DIR/bin"
+    cat > "$RALPH_DIR/bin/gh" << 'MOCK'
+#!/usr/bin/env bash
+if [[ "$1" == "auth" ]]; then
+    exit 0
+elif [[ "$1" == "issue" ]]; then
+    echo '[{"number": 1}, {"number": 2}, {"number": 3}]'
+    exit 0
+fi
+exit 1
+MOCK
+    chmod +x "$RALPH_DIR/bin/gh"
+    export PATH="$RALPH_DIR/bin:$PATH"
+
+    # Mock git remote
+    mkdir -p "$_WORK_DIR/.git"
+    cd "$_WORK_DIR"
+    git init -q
+    git remote add origin https://github.com/test/repo.git
+
+    run get_github_issue_count
+    assert_success
+    assert_output "3"
+}
+
+@test "get_github_issue_count returns 0 when gh unavailable" {
+    cd "$_WORK_DIR"
+    # No gh command in path (restore original PATH)
+    PATH="$_ORIG_PATH"
+    run get_github_issue_count
+    assert_failure
+    assert_output "0"
+}
+
+# ===========================================================================
+# get_github_labels
+# ===========================================================================
+
+@test "get_github_labels returns label names from mock gh" {
+    mkdir -p "$RALPH_DIR/bin"
+    cat > "$RALPH_DIR/bin/gh" << 'MOCK'
+#!/usr/bin/env bash
+if [[ "$1" == "auth" ]]; then
+    exit 0
+elif [[ "$1" == "label" ]]; then
+    echo -e "bug\nenhancement\ndocumentation"
+    exit 0
+fi
+exit 1
+MOCK
+    chmod +x "$RALPH_DIR/bin/gh"
+    export PATH="$RALPH_DIR/bin:$PATH"
+
+    mkdir -p "$_WORK_DIR/.git"
+    cd "$_WORK_DIR"
+    git init -q
+    git remote add origin https://github.com/test/repo.git
+
+    run get_github_labels
+    assert_success
+    assert_output --partial "bug"
+    assert_output --partial "enhancement"
 }

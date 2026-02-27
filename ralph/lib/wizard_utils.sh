@@ -475,6 +475,15 @@ show_progress() {
     local total=$2
     local message=$3
 
+    # Guard against division by zero
+    if [[ $total -le 0 ]]; then
+        local bar_width=30
+        local bar=""
+        for ((i = 0; i < bar_width; i++)); do bar+="░"; done
+        echo -en "\r${WIZARD_CYAN}[${bar}]${WIZARD_NC} 0/${total} ${message}"
+        return 0
+    fi
+
     local bar_width=30
     local filled=$((current * bar_width / total))
     local empty=$((bar_width - filled))

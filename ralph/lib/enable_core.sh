@@ -328,10 +328,9 @@ detect_project_context() {
             DETECTED_TEST_CMD="pnpm test"
             DETECTED_RUN_CMD="pnpm start"
         fi
-    fi
 
     # Detect from pyproject.toml or setup.py (Python)
-    if [[ -f "pyproject.toml" ]] || [[ -f "setup.py" ]]; then
+    elif [[ -f "pyproject.toml" ]] || [[ -f "setup.py" ]]; then
         DETECTED_PROJECT_TYPE="python"
 
         # Extract project name from pyproject.toml
@@ -358,19 +357,17 @@ detect_project_context() {
             DETECTED_TEST_CMD="pytest"
             DETECTED_RUN_CMD="python -m ${DETECTED_PROJECT_NAME:-main}"
         fi
-    fi
 
     # Detect from Cargo.toml (Rust)
-    if [[ -f "Cargo.toml" ]]; then
+    elif [[ -f "Cargo.toml" ]]; then
         DETECTED_PROJECT_TYPE="rust"
         DETECTED_PROJECT_NAME=$(grep -m1 '^name' Cargo.toml | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null)
         DETECTED_BUILD_CMD="cargo build"
         DETECTED_TEST_CMD="cargo test"
         DETECTED_RUN_CMD="cargo run"
-    fi
 
     # Detect from go.mod (Go)
-    if [[ -f "go.mod" ]]; then
+    elif [[ -f "go.mod" ]]; then
         DETECTED_PROJECT_TYPE="go"
         DETECTED_PROJECT_NAME=$(head -1 go.mod | sed 's/module //' 2>/dev/null)
         DETECTED_BUILD_CMD="go build"

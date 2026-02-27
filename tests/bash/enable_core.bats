@@ -382,21 +382,20 @@ EOF
     assert_equal "$DETECTED_FRAMEWORK" "fastapi"
 }
 
-# Known bug: Python detection overwrites JS/TS when both package.json and
-# pyproject.toml exist. The Python block runs after JS and overwrites
-# DETECTED_PROJECT_TYPE unconditionally.
-@test "detect_project_context: Python overwrites JS/TS when both exist" {
-    echo '{"name": "fullstack-app", "dependencies": {"typescript": "^5.3"}}' > package.json
-    touch tsconfig.json
-    cat > pyproject.toml << 'EOF'
+@test "detect_project_context: JS/TS takes precedence when both package.json and pyproject.toml exist" {
+    # Monorepo scenario: Next.js frontend with Python API
+    echo '{"name": "fullstack-app", "dependencies": {"next": "14.0.0"}}' > package.json
+    echo '{}' > tsconfig.json
+    cat > pyproject.toml << 'TOML'
 [project]
-name = "backend"
-EOF
+name = "api-service"
+dependencies = ["fastapi"]
+TOML
 
     detect_project_context
 
-    # Known bug: Python detection runs after JS and overwrites project type
-    assert_equal "$DETECTED_PROJECT_TYPE" "python"
+    # JS/TS detected first should not be overwritten by Python
+    assert_equal "$DETECTED_PROJECT_TYPE" "typescript"
 }
 
 # ===========================================================================

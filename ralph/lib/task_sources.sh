@@ -312,11 +312,45 @@ extract_prd_tasks() {
     local headings
     headings=$(grep -E '^#{1,3}[[:space:]]+(TODO|Tasks|Requirements|Features|Backlog|Sprint)' "$prd_file" 2>/dev/null)
     if [[ -n "$headings" ]]; then
-        # Extract content after these headings as potential tasks
+        # Extract bullet items beneath each matching heading
         while IFS= read -r heading; do
-            local section_name
-            section_name=$(echo "$heading" | sed -E 's/^#*[[:space:]]*//')
-            # This is informational - actual task extraction would need more context
+            # Get line number of this heading
+            local heading_line
+            heading_line=$(grep -nF "$heading" "$prd_file" | head -1 | cut -d: -f1)
+            [[ -z "$heading_line" ]] && continue
+
+            # Find the next heading (any level) after this one
+            local next_heading_line
+            next_heading_line=$(tail -n +"$((heading_line + 1))" "$prd_file" | grep -n '^#' | head -1 | cut -d: -f1)
+
+            # Extract the section content
+            local section_content
+            if [[ -n "$next_heading_line" ]]; then
+                local end_line=$((heading_line + next_heading_line - 1))
+                section_content=$(sed -n "$((heading_line + 1)),${end_line}p" "$prd_file")
+            else
+                section_content=$(tail -n +"$((heading_line + 1))" "$prd_file")
+            fi
+
+            # Extract bullet items from section and convert to checkboxes
+            while IFS= read -r line; do
+                local task_text=""
+                # Match "- item" or "* item" (but not checkboxes, already handled above)
+                if [[ "$line" =~ ^[[:space:]]*[-*][[:space:]]+(.+)$ ]]; then
+                    task_text="${BASH_REMATCH[1]}"
+                    # Skip checkbox lines — they are handled by the earlier extraction
+                    if [[ "$line" == *"["*"]"* ]]; then
+                        task_text=""
+                    fi
+                # Match "N. item" numbered patterns
+                elif [[ "$line" =~ ^[[:space:]]*[0-9]+\.[[:space:]]+(.+)$ ]]; then
+                    task_text="${BASH_REMATCH[1]}"
+                fi
+                if [[ -n "$task_text" ]]; then
+                    tasks="${tasks}
+- [ ] ${task_text}"
+                fi
+            done <<< "$section_content"
         done <<< "$headings"
     fi
 

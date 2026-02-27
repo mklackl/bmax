@@ -115,8 +115,15 @@ teardown() {
 # show_progress
 # ===========================================================================
 
-# Known bug: show_progress division by zero when total=0.
-# Arithmetic expansion fails; skipping that case.
+@test "show_progress handles zero total without error" {
+    run show_progress 0 0 "Initializing"
+    assert_success
+}
+
+@test "show_progress handles negative total without error" {
+    run show_progress 0 -1 "Initializing"
+    assert_success
+}
 
 @test "show_progress displays current step and message" {
     run show_progress 3 10 "Installing packages"
