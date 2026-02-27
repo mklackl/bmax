@@ -563,3 +563,32 @@ EOF
     run detect_stuck_loop "$current" "$RALPH_DIR/logs"
     assert_failure  # exit code 1 = not stuck (different errors)
 }
+
+# ===========================================================================
+# log_analysis_summary
+# ===========================================================================
+
+@test "log_analysis_summary outputs key fields from analysis file" {
+    _skip_if_xargs_broken
+    cat > "$RALPH_DIR/.response_analysis" << 'JSON'
+{
+    "loop_number": 5,
+    "analysis": {
+        "exit_signal": false,
+        "confidence_score": 35,
+        "is_test_only": false,
+        "files_modified": 3,
+        "work_summary": "Implemented authentication module"
+    }
+}
+JSON
+    run log_analysis_summary "$RALPH_DIR/.response_analysis"
+    assert_success
+    assert_output --partial "Loop #5"
+    assert_output --partial "3"
+}
+
+@test "log_analysis_summary returns 1 when file missing" {
+    run log_analysis_summary "$RALPH_DIR/nonexistent.json"
+    assert_failure
+}

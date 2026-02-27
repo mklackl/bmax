@@ -446,3 +446,51 @@ teardown() {
     run jq -r '.[0].reason' "$CB_HISTORY_FILE"
     assert_output 'Error: "file not found"'
 }
+
+# ===========================================================================
+# show_circuit_status
+# ===========================================================================
+
+@test "show_circuit_status outputs CLOSED state info" {
+    init_circuit_breaker
+    run show_circuit_status
+    assert_success
+    assert_output --partial "CLOSED"
+}
+
+@test "show_circuit_status outputs OPEN state info" {
+    init_circuit_breaker
+    # Force to OPEN state
+    jq '.state = "OPEN" | .reason = "no_progress_threshold"' "$CB_STATE_FILE" > "$CB_STATE_FILE.tmp"
+    mv "$CB_STATE_FILE.tmp" "$CB_STATE_FILE"
+    run show_circuit_status
+    assert_success
+    assert_output --partial "OPEN"
+}
+
+@test "show_circuit_status outputs HALF_OPEN state info" {
+    init_circuit_breaker
+    jq '.state = "HALF_OPEN"' "$CB_STATE_FILE" > "$CB_STATE_FILE.tmp"
+    mv "$CB_STATE_FILE.tmp" "$CB_STATE_FILE"
+    run show_circuit_status
+    assert_success
+    assert_output --partial "HALF_OPEN"
+}
+
+# ===========================================================================
+# should_halt_execution
+# ===========================================================================
+
+@test "should_halt_execution returns 0 (halt) when OPEN" {
+    init_circuit_breaker
+    jq '.state = "OPEN" | .reason = "no_progress_threshold"' "$CB_STATE_FILE" > "$CB_STATE_FILE.tmp"
+    mv "$CB_STATE_FILE.tmp" "$CB_STATE_FILE"
+    run should_halt_execution
+    assert_success
+}
+
+@test "should_halt_execution returns 1 (continue) when CLOSED" {
+    init_circuit_breaker
+    run should_halt_execution
+    assert_failure
+}
