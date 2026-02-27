@@ -8,18 +8,17 @@ setup() {
     load 'test_helper/common-setup'
     _common_setup
 
-    # Save the temp RALPH_DIR created by _common_setup before sourcing.
-    local temp_ralph_dir="$RALPH_DIR"
-
     # Source ralph_loop.sh to load function definitions.
-    # The source guard (BASH_SOURCE[0] == $0) prevents main() from running.
-    # Side effects: set -e, library sourcing, variable init, mkdir on ".ralph/".
-    # We must re-set path variables AFTER sourcing because the script
-    # unconditionally assigns RALPH_DIR=".ralph" and derives paths from it.
+    # RALPH_DIR is already exported by _common_setup (temp dir), and the script
+    # respects it via ${RALPH_DIR:-.ralph}. Side effects: set -e, library sourcing,
+    # variable init, mkdir (in temp dir since RALPH_DIR is pre-set).
     source "$PROJECT_ROOT/ralph/ralph_loop.sh"
 
-    # Restore temp dir and re-derive all path variables for test isolation.
-    RALPH_DIR="$temp_ralph_dir"
+    # Disable set -e leaked by ralph_loop.sh so tests that call functions
+    # without `run` don't abort on intermediate non-zero exits.
+    set +e
+
+    # Re-export RALPH_DIR and re-derive path variables for test isolation.
     export RALPH_DIR
     LOG_DIR="$RALPH_DIR/logs"
     DOCS_DIR="$RALPH_DIR/docs/generated"
@@ -485,6 +484,7 @@ PLAN
     load_platform_driver
 
     run execute_claude_code 1
+    assert_success
     # Check call count was incremented
     local count
     count=$(cat "$CALL_COUNT_FILE" 2>/dev/null || echo "0")

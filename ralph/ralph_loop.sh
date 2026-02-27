@@ -19,7 +19,7 @@ source "$SCRIPT_DIR/lib/circuit_breaker.sh"
 
 # Configuration
 # Ralph-specific files live in .ralph/ subfolder
-RALPH_DIR=".ralph"
+RALPH_DIR="${RALPH_DIR:-.ralph}"
 PROMPT_FILE="$RALPH_DIR/PROMPT.md"
 LOG_DIR="$RALPH_DIR/logs"
 DOCS_DIR="$RALPH_DIR/docs/generated"
