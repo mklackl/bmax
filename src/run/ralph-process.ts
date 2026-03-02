@@ -39,13 +39,17 @@ export function spawnRalphLoop(
   let exitCallbacks: Array<(code: number | null) => void> = [];
   let exited = false;
 
-  child.on("close", (code) => {
+  const handleExit = (code: number | null): void => {
+    if (exited) return;
     state = "stopped";
     exitCode = code;
     exited = true;
     for (const cb of exitCallbacks) cb(code);
     exitCallbacks = [];
-  });
+  };
+
+  child.on("close", (code) => handleExit(code));
+  child.on("error", () => handleExit(null));
 
   return {
     get child() {

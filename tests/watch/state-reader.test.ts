@@ -105,7 +105,7 @@ describe("state-reader", () => {
 
       expect(info).not.toBeNull();
       expect(info!.loopCount).toBe(5);
-      expect(info!.status).toBe("running");
+      expect(info!.status).toBe("unknown");
       expect(info!.lastAction).toBe("");
       expect(info!.callsMadeThisHour).toBe(0);
       expect(info!.maxCallsPerHour).toBe(0);

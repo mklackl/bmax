@@ -49,11 +49,7 @@ export async function createFile(
   content: string
 ): Promise<void> {
   const fullPath = join(projectPath, relativePath);
-  const dir = fullPath.substring(
-    0,
-    fullPath.lastIndexOf(/[/\\]/.test(fullPath) ? /[/\\]/.exec(fullPath)![0] : "/")
-  );
-  await mkdir(dir, { recursive: true }).catch(() => {});
+  await mkdir(dirname(fullPath), { recursive: true });
   await writeFile(fullPath, content, "utf-8");
 }
 

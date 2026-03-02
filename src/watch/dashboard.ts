@@ -42,9 +42,32 @@ export async function startDashboard(options: WatchOptions): Promise<void> {
   const watcher = new FileWatcher(refresh, interval);
 
   return new Promise<void>((resolve) => {
+    const handleKey = (data: string): void => {
+      if (data === "q" || data === "\x03") {
+        stop();
+      }
+    };
+
+    const onResize = (): void => {
+      void refresh();
+    };
+
+    const onSignal = (): void => {
+      stop();
+    };
+
+    let stopped = false;
     const stop = (): void => {
+      if (stopped) return;
+      stopped = true;
       watcher.stop();
       cleanup();
+      process.removeListener("SIGINT", onSignal);
+      process.removeListener("SIGTERM", onSignal);
+      process.stdout.removeListener("resize", onResize);
+      if (process.stdin.isTTY) {
+        process.stdin.removeListener("data", handleKey);
+      }
       resolve();
     };
 
@@ -52,21 +75,10 @@ export async function startDashboard(options: WatchOptions): Promise<void> {
       process.stdin.setRawMode(true);
       process.stdin.resume();
       process.stdin.setEncoding("utf-8");
-      process.stdin.on("data", (data: string) => {
-        if (data === "q" || data === "\x03") {
-          stop();
-        }
-      });
+      process.stdin.on("data", handleKey);
     }
 
-    const onResize = (): void => {
-      void refresh();
-    };
     process.stdout.on("resize", onResize);
-
-    const onSignal = (): void => {
-      stop();
-    };
     process.on("SIGINT", onSignal);
     process.on("SIGTERM", onSignal);
 

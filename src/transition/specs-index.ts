@@ -156,11 +156,11 @@ export function formatSpecsIndexMd(index: SpecsIndex): string {
     "",
   ];
 
-  const priorityConfig: { key: Priority; heading: string; description: string }[] = [
-    { key: "critical", heading: "Critical (Always Read First)", description: "" },
-    { key: "high", heading: "High Priority (Read for Implementation)", description: "" },
-    { key: "medium", heading: "Medium Priority (Reference as Needed)", description: "" },
-    { key: "low", heading: "Low Priority (Optional)", description: "" },
+  const priorityConfig: { key: Priority; heading: string }[] = [
+    { key: "critical", heading: "Critical (Always Read First)" },
+    { key: "high", heading: "High Priority (Read for Implementation)" },
+    { key: "medium", heading: "Medium Priority (Reference as Needed)" },
+    { key: "low", heading: "Low Priority (Optional)" },
   ];
 
   let fileNumber = 1;

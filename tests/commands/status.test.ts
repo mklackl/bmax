@@ -308,6 +308,19 @@ describe("status command", () => {
       expect(output).toContain("required");
     });
 
+    it("shows phase headings in artifact checklist", async () => {
+      await setupProject();
+      await setupArtifacts(["product-brief.md", "prd.md", "architecture.md"]);
+
+      const { runStatus } = await import("../../src/commands/status.js");
+      await runStatus({ projectDir: testDir });
+
+      const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(output).toContain("Phase 1 - Analysis");
+      expect(output).toContain("Phase 2 - Planning");
+      expect(output).toContain("Phase 3 - Solutioning");
+    });
+
     it("does not scan artifacts when state has phase 4", async () => {
       await setupProject();
       await setupState({ currentPhase: 4, status: "implementing" });

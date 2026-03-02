@@ -209,11 +209,11 @@ export function validateRalphApiStatus(data: unknown): RalphApiStatus {
 }
 
 // Ralph loop status (from state.ts - loop progress tracking)
-const RALPH_LOOP_STATUSES = ["running", "blocked", "completed", "not_started"] as const;
+const RALPH_LOOP_STATUSES = ["running", "blocked", "completed", "not_started", "unknown"] as const;
 
 export interface RalphLoopStatus {
   loopCount: number;
-  status: "running" | "blocked" | "completed" | "not_started";
+  status: "running" | "blocked" | "completed" | "not_started" | "unknown";
   tasksCompleted: number;
   tasksTotal: number;
 }
@@ -262,7 +262,7 @@ export function normalizeRalphStatus(data: unknown): RalphLoopStatus {
 
   const loopCount = typeof data.loop_count === "number" ? data.loop_count : 0;
   const rawStatus = typeof data.status === "string" ? data.status : undefined;
-  const status = (rawStatus !== undefined ? BASH_STATUS_MAP[rawStatus] : undefined) ?? "running";
+  const status = (rawStatus !== undefined ? BASH_STATUS_MAP[rawStatus] : undefined) ?? "unknown";
 
   return {
     loopCount,
@@ -326,7 +326,7 @@ export function parseInterval(value?: string): number {
     throw new Error(`Interval must be a number >= ${MIN_INTERVAL_MS} (milliseconds)`);
   }
   const interval = value !== undefined ? Number(value) : DEFAULT_INTERVAL_MS;
-  if (isNaN(interval) || interval < MIN_INTERVAL_MS) {
+  if (interval < MIN_INTERVAL_MS) {
     throw new Error(`Interval must be a number >= ${MIN_INTERVAL_MS} (milliseconds)`);
   }
   return Math.trunc(interval);

@@ -270,7 +270,7 @@ describe("validateRalphLoopStatus", () => {
   });
 
   it("accepts all valid status values", () => {
-    for (const status of ["running", "blocked", "completed", "not_started"]) {
+    for (const status of ["running", "blocked", "completed", "not_started", "unknown"]) {
       const data = { loopCount: 0, status, tasksCompleted: 0, tasksTotal: 0 };
       expect(validateRalphLoopStatus(data).status).toBe(status);
     }
@@ -438,9 +438,9 @@ describe("normalizeRalphStatus", () => {
     expect(result.status).toBe("completed");
   });
 
-  it("maps unknown bash status to 'running'", () => {
+  it("maps unknown bash status to 'unknown'", () => {
     const result = normalizeRalphStatus({ loop_count: 1, status: "paused" });
-    expect(result.status).toBe("running");
+    expect(result.status).toBe("unknown");
   });
 
   it("defaults loopCount to 0 when loop_count is missing", () => {
@@ -453,9 +453,9 @@ describe("normalizeRalphStatus", () => {
     expect(result.loopCount).toBe(0);
   });
 
-  it("defaults status to 'running' when status is missing", () => {
+  it("defaults status to 'unknown' when status is missing", () => {
     const result = normalizeRalphStatus({ loop_count: 3 });
-    expect(result.status).toBe("running");
+    expect(result.status).toBe("unknown");
   });
 
   it("reads task counts when present in bash data", () => {

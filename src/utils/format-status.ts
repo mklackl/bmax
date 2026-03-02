@@ -23,6 +23,8 @@ export function formatStatus(status: string): string {
       return chalk.red(status);
     case "not_started":
       return chalk.dim("not started");
+    case "unknown":
+      return chalk.dim(status);
     default:
       return status;
   }

@@ -49,7 +49,6 @@ bmalph/
 │   │   ├── windsurf.ts     # Windsurf platform definition
 │   │   ├── copilot.ts      # GitHub Copilot platform definition
 │   │   ├── aider.ts        # Aider platform definition
-│   │   └── index.ts        # Module barrel export
 │   ├── transition/         # Transition logic modules
 │   │   ├── orchestration.ts # Main transition orchestrator
 │   │   ├── story-parsing.ts # Parse BMAD stories
@@ -205,7 +204,7 @@ git commit -m "feat(api)!: change response format"
 npm run lint
 
 # Format code
-npm run format
+npm run fmt:fix
 
 # Full check (lint + build + test)
 npm run ci

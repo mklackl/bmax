@@ -253,10 +253,10 @@ describe("state", () => {
       const result = await readRalphStatus(testDir);
 
       // camelCase validation fails, bash normalizer treats it as an object
-      // with no recognized bash fields, so returns safe defaults
+      // with no recognized bash fields, so returns safe defaults with unknown status
       expect(result).toEqual({
         loopCount: 0,
-        status: "running",
+        status: "unknown",
         tasksCompleted: 0,
         tasksTotal: 0,
       });

@@ -85,4 +85,23 @@ describe("ARTIFACT_DEFINITIONS", () => {
       expect(match).toBeUndefined();
     }
   });
+
+  it("does not false-positive on filenames containing artifact substrings", () => {
+    const falsePositives: [string, string][] = [
+      ["marketplace-plan.md", "Market Research"],
+      ["luxury-features.md", "UX Design"],
+      ["tuxedo-styles.md", "UX Design"],
+      ["debrief.md", "Product Brief"],
+      ["condominium-research.md", "Domain Research"],
+      ["restore-backup.md", "Epics & Stories"],
+      ["storage-plan.md", "Epics & Stories"],
+      ["epicurean-menu.md", "Epics & Stories"],
+    ];
+    for (const [filename, artifactName] of falsePositives) {
+      const match = ARTIFACT_DEFINITIONS.find((d) => d.pattern.test(filename));
+      expect(match?.name, `"${filename}" should not match "${artifactName}"`).not.toBe(
+        artifactName
+      );
+    }
+  });
 });

@@ -171,7 +171,8 @@ export async function runTransition(
   // Generate changelog before overwriting specs/
   const specsDir = join(projectDir, ".ralph/specs");
   const bmadOutputDir = join(projectDir, "_bmad-output");
-  if (await exists(bmadOutputDir)) {
+  const bmadOutputExists = await exists(bmadOutputDir);
+  if (bmadOutputExists) {
     try {
       const changes = await generateSpecsChangelog(specsDir, bmadOutputDir);
       if (changes.length > 0) {
@@ -188,7 +189,6 @@ export async function runTransition(
   }
 
   // Copy entire _bmad-output/ tree to .ralph/specs/ (preserving structure)
-  const bmadOutputExists = await exists(bmadOutputDir);
   if (!bmadOutputExists) {
     debug("_bmad-output not found, falling back to artifacts directory");
   }

@@ -170,12 +170,6 @@ export async function runStatus(options: StatusOptions): Promise<void> {
   }
 }
 
-const PHASE_LABELS: Record<number, string> = {
-  1: "Phase 1 - Analysis",
-  2: "Phase 2 - Planning",
-  3: "Phase 3 - Solutioning",
-};
-
 function printArtifactChecklist(scan: ProjectArtifactScan): void {
   const foundByName = new Map<string, ScannedArtifact>();
   for (const artifacts of [scan.phases[1], scan.phases[2], scan.phases[3]]) {
@@ -188,7 +182,7 @@ function printArtifactChecklist(scan: ProjectArtifactScan): void {
   for (const def of ARTIFACT_DEFINITIONS) {
     if (def.phase !== currentPhase) {
       currentPhase = def.phase;
-      console.log(`    ${PHASE_LABELS[currentPhase]}`);
+      console.log(`    Phase ${currentPhase} - ${getPhaseLabel(currentPhase)}`);
     }
 
     const found = foundByName.get(def.name);

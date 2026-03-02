@@ -14,13 +14,13 @@ export interface ArtifactDefinition {
 }
 
 export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
-  { pattern: /brief/i, phase: 1, name: "Product Brief", required: false },
-  { pattern: /market/i, phase: 1, name: "Market Research", required: false },
-  { pattern: /domain/i, phase: 1, name: "Domain Research", required: false },
+  { pattern: /\bbrief\b/i, phase: 1, name: "Product Brief", required: false },
+  { pattern: /\bmarket\b/i, phase: 1, name: "Market Research", required: false },
+  { pattern: /\bdomain\b/i, phase: 1, name: "Domain Research", required: false },
   { pattern: /tech.*research/i, phase: 1, name: "Technical Research", required: false },
-  { pattern: /prd/i, phase: 2, name: "PRD", required: true },
-  { pattern: /ux/i, phase: 2, name: "UX Design", required: false },
+  { pattern: /\bprd\b/i, phase: 2, name: "PRD", required: true },
+  { pattern: /\bux\b/i, phase: 2, name: "UX Design", required: false },
   { pattern: /architect/i, phase: 3, name: "Architecture", required: true },
-  { pattern: /epic|stor/i, phase: 3, name: "Epics & Stories", required: true },
+  { pattern: /\bepics?\b|\bstor(?:y|ies)\b/i, phase: 3, name: "Epics & Stories", required: true },
   { pattern: /readiness/i, phase: 3, name: "Readiness Report", required: true },
 ];

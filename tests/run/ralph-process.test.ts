@@ -252,4 +252,44 @@ describe("spawnRalphLoop", () => {
 
     expect(exitCallback).toHaveBeenCalledWith(42);
   });
+
+  it("transitions to stopped and fires onExit on spawn error event", async () => {
+    const mockChild = createMockChild();
+    mockSpawn.mockReturnValue(mockChild);
+
+    const { spawnRalphLoop } = await import("../../src/run/ralph-process.js");
+    const rp = spawnRalphLoop("/project", "claude-code", { inheritStdio: false });
+
+    const exitCallback = vi.fn();
+    rp.onExit(exitCallback);
+
+    mockChild.emit("error", new Error("spawn ENOENT"));
+
+    expect(rp.state).toBe("stopped");
+    expect(exitCallback).toHaveBeenCalledWith(null);
+  });
+
+  it("uses child.kill directly on win32 platform", async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, "platform", { value: "win32", configurable: true });
+
+    try {
+      const mockChild = createMockChild();
+      mockSpawn.mockReturnValue(mockChild);
+
+      const processKillSpy = vi.spyOn(process, "kill");
+
+      const { spawnRalphLoop } = await import("../../src/run/ralph-process.js");
+      const rp = spawnRalphLoop("/project", "claude-code", { inheritStdio: false });
+
+      rp.kill();
+
+      expect(mockChild.kill).toHaveBeenCalledWith("SIGTERM");
+      expect(processKillSpy).not.toHaveBeenCalled();
+
+      processKillSpy.mockRestore();
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform, configurable: true });
+    }
+  });
 });
