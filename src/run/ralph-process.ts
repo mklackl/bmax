@@ -5,6 +5,7 @@ import { exists } from "../utils/file-system.js";
 import type { RalphProcess, RalphProcessState } from "./types.js";
 
 const RALPH_LOOP_PATH = `${RALPH_DIR}/ralph_loop.sh`;
+const BASH_RALPH_LOOP_PATH = `./${RALPH_LOOP_PATH}`;
 
 export async function validateBashAvailable(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -26,8 +27,7 @@ export function spawnRalphLoop(
   platformId: string,
   options: { inheritStdio: boolean }
 ): RalphProcess {
-  const loopPath = join(projectDir, RALPH_LOOP_PATH);
-  const child = spawn("bash", [loopPath], {
+  const child = spawn("bash", [BASH_RALPH_LOOP_PATH], {
     cwd: projectDir,
     env: { ...process.env, PLATFORM_DRIVER: platformId },
     stdio: options.inheritStdio ? "inherit" : ["ignore", "pipe", "pipe"],

@@ -115,13 +115,25 @@ describe("spawnRalphLoop", () => {
 
     expect(mockSpawn).toHaveBeenCalledWith(
       "bash",
-      [expect.stringContaining("ralph_loop.sh")],
+      ["./.ralph/ralph_loop.sh"],
       expect.objectContaining({
         cwd: "/project",
         env: expect.objectContaining({ PLATFORM_DRIVER: "claude-code" }),
       })
     );
     expect(rp.state).toBe("running");
+  });
+
+  it("uses a bash-safe relative loop path on Windows project directories", async () => {
+    const mockChild = createMockChild();
+    mockSpawn.mockReturnValue(mockChild);
+
+    const { spawnRalphLoop } = await import("../../src/run/ralph-process.js");
+    spawnRalphLoop("C:\\Users\\Test\\project", "claude-code", { inheritStdio: false });
+
+    const spawnArgs = mockSpawn.mock.calls[0][1] as string[];
+    expect(spawnArgs[0]).toBe("./.ralph/ralph_loop.sh");
+    expect(spawnArgs[0]).not.toContain("C:\\Users\\Test\\project");
   });
 
   it("uses inherit stdio when inheritStdio is true", async () => {
