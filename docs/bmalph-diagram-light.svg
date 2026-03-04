@@ -156,7 +156,7 @@
 
   <rect x="752" y="178" width="152" height="24" rx="5" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="0.5"/>
   <circle cx="766" cy="190" r="4" fill="#10b981" opacity="0.6"/>
-  <text x="776" y="194" fill="#047857" font-size="10" font-weight="600">Ralph Loop (claude / codex)</text>
+  <text x="776" y="194" fill="#047857" font-size="10" font-weight="600">Ralph Loop (claude / codex / copilot / cursor)</text>
 
   <!-- Ralph cycle -->
   <text x="752" y="222" fill="#64748b" font-size="9">1. Pick next story</text>
@@ -230,7 +230,7 @@
   <!-- Full tier badge -->
   <rect x="270" y="560" width="12" height="12" rx="2" fill="#10b981"/>
   <text x="288" y="570" fill="#1e293b" font-size="9" font-weight="600">Full  (Phases 1-4)</text>
-  <text x="288" y="582" fill="#64748b" font-size="8">claude-code · codex</text>
+  <text x="288" y="582" fill="#64748b" font-size="8">claude-code · codex · copilot* · cursor*</text>
 
   <!-- Divider -->
   <line x1="430" y1="558" x2="430" y2="604" stroke="#e2e8f0" stroke-width="1"/>
@@ -238,10 +238,10 @@
   <!-- Instructions-only badge -->
   <rect x="445" y="560" width="12" height="12" rx="2" fill="#94a3b8"/>
   <text x="463" y="570" fill="#1e293b" font-size="9" font-weight="600">Instructions-only  (Phases 1-3)</text>
-  <text x="463" y="582" fill="#64748b" font-size="8">cursor · windsurf · copilot · aider</text>
+  <text x="463" y="582" fill="#64748b" font-size="8">windsurf · aider</text>
 
   <!-- Note -->
-  <text x="480" y="600" text-anchor="middle" fill="#94a3b8" font-size="8">Ralph autonomous loop (Phase 4) requires a CLI-based full-tier platform</text>
+  <text x="480" y="600" text-anchor="middle" fill="#94a3b8" font-size="8">Ralph autonomous loop (Phase 4) requires a CLI-based full-tier platform · * = experimental</text>
 
   <!-- Footer -->
   <text x="480" y="648" text-anchor="middle" fill="#94a3b8" font-size="10">github.com/LarsCowe/bmalph</text>

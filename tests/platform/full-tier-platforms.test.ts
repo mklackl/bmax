@@ -22,8 +22,8 @@ describe("full-tier experimental platforms", () => {
         expect(platform.experimental).toBe(true);
       });
 
-      it("has commandDelivery kind none", () => {
-        expect(platform.commandDelivery).toEqual({ kind: "none" });
+      it("has commandDelivery kind index", () => {
+        expect(platform.commandDelivery).toEqual({ kind: "index" });
       });
 
       it(`instructionsFile is ${expectedFile}`, () => {

@@ -7,7 +7,7 @@ export const aiderPlatform: Platform = {
   displayName: "Aider",
   tier: "instructions-only",
   instructionsFile: "CONVENTIONS.md",
-  commandDelivery: { kind: "none" },
+  commandDelivery: { kind: "index" },
   instructionsSectionMarker: "## BMAD-METHOD Integration",
   generateInstructionsSnippet: generateInstructionsOnlySnippet,
   getDoctorChecks() {

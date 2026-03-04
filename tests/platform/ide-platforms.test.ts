@@ -18,8 +18,8 @@ describe("IDE-only platforms", () => {
         expect(platform.tier).toBe("instructions-only");
       });
 
-      it("has commandDelivery kind none", () => {
-        expect(platform.commandDelivery).toEqual({ kind: "none" });
+      it("has commandDelivery kind index", () => {
+        expect(platform.commandDelivery).toEqual({ kind: "index" });
       });
 
       it(`instructionsFile is ${expectedFile}`, () => {

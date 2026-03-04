@@ -8,7 +8,14 @@ import {
   replaceSection,
 } from "./utils/file-system.js";
 import { isEnoent } from "./utils/errors.js";
-import { BMAD_DIR, RALPH_DIR, BMALPH_DIR, BMAD_OUTPUT_DIR } from "./utils/constants.js";
+import {
+  BMAD_DIR,
+  RALPH_DIR,
+  BMALPH_DIR,
+  BMAD_OUTPUT_DIR,
+  SKILLS_DIR,
+  SKILLS_PREFIX,
+} from "./utils/constants.js";
 import type { Platform } from "./platform/types.js";
 import type { DryRunAction } from "./utils/dryrun.js";
 
@@ -57,6 +64,20 @@ export async function buildResetPlan(projectDir: string, platform: Platform): Pr
     }
   }
 
+  // Check for skills to remove (skills delivery only)
+  if (platform.commandDelivery.kind === "skills") {
+    try {
+      const existingDirs = await readdir(join(projectDir, SKILLS_DIR));
+      for (const dir of existingDirs) {
+        if (dir.startsWith(SKILLS_PREFIX)) {
+          plan.commandFiles.push(posix.join(SKILLS_DIR, dir));
+        }
+      }
+    } catch (err) {
+      if (!isEnoent(err)) throw err;
+    }
+  }
+
   // Check instructions file for BMAD sections
   try {
     const content = await readFile(join(projectDir, platform.instructionsFile), "utf-8");
@@ -64,11 +85,6 @@ export async function buildResetPlan(projectDir: string, platform: Platform): Pr
 
     if (content.includes(platform.instructionsSectionMarker)) {
       sectionsToRemove.push(platform.instructionsSectionMarker);
-    }
-
-    // Codex (inline) also has a BMAD Commands section
-    if (platform.commandDelivery.kind === "inline" && content.includes("## BMAD Commands")) {
-      sectionsToRemove.push("## BMAD Commands");
     }
 
     if (sectionsToRemove.length > 0) {
@@ -123,9 +139,9 @@ export async function executeResetPlan(projectDir: string, plan: ResetPlan): Pro
     await rm(join(projectDir, dir), { recursive: true, force: true });
   }
 
-  // Delete slash command files
+  // Delete slash command files and skill directories
   for (const file of plan.commandFiles) {
-    await rm(join(projectDir, file), { force: true });
+    await rm(join(projectDir, file), { recursive: true, force: true });
   }
 
   // Clean instructions file

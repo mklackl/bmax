@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateFullTierSnippet,
+  generateSkillsTierSnippet,
   generateInstructionsOnlySnippet,
 } from "../../src/platform/instructions-snippet.js";
 
@@ -39,20 +40,72 @@ describe("generateFullTierSnippet", () => {
     expect(snippet).toContain("bmalph-implement");
   });
 
-  it("lists all expected agents", () => {
+  it("references COMMANDS.md for command discovery", () => {
     const snippet = generateFullTierSnippet("Run");
-    const expectedAgents = [
-      "Analyst",
-      "Architect",
-      "Product Manager",
-      "Scrum Master",
-      "Developer",
-      "UX Designer",
-      "QA Engineer",
-    ];
-    for (const agent of expectedAgents) {
-      expect(snippet).toContain(agent);
-    }
+    expect(snippet).toContain("_bmad/COMMANDS.md");
+  });
+
+  it("references lite workflow for PRD creation", () => {
+    const snippet = generateFullTierSnippet("Run");
+    expect(snippet).toContain("_bmad/lite/create-prd.md");
+  });
+
+  it("includes command reference section", () => {
+    const snippet = generateFullTierSnippet("Run");
+    expect(snippet).toContain("Command Reference");
+    expect(snippet).toContain("look it up in");
+  });
+});
+
+describe("generateSkillsTierSnippet", () => {
+  it("includes the BMAD-METHOD Integration heading", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("## BMAD-METHOD Integration");
+  });
+
+  it("includes all four phases", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("1. Analysis");
+    expect(snippet).toContain("2. Planning");
+    expect(snippet).toContain("3. Solutioning");
+    expect(snippet).toContain("4. Implementation");
+  });
+
+  it("includes Phase 4 Ralph reference", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("Ralph autonomous loop");
+  });
+
+  it("includes the bmalph-implement transition step", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("bmalph-implement");
+  });
+
+  it("references $command-name invocation syntax", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("$command-name");
+    expect(snippet).toContain("$create-prd");
+    expect(snippet).toContain("$analyst");
+  });
+
+  it("references COMMANDS.md as supplementary reference", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("_bmad/COMMANDS.md");
+  });
+
+  it("mentions Codex Skills", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("Codex Skills");
+  });
+
+  it("references lite workflow for PRD creation", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).toContain("_bmad/lite/create-prd.md");
+  });
+
+  it("does not contain look-it-up-in-COMMANDS phrasing", () => {
+    const snippet = generateSkillsTierSnippet();
+    expect(snippet).not.toContain("look it up in");
   });
 });
 
@@ -75,7 +128,7 @@ describe("generateInstructionsOnlySnippet", () => {
     expect(snippet).not.toContain("4. Implementation");
   });
 
-  it("does not mention Ralph or Phase 4", () => {
+  it("does not mention Ralph or Phase 4 in workflow", () => {
     const snippet = generateInstructionsOnlySnippet();
     expect(snippet).not.toContain("Ralph autonomous loop");
     expect(snippet).not.toContain("bmalph-implement");
@@ -87,19 +140,19 @@ describe("generateInstructionsOnlySnippet", () => {
     expect(snippet).toContain("not supported on this platform");
   });
 
-  it("lists all expected agents", () => {
+  it("references COMMANDS.md for command discovery", () => {
     const snippet = generateInstructionsOnlySnippet();
-    const expectedAgents = [
-      "Analyst",
-      "Architect",
-      "Product Manager",
-      "Scrum Master",
-      "Developer",
-      "UX Designer",
-      "QA Engineer",
-    ];
-    for (const agent of expectedAgents) {
-      expect(snippet).toContain(agent);
-    }
+    expect(snippet).toContain("_bmad/COMMANDS.md");
+  });
+
+  it("references lite workflow for PRD creation", () => {
+    const snippet = generateInstructionsOnlySnippet();
+    expect(snippet).toContain("_bmad/lite/create-prd.md");
+  });
+
+  it("includes command reference section", () => {
+    const snippet = generateInstructionsOnlySnippet();
+    expect(snippet).toContain("Command Reference");
+    expect(snippet).toContain("look it up in");
   });
 });

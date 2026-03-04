@@ -48,7 +48,7 @@ const mockCodexPlatform: Platform = {
   displayName: "OpenAI Codex",
   tier: "full",
   instructionsFile: "AGENTS.md",
-  commandDelivery: { kind: "inline" },
+  commandDelivery: { kind: "skills" },
   instructionsSectionMarker: "## BMAD-METHOD Integration",
   generateInstructionsSnippet: () => "",
   getDoctorChecks: () => [],
@@ -150,13 +150,13 @@ describe("reset", () => {
       expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## BMAD-METHOD Integration");
     });
 
-    it("detects BMAD Commands section for inline platforms", async () => {
+    it("detects BMAD section for index platforms", async () => {
       existsMock.mockResolvedValue(false);
       readdirMock.mockResolvedValue([]);
       readFileMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
         if (p.endsWith("/AGENTS.md")) {
-          return "# Agents\n\n## BMAD-METHOD Integration\n\nContent\n\n## BMAD Commands\n\nCommands\n";
+          return "# Agents\n\n## BMAD-METHOD Integration\n\nContent\n";
         }
         throw enoent();
       });
@@ -166,7 +166,6 @@ describe("reset", () => {
 
       expect(plan.instructionsCleanup).not.toBeNull();
       expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## BMAD-METHOD Integration");
-      expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## BMAD Commands");
     });
 
     it("detects gitignore entries to remove", async () => {
@@ -202,6 +201,37 @@ describe("reset", () => {
       expect(plan.warnings[0].path).toBe("_bmad-output/");
     });
 
+    it("finds bmad-* skill directories for skills platforms", async () => {
+      existsMock.mockResolvedValue(false);
+      readdirMock.mockImplementation(async (path: string) => {
+        const p = path.replace(/\\/g, "/");
+        if (p.includes(".agents/skills")) {
+          return ["bmad-analyst", "bmad-create-prd", "my-custom-skill"];
+        }
+        return [];
+      });
+      readFileMock.mockRejectedValue(enoent());
+
+      const { buildResetPlan } = await import("../src/reset.js");
+      const plan = await buildResetPlan("/project", mockCodexPlatform);
+
+      expect(plan.commandFiles).toContain(".agents/skills/bmad-analyst");
+      expect(plan.commandFiles).toContain(".agents/skills/bmad-create-prd");
+      expect(plan.commandFiles).not.toContain(".agents/skills/my-custom-skill");
+    });
+
+    it("skips skills cleanup for non-skills platforms", async () => {
+      existsMock.mockResolvedValue(false);
+      readdirMock.mockResolvedValue([]);
+      readFileMock.mockRejectedValue(enoent());
+
+      const { buildResetPlan } = await import("../src/reset.js");
+      const plan = await buildResetPlan("/project", mockClaudeCodePlatform);
+
+      // Should not have any .agents/skills paths
+      expect(plan.commandFiles.filter((f) => f.includes(".agents/skills"))).toEqual([]);
+    });
+
     it("returns empty plan when nothing exists", async () => {
       existsMock.mockResolvedValue(false);
       readdirMock.mockResolvedValue([]);
@@ -215,6 +245,17 @@ describe("reset", () => {
       expect(plan.instructionsCleanup).toBeNull();
       expect(plan.gitignoreLines).toEqual([]);
       expect(plan.warnings).toEqual([]);
+    });
+
+    it("handles ENOENT when .agents/skills directory does not exist", async () => {
+      existsMock.mockResolvedValue(false);
+      readdirMock.mockRejectedValue(enoent());
+      readFileMock.mockRejectedValue(enoent());
+
+      const { buildResetPlan } = await import("../src/reset.js");
+      const plan = await buildResetPlan("/project", mockCodexPlatform);
+
+      expect(plan.commandFiles).toEqual([]);
     });
   });
 
@@ -263,11 +304,11 @@ describe("reset", () => {
 
       expect(rmMock).toHaveBeenCalledWith(
         expect.stringMatching(/[/\\]\.claude[/\\]commands[/\\]bmalph\.md$/),
-        { force: true }
+        { recursive: true, force: true }
       );
       expect(rmMock).toHaveBeenCalledWith(
         expect.stringMatching(/[/\\]\.claude[/\\]commands[/\\]analyst\.md$/),
-        { force: true }
+        { recursive: true, force: true }
       );
     });
 

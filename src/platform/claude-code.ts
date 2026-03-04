@@ -11,7 +11,7 @@ export const claudeCodePlatform: Platform = {
   generateInstructionsSnippet: () => `
 ## BMAD-METHOD Integration
 
-Use \`/bmalph\` to navigate phases. Use \`/bmad-help\` to discover all commands. Use \`/bmalph-status\` for a quick overview.
+Use \`/bmalph\` to navigate phases. Use \`/bmad-help\` to discover all commands. Use \`/bmalph-status\` for a quick overview. See \`_bmad/COMMANDS.md\` for a full command reference.
 
 ### Phases
 

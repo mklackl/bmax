@@ -76,8 +76,9 @@ describe("doctor command", () => {
         },
       })
     );
-    await mkdir(join(testDir, "_bmad"), { recursive: true });
+    await mkdir(join(testDir, "_bmad/lite"), { recursive: true });
     await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
+    await writeFile(join(testDir, "_bmad/lite/create-prd.md"), "# PRD Generator");
     await mkdir(join(testDir, ".claude/commands"), { recursive: true });
     await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\necho hello\n");
     await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
@@ -942,7 +943,7 @@ describe("doctor command", () => {
       const registry = buildCheckRegistry(claudeCodePlatform);
 
       expect(Array.isArray(registry)).toBe(true);
-      expect(registry.length).toBe(16);
+      expect(registry.length).toBe(17);
 
       // All checks should have required properties
       for (const check of registry) {
@@ -968,6 +969,7 @@ describe("doctor command", () => {
         "ralph-loop",
         "ralph-lib",
         "slash-command",
+        "lite-workflow",
         "instructions-file",
         "gitignore",
         "version-marker",

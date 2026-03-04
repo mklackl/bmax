@@ -7,7 +7,7 @@ export const windsurfPlatform: Platform = {
   displayName: "Windsurf",
   tier: "instructions-only",
   instructionsFile: ".windsurf/rules/bmad.md",
-  commandDelivery: { kind: "none" },
+  commandDelivery: { kind: "index" },
   instructionsSectionMarker: "## BMAD-METHOD Integration",
   generateInstructionsSnippet: generateInstructionsOnlySnippet,
   getDoctorChecks() {

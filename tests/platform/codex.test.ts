@@ -15,13 +15,19 @@ describe("codexPlatform", () => {
     expect(codexPlatform.instructionsFile).toBe("AGENTS.md");
   });
 
-  it("commandDelivery is inline kind", () => {
-    expect(codexPlatform.commandDelivery).toEqual({ kind: "inline" });
+  it("commandDelivery is skills kind", () => {
+    expect(codexPlatform.commandDelivery).toEqual({ kind: "skills" });
   });
 
   it("generateInstructionsSnippet contains BMAD-METHOD Integration", () => {
     const snippet = codexPlatform.generateInstructionsSnippet();
     expect(snippet).toContain("BMAD-METHOD Integration");
+  });
+
+  it("generateInstructionsSnippet references $command-name syntax", () => {
+    const snippet = codexPlatform.generateInstructionsSnippet();
+    expect(snippet).toContain("$command-name");
+    expect(snippet).toContain("Codex Skills");
   });
 
   it("generateInstructionsSnippet does not contain slash command syntax", () => {
@@ -31,9 +37,15 @@ describe("codexPlatform", () => {
     expect(snippet).not.toMatch(/\/architect\b/);
   });
 
-  it("getDoctorChecks returns 1 check", () => {
+  it("getDoctorChecks returns 4 checks (command-index, skills, lite-workflow, instructions-file)", () => {
     const checks = codexPlatform.getDoctorChecks();
-    expect(checks).toHaveLength(1);
+    expect(checks).toHaveLength(4);
+    expect(checks.map((c) => c.id)).toEqual([
+      "command-index",
+      "skills",
+      "lite-workflow",
+      "instructions-file",
+    ]);
   });
 
   describe("doctor checks", () => {

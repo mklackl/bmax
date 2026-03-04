@@ -40,9 +40,14 @@ describe("claudeCodePlatform", () => {
     expect(snippet).not.toContain("/bmalph-reset");
   });
 
-  it("getDoctorChecks returns 2 checks", () => {
+  it("getDoctorChecks returns 3 checks (slash-command, lite-workflow, instructions-file)", () => {
     const checks = claudeCodePlatform.getDoctorChecks();
-    expect(checks).toHaveLength(2);
+    expect(checks).toHaveLength(3);
+    expect(checks.map((c) => c.id)).toEqual([
+      "slash-command",
+      "lite-workflow",
+      "instructions-file",
+    ]);
   });
 
   describe("doctor checks", () => {

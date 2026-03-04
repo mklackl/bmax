@@ -109,7 +109,7 @@ export function expectDoctorSummary(
 export interface PlatformAssertionConfig {
   id: string;
   instructionsFile: string;
-  commandDelivery: "directory" | "inline" | "none";
+  commandDelivery: "directory" | "index" | "skills";
   tier: "full" | "instructions-only";
 }
 
@@ -146,6 +146,12 @@ export async function expectBmalphInitializedForPlatform(
     await expectFileExists(join(projectPath, ".claude/commands/bmalph.md"));
   } else {
     await expectFileNotExists(join(projectPath, ".claude/commands"));
+  }
+
+  // Skills structure
+  if (platform.commandDelivery === "skills") {
+    await expectDirectoryExists(join(projectPath, ".agents/skills/bmad-analyst"));
+    await expectFileExists(join(projectPath, ".agents/skills/bmad-analyst/SKILL.md"));
   }
 }
 

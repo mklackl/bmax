@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { exists } from "../utils/file-system.js";
+import { SKILLS_DIR, SKILLS_PREFIX } from "../utils/constants.js";
 import { isEnoent, formatError } from "../utils/errors.js";
 import type { Platform, PlatformDoctorCheck } from "./types.js";
 
@@ -34,17 +35,21 @@ export function createInstructionsFileCheck(platform: Platform): PlatformDoctorC
 }
 
 /**
- * Creates a slash-command check for directory-based command delivery.
+ * Creates a doctor check that verifies a file exists at the given path.
  */
-function createSlashCommandCheck(dir: string): PlatformDoctorCheck {
+function createFileExistsCheck(
+  id: string,
+  relativePath: string,
+  hint: string
+): PlatformDoctorCheck {
   return {
-    id: "slash-command",
-    label: `${dir}/bmalph.md present`,
+    id,
+    label: `${relativePath} present`,
     check: async (projectDir: string) => {
-      if (await exists(join(projectDir, `${dir}/bmalph.md`))) {
+      if (await exists(join(projectDir, relativePath))) {
         return { passed: true };
       }
-      return { passed: false, detail: "not found", hint: "Run: bmalph init" };
+      return { passed: false, detail: "not found", hint };
     },
   };
 }
@@ -57,9 +62,27 @@ export function buildPlatformDoctorChecks(platform: Platform): PlatformDoctorChe
   const checks: PlatformDoctorCheck[] = [];
 
   if (platform.commandDelivery.kind === "directory") {
-    checks.push(createSlashCommandCheck(platform.commandDelivery.dir));
+    const dir = platform.commandDelivery.dir;
+    checks.push(createFileExistsCheck("slash-command", `${dir}/bmalph.md`, "Run: bmalph init"));
   }
 
+  if (platform.commandDelivery.kind === "index" || platform.commandDelivery.kind === "skills") {
+    checks.push(createFileExistsCheck("command-index", "_bmad/COMMANDS.md", "Run: bmalph upgrade"));
+  }
+
+  if (platform.commandDelivery.kind === "skills") {
+    checks.push(
+      createFileExistsCheck(
+        "skills",
+        `${SKILLS_DIR}/${SKILLS_PREFIX}analyst/SKILL.md`,
+        "Run: bmalph upgrade"
+      )
+    );
+  }
+
+  checks.push(
+    createFileExistsCheck("lite-workflow", "_bmad/lite/create-prd.md", "Run: bmalph upgrade")
+  );
   checks.push(createInstructionsFileCheck(platform));
 
   return checks;

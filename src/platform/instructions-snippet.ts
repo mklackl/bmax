@@ -1,14 +1,4 @@
-/**
- * Shared instructions snippet for full-tier platforms (codex, copilot, cursor).
- * @param verb - Opening verb for the first line ("Run" for codex, "Ask" for copilot/cursor).
- */
-export function generateFullTierSnippet(verb: string): string {
-  return `
-## BMAD-METHOD Integration
-
-${verb} the BMAD master agent to navigate phases. Ask for help to discover all available agents and workflows.
-
-### Phases
+const FULL_TIER_PHASES = `### Phases
 
 | Phase | Focus | Key Agents |
 |-------|-------|-----------|
@@ -20,19 +10,41 @@ ${verb} the BMAD master agent to navigate phases. Ask for help to discover all a
 ### Workflow
 
 1. Work through Phases 1-3 using BMAD agents and workflows
-2. Use the bmalph-implement transition to prepare Ralph format, then start Ralph
+2. For PRD creation, use \`_bmad/lite/create-prd.md\` for single-turn generation
+3. Use the bmalph-implement transition to prepare Ralph format, then start Ralph`;
 
-### Available Agents
+const COMMAND_REFERENCE = `### Command Reference
 
-| Agent | Role |
-|-------|------|
-| Analyst | Research, briefs, discovery |
-| Architect | Technical design, architecture |
-| Product Manager | PRDs, epics, stories |
-| Scrum Master | Sprint planning, status, coordination |
-| Developer | Implementation, coding |
-| UX Designer | User experience, wireframes |
-| QA Engineer | Test automation, quality assurance |
+When the user asks for a BMAD command, look it up in \`_bmad/COMMANDS.md\` and follow the invocation instructions.`;
+
+/**
+ * Shared instructions snippet for non-directory full-tier platforms.
+ * @param verb - Opening verb for the first line ("Run" or "Ask").
+ */
+export function generateFullTierSnippet(verb: string): string {
+  return `
+## BMAD-METHOD Integration
+
+${verb} the BMAD master agent to navigate phases. Read \`_bmad/COMMANDS.md\` for all available agents, workflows, and commands.
+
+${FULL_TIER_PHASES}
+
+${COMMAND_REFERENCE}
+`;
+}
+
+/**
+ * Instructions snippet for skills-based platforms.
+ * Commands are available as native skills with \`$command-name\` invocation.
+ */
+export function generateSkillsTierSnippet(): string {
+  return `
+## BMAD-METHOD Integration
+
+BMAD commands are available as Codex Skills. Use \`$command-name\` to invoke them
+(e.g., \`$create-prd\`, \`$analyst\`). See \`_bmad/COMMANDS.md\` for a full reference.
+
+${FULL_TIER_PHASES}
 `;
 }
 
@@ -44,7 +56,7 @@ export function generateInstructionsOnlySnippet(): string {
   return `
 ## BMAD-METHOD Integration
 
-Ask the BMAD master agent to navigate phases. Ask for help to discover all available agents and workflows.
+Ask the BMAD master agent to navigate phases. Read \`_bmad/COMMANDS.md\` for all available agents, workflows, and commands.
 
 ### Phases
 
@@ -56,20 +68,10 @@ Ask the BMAD master agent to navigate phases. Ask for help to discover all avail
 
 ### Workflow
 
-Work through Phases 1-3 using BMAD agents and workflows interactively.
+Work through Phases 1-3 using BMAD agents and workflows interactively. For PRD creation, use \`_bmad/lite/create-prd.md\` for single-turn generation.
 
 > **Note:** Ralph (Phase 4 — autonomous implementation) is not supported on this platform.
 
-### Available Agents
-
-| Agent | Role |
-|-------|------|
-| Analyst | Research, briefs, discovery |
-| Architect | Technical design, architecture |
-| Product Manager | PRDs, epics, stories |
-| Scrum Master | Sprint planning, status, coordination |
-| Developer | Implementation, coding |
-| UX Designer | User experience, wireframes |
-| QA Engineer | Test automation, quality assurance |
+${COMMAND_REFERENCE}
 `;
 }

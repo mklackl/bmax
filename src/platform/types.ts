@@ -23,8 +23,8 @@ export type PlatformTier = "full" | "instructions-only";
 /** How slash commands are delivered to the platform. */
 export type CommandDelivery =
   | { kind: "directory"; dir: string }
-  | { kind: "inline" }
-  | { kind: "none" };
+  | { kind: "index" }
+  | { kind: "skills" };
 
 /** Result of a single platform-specific doctor check. */
 export interface PlatformDoctorCheck {

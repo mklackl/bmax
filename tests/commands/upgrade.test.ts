@@ -26,11 +26,7 @@ vi.mock("../../src/platform/registry.js", () => ({
     tier: id === "claude-code" || id === "codex" ? "full" : "instructions-only",
     instructionsFile: id === "claude-code" ? "CLAUDE.md" : "AGENTS.md",
     commandDelivery:
-      id === "claude-code"
-        ? { kind: "directory", dir: ".claude/commands" }
-        : id === "codex"
-          ? { kind: "inline" }
-          : { kind: "none" },
+      id === "claude-code" ? { kind: "directory", dir: ".claude/commands" } : { kind: "index" },
     instructionsSectionMarker: "## BMAD-METHOD Integration",
     generateInstructionsSnippet: () => "## BMAD-METHOD Integration\n\nSnippet content",
     getDoctorChecks: () => [],

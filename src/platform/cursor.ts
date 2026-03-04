@@ -8,7 +8,7 @@ export const cursorPlatform: Platform = {
   tier: "full",
   experimental: true,
   instructionsFile: ".cursor/rules/bmad.mdc",
-  commandDelivery: { kind: "none" },
+  commandDelivery: { kind: "index" },
   instructionsSectionMarker: "## BMAD-METHOD Integration",
   generateInstructionsSnippet: () => generateFullTierSnippet("Ask"),
   getDoctorChecks() {

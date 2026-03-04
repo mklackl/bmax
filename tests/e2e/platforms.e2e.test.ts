@@ -9,7 +9,6 @@ import {
   expectFileExists,
   expectFileContains,
   expectFileNotExists,
-  expectFileNotContains,
   type PlatformAssertionConfig,
 } from "./helpers/assertions.js";
 
@@ -18,29 +17,29 @@ import {
  * Excludes claude-code (already covered by existing E2E tests).
  */
 const PLATFORM_CONFIGS: PlatformAssertionConfig[] = [
-  { id: "codex", instructionsFile: "AGENTS.md", commandDelivery: "inline", tier: "full" },
+  { id: "codex", instructionsFile: "AGENTS.md", commandDelivery: "skills", tier: "full" },
   {
     id: "cursor",
     instructionsFile: ".cursor/rules/bmad.mdc",
-    commandDelivery: "none",
+    commandDelivery: "index",
     tier: "full",
   },
   {
     id: "windsurf",
     instructionsFile: ".windsurf/rules/bmad.md",
-    commandDelivery: "none",
+    commandDelivery: "index",
     tier: "instructions-only",
   },
   {
     id: "copilot",
     instructionsFile: ".github/copilot-instructions.md",
-    commandDelivery: "none",
+    commandDelivery: "index",
     tier: "full",
   },
   {
     id: "aider",
     instructionsFile: "CONVENTIONS.md",
-    commandDelivery: "none",
+    commandDelivery: "index",
     tier: "instructions-only",
   },
 ];
@@ -134,16 +133,46 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
   });
 
   describe("codex-specific", () => {
-    it("inline commands merged into AGENTS.md", async () => {
+    it("command index generated instead of inline commands", async () => {
       project = await createTestProject();
 
       await runInit(project.path, "test-project", "E2E test", "codex");
 
-      // AGENTS.md should contain inline commands section
-      await expectFileContains(join(project.path, "AGENTS.md"), "## BMAD Commands");
+      // _bmad/COMMANDS.md should exist with command index
+      await expectFileExists(join(project.path, "_bmad/COMMANDS.md"));
+      await expectFileContains(join(project.path, "_bmad/COMMANDS.md"), "# BMAD Commands");
 
       // No .claude/commands/ directory created
       await expectFileNotExists(join(project.path, ".claude/commands"));
+    });
+
+    it("generates Codex Skills in .agents/skills/", async () => {
+      project = await createTestProject();
+
+      await runInit(project.path, "test-project", "E2E test", "codex");
+
+      // Agent skill exists with correct structure
+      await expectFileExists(join(project.path, ".agents/skills/bmad-analyst/SKILL.md"));
+      await expectFileContains(
+        join(project.path, ".agents/skills/bmad-analyst/SKILL.md"),
+        "managed-by: bmalph"
+      );
+
+      // Workflow skill exists
+      await expectFileExists(join(project.path, ".agents/skills/bmad-create-prd/SKILL.md"));
+
+      // CLI pointer commands are NOT generated as skills
+      await expectFileNotExists(join(project.path, ".agents/skills/bmad-bmalph-implement"));
+      await expectFileNotExists(join(project.path, ".agents/skills/bmad-bmalph-status"));
+    });
+
+    it("instructions reference $command-name syntax", async () => {
+      project = await createTestProject();
+
+      await runInit(project.path, "test-project", "E2E test", "codex");
+
+      await expectFileContains(join(project.path, "AGENTS.md"), "$command-name");
+      await expectFileContains(join(project.path, "AGENTS.md"), "Codex Skills");
     });
 
     it(".ralphrc has correct platform driver", async () => {
@@ -164,20 +193,21 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       (p) => p.tier === "instructions-only"
     );
 
-    it.each(instructionsOnlyPlatforms)("$id: no command delivery artifacts", async (platform) => {
-      project = await createTestProject();
+    it.each(instructionsOnlyPlatforms)(
+      "$id: has command index, no directory-based commands",
+      async (platform) => {
+        project = await createTestProject();
 
-      await runInit(project.path, "test-project", "E2E test", platform.id);
+        await runInit(project.path, "test-project", "E2E test", platform.id);
 
-      // No .claude/commands/ directory
-      await expectFileNotExists(join(project.path, ".claude/commands"));
+        // No .claude/commands/ directory
+        await expectFileNotExists(join(project.path, ".claude/commands"));
 
-      // No inline commands section in instructions file
-      await expectFileNotContains(
-        join(project.path, platform.instructionsFile),
-        "## BMAD Commands"
-      );
-    });
+        // _bmad/COMMANDS.md should exist
+        await expectFileExists(join(project.path, "_bmad/COMMANDS.md"));
+        await expectFileContains(join(project.path, "_bmad/COMMANDS.md"), "# BMAD Commands");
+      }
+    );
 
     it.each(instructionsOnlyPlatforms)(
       "$id: instructions mention Phases 1-3 but not Phase 4",
@@ -200,46 +230,45 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
     );
   });
 
-  describe.each(PLATFORM_CONFIGS.filter((p) => p.tier === "full" && p.commandDelivery === "none"))(
-    "$id-specific",
-    (platform) => {
-      it("instructions reference Phase 4 and Ralph", async () => {
-        project = await createTestProject();
+  describe.each(
+    PLATFORM_CONFIGS.filter(
+      (p) => p.tier === "full" && (p.commandDelivery === "index" || p.commandDelivery === "skills")
+    )
+  )("$id-specific", (platform) => {
+    it("instructions reference Phase 4 and Ralph", async () => {
+      project = await createTestProject();
 
-        await runInit(project.path, "test-project", "E2E test", platform.id);
+      await runInit(project.path, "test-project", "E2E test", platform.id);
 
-        const content = await readFile(join(project.path, platform.instructionsFile), "utf-8");
+      const content = await readFile(join(project.path, platform.instructionsFile), "utf-8");
 
-        expect(content).toContain("4. Implementation");
-        expect(content).toContain("Ralph");
-        expect(content).not.toContain("not supported on this platform");
-      });
+      expect(content).toContain("4. Implementation");
+      expect(content).toContain("Ralph");
+      expect(content).not.toContain("not supported on this platform");
+    });
 
-      it("has no command delivery artifacts", async () => {
-        project = await createTestProject();
+    it("has command index but no directory-based commands", async () => {
+      project = await createTestProject();
 
-        await runInit(project.path, "test-project", "E2E test", platform.id);
+      await runInit(project.path, "test-project", "E2E test", platform.id);
 
-        await expectFileNotExists(join(project.path, ".claude/commands"));
-        await expectFileNotContains(
-          join(project.path, platform.instructionsFile),
-          "## BMAD Commands"
-        );
-      });
+      await expectFileNotExists(join(project.path, ".claude/commands"));
+      await expectFileExists(join(project.path, "_bmad/COMMANDS.md"));
+      await expectFileContains(join(project.path, "_bmad/COMMANDS.md"), "# BMAD Commands");
+    });
 
-      it(".ralphrc has correct platform driver", async () => {
-        project = await createTestProject();
+    it(".ralphrc has correct platform driver", async () => {
+      project = await createTestProject();
 
-        await runInit(project.path, "test-project", "E2E test", platform.id);
+      await runInit(project.path, "test-project", "E2E test", platform.id);
 
-        await expectFileExists(join(project.path, ".ralph/.ralphrc"));
-        await expectFileContains(
-          join(project.path, ".ralph/.ralphrc"),
-          `PLATFORM_DRIVER="\${PLATFORM_DRIVER:-${platform.id}}"`
-        );
-      });
-    }
-  );
+      await expectFileExists(join(project.path, ".ralph/.ralphrc"));
+      await expectFileContains(
+        join(project.path, ".ralph/.ralphrc"),
+        `PLATFORM_DRIVER="\${PLATFORM_DRIVER:-${platform.id}}"`
+      );
+    });
+  });
 
   describe("_bmad/config.yaml platform field", () => {
     it.each(PLATFORM_CONFIGS)("$id: config.yaml has correct platform", async (platform) => {
