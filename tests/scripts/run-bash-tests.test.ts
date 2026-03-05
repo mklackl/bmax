@@ -71,7 +71,12 @@ process.exit(Number(process.env.BMALPH_FAKE_BATS_EXIT_CODE ?? "0"));
   await writeFile(
     filePath,
     `#!/bin/sh
-bin_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+case "$0" in
+  */*) script_dir=\${0%/*} ;;
+  *) script_dir=. ;;
+esac
+
+bin_dir=$(CDPATH= cd -- "$script_dir" && pwd)
 
 if [ "$1" = "--version" ]; then
   exit 0
