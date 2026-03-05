@@ -18,13 +18,16 @@ function executableName(command: string): string {
   return process.platform === "win32" ? `${command}.cmd` : command;
 }
 
+function quoteForPosixShell(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
 async function createFakeBash(binDir: string): Promise<void> {
   const filePath = join(binDir, executableName("bash"));
-  if (process.platform === "win32") {
-    const helperPath = join(binDir, "bash-helper.cjs");
-    await writeFile(
-      helperPath,
-      `const { appendFileSync, existsSync } = require("node:fs");
+  const helperPath = join(binDir, "bash-helper.cjs");
+  await writeFile(
+    helperPath,
+    `const { appendFileSync, existsSync } = require("node:fs");
 const { join } = require("node:path");
 
 const args = process.argv.slice(2);
@@ -39,7 +42,7 @@ if (args[0] !== "-lc") {
 }
 
 const command = args[1] ?? "";
-const toolMatch = /command -v (\\w+)/.exec(command);
+const toolMatch = /^command -v (\\w+) >\\/dev\\/null 2>&1$/.exec(command);
 if (toolMatch) {
   const tool = toolMatch[1];
   process.exit(existsSync(join(binDir, tool)) || existsSync(join(binDir, tool + ".cmd")) ? 0 : 1);
@@ -58,8 +61,10 @@ if (process.env.BMALPH_BATS_LOG) {
 
 process.exit(Number(process.env.BMALPH_FAKE_BATS_EXIT_CODE ?? "0"));
 `,
-      "utf8"
-    );
+    "utf8"
+  );
+
+  if (process.platform === "win32") {
     await writeFile(
       filePath,
       `@echo off\r\n"${process.execPath}" "%~dp0bash-helper.cjs" %*\r\nexit /b %errorlevel%\r\n`,
@@ -71,41 +76,7 @@ process.exit(Number(process.env.BMALPH_FAKE_BATS_EXIT_CODE ?? "0"));
   await writeFile(
     filePath,
     `#!/bin/sh
-case "$0" in
-  */*) script_dir=\${0%/*} ;;
-  *) script_dir=. ;;
-esac
-
-bin_dir=$(CDPATH= cd -- "$script_dir" && pwd)
-
-if [ "$1" = "--version" ]; then
-  exit 0
-fi
-
-if [ "$1" != "-lc" ]; then
-  exit 1
-fi
-
-command=$2
-if [ "\${command#command -v }" != "$command" ] && [ "\${command% >/dev/null 2>&1}" != "$command" ]; then
-  tool=\${command#command -v }
-  tool=\${tool% >/dev/null 2>&1}
-  if [ -f "$bin_dir/$tool" ] || [ -f "$bin_dir/$tool.cmd" ]; then
-    exit 0
-  fi
-  exit 1
-fi
-
-case "$command" in
-  bats *)
-    if [ -n "$BMALPH_BATS_LOG" ]; then
-      printf '%s\\n' "$command" >> "$BMALPH_BATS_LOG"
-    fi
-    exit "\${BMALPH_FAKE_BATS_EXIT_CODE:-0}"
-    ;;
-esac
-
-exit 1
+exec ${quoteForPosixShell(process.execPath)} ${quoteForPosixShell(helperPath)} "$@"
 `,
     "utf8"
   );
