@@ -340,6 +340,21 @@ describe("upgrade command", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Copy failed"));
     });
 
+    it("surfaces rollback recovery errors", async () => {
+      const { isInitialized, copyBundledAssets } = await import("../../src/installer.js");
+      vi.mocked(isInitialized).mockResolvedValue(true);
+      vi.mocked(copyBundledAssets).mockRejectedValue(
+        new Error("BMAD finalization failed after swap; previous BMAD installation was restored.")
+      );
+
+      const { upgradeCommand } = await import("../../src/commands/upgrade.js");
+      await upgradeCommand({ force: true, projectDir: process.cwd() });
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("previous BMAD installation was restored")
+      );
+    });
+
     it("sets exitCode to 1 on error", async () => {
       const { isInitialized, copyBundledAssets } = await import("../../src/installer.js");
       vi.mocked(isInitialized).mockResolvedValue(true);
