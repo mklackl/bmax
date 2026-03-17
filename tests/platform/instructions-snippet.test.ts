@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   generateFullTierSnippet,
   generateSkillsTierSnippet,
+  generateOpencodeSkillsTierSnippet,
   generateInstructionsOnlySnippet,
 } from "../../src/platform/instructions-snippet.js";
 
@@ -106,6 +107,34 @@ describe("generateSkillsTierSnippet", () => {
   it("does not contain look-it-up-in-COMMANDS phrasing", () => {
     const snippet = generateSkillsTierSnippet();
     expect(snippet).not.toContain("look it up in");
+  });
+});
+
+describe("generateOpencodeSkillsTierSnippet", () => {
+  it("includes the BMAD-METHOD Integration heading", () => {
+    const snippet = generateOpencodeSkillsTierSnippet();
+    expect(snippet).toContain("## BMAD-METHOD Integration");
+  });
+
+  it("includes all four phases", () => {
+    const snippet = generateOpencodeSkillsTierSnippet();
+    expect(snippet).toContain("1. Analysis");
+    expect(snippet).toContain("2. Planning");
+    expect(snippet).toContain("3. Solutioning");
+    expect(snippet).toContain("4. Implementation");
+  });
+
+  it("references native OpenCode skills without Codex dollar syntax", () => {
+    const snippet = generateOpencodeSkillsTierSnippet();
+    expect(snippet).toContain(".opencode/skills");
+    expect(snippet).toContain("bmad-analyst");
+    expect(snippet).not.toContain("$command-name");
+    expect(snippet).not.toContain("Codex Skills");
+  });
+
+  it("mentions the question tool for interactive workflow prompts", () => {
+    const snippet = generateOpencodeSkillsTierSnippet();
+    expect(snippet).toContain("question tool");
   });
 });
 

@@ -17,6 +17,13 @@ describe("registry", () => {
       expect(platform.tier).toBe("full");
     });
 
+    it("returns opencode platform with correct properties", () => {
+      const platform = getPlatform("opencode");
+      expect(platform.id).toBe("opencode");
+      expect(platform.displayName).toBe("OpenCode");
+      expect(platform.tier).toBe("full");
+    });
+
     it("throws for unknown platform id", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(() => getPlatform("unknown" as any)).toThrow("Unknown platform: unknown");
@@ -24,9 +31,9 @@ describe("registry", () => {
   });
 
   describe("getAllPlatforms", () => {
-    it("returns array of 6 platforms", () => {
+    it("returns array of 7 platforms", () => {
       const platforms = getAllPlatforms();
-      expect(platforms).toHaveLength(6);
+      expect(platforms).toHaveLength(7);
     });
   });
 
@@ -37,6 +44,10 @@ describe("registry", () => {
 
     it("returns true for codex", () => {
       expect(isPlatformId("codex")).toBe(true);
+    });
+
+    it("returns true for opencode", () => {
+      expect(isPlatformId("opencode")).toBe(true);
     });
 
     it("returns false for unknown", () => {

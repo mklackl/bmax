@@ -40,7 +40,7 @@ export async function copyBundledAssets(
   const classified = await installBmadAssets(projectDir, bmadDir, slashCommandsDir, p);
 
   if (p.commandDelivery.kind === "skills") {
-    await generateSkills(projectDir, classified);
+    await generateSkills(projectDir, classified, p);
   }
 
   const ralphAssets = await installRalphAssets(projectDir, ralphDir, p, await getPackageVersion());

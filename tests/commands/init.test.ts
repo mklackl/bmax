@@ -22,15 +22,32 @@ vi.mock("../../src/utils/config.js", () => ({
 
 vi.mock("../../src/platform/registry.js", () => ({
   isPlatformId: vi.fn((value: string) => {
-    return ["claude-code", "codex", "cursor", "windsurf", "copilot", "aider"].includes(value);
+    return ["claude-code", "codex", "opencode", "cursor", "windsurf", "copilot", "aider"].includes(
+      value
+    );
   }),
   getPlatform: vi.fn((id: string) => ({
     id,
-    displayName: id === "claude-code" ? "Claude Code" : id === "codex" ? "OpenAI Codex" : id,
-    tier: ["claude-code", "codex", "copilot", "cursor"].includes(id) ? "full" : "instructions-only",
+    displayName:
+      id === "claude-code"
+        ? "Claude Code"
+        : id === "codex"
+          ? "OpenAI Codex"
+          : id === "opencode"
+            ? "OpenCode"
+            : id,
+    tier: ["claude-code", "codex", "opencode", "copilot", "cursor"].includes(id)
+      ? "full"
+      : "instructions-only",
     instructionsFile: id === "claude-code" ? "CLAUDE.md" : "AGENTS.md",
     commandDelivery:
-      id === "claude-code" ? { kind: "directory", dir: ".claude/commands" } : { kind: "index" },
+      id === "claude-code"
+        ? { kind: "directory", dir: ".claude/commands" }
+        : id === "codex"
+          ? { kind: "skills", dir: ".agents/skills", frontmatterName: "command" }
+          : id === "opencode"
+            ? { kind: "skills", dir: ".opencode/skills", frontmatterName: "directory" }
+            : { kind: "index" },
     instructionsSectionMarker: "## BMAD-METHOD Integration",
     generateInstructionsSnippet: () => "## BMAD-METHOD Integration\n\nSnippet content",
     getDoctorChecks: () => [],
@@ -38,6 +55,7 @@ vi.mock("../../src/platform/registry.js", () => ({
   getAllPlatforms: vi.fn(() => [
     { id: "claude-code", displayName: "Claude Code", tier: "full" },
     { id: "codex", displayName: "OpenAI Codex", tier: "full" },
+    { id: "opencode", displayName: "OpenCode", tier: "full" },
     { id: "cursor", displayName: "Cursor", tier: "full", experimental: true },
     { id: "windsurf", displayName: "Windsurf", tier: "instructions-only" },
     { id: "copilot", displayName: "GitHub Copilot CLI", tier: "full", experimental: true },
@@ -564,5 +582,32 @@ describe("init command", () => {
     expect(getPlatform).toHaveBeenCalledWith("claude-code");
 
     process.stdin.isTTY = originalIsTTY;
+  });
+
+  it("passes explicit opencode platform to installer", async () => {
+    const { isInitialized, installProject, mergeInstructionsFile } =
+      await import("../../src/installer.js");
+    const { writeConfig } = await import("../../src/utils/config.js");
+    const { getPlatform, isPlatformId } = await import("../../src/platform/registry.js");
+
+    vi.mocked(isInitialized).mockResolvedValue(false);
+    vi.mocked(installProject).mockResolvedValue(undefined);
+    vi.mocked(mergeInstructionsFile).mockResolvedValue(undefined);
+    vi.mocked(writeConfig).mockResolvedValue(undefined);
+    vi.mocked(isPlatformId).mockReturnValue(true);
+
+    const { initCommand } = await import("../../src/commands/init.js");
+    await initCommand({
+      name: "my-proj",
+      description: "A project",
+      platform: "opencode",
+      projectDir: process.cwd(),
+    });
+
+    expect(getPlatform).toHaveBeenCalledWith("opencode");
+    expect(writeConfig).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ platform: "opencode" })
+    );
   });
 });

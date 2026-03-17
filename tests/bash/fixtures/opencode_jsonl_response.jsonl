@@ -1,0 +1,2 @@
+{"type":"session.created","session":{"id":"opencode-session-123"}}
+{"type":"message.updated","message":{"role":"assistant","parts":[{"type":"text","text":"Completed the OpenCode run.\n\n---RALPH_STATUS---\nSTATUS: COMPLETE\nEXIT_SIGNAL: true\n---END_RALPH_STATUS---"}]}}

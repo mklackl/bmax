@@ -16,7 +16,11 @@ describe("codexPlatform", () => {
   });
 
   it("commandDelivery is skills kind", () => {
-    expect(codexPlatform.commandDelivery).toEqual({ kind: "skills" });
+    expect(codexPlatform.commandDelivery).toEqual({
+      kind: "skills",
+      dir: ".agents/skills",
+      frontmatterName: "command",
+    });
   });
 
   it("generateInstructionsSnippet contains BMAD-METHOD Integration", () => {

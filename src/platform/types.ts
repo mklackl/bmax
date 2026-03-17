@@ -9,6 +9,7 @@
 export const PLATFORM_IDS = [
   "claude-code",
   "codex",
+  "opencode",
   "cursor",
   "windsurf",
   "copilot",
@@ -24,7 +25,7 @@ export type PlatformTier = "full" | "instructions-only";
 export type CommandDelivery =
   | { kind: "directory"; dir: string }
   | { kind: "index" }
-  | { kind: "skills" };
+  | { kind: "skills"; dir: string; frontmatterName: "command" | "directory" };
 
 /** Result of a single platform-specific doctor check. */
 export interface PlatformDoctorCheck {

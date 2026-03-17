@@ -26,12 +26,13 @@ describe("detectPlatform", () => {
     expect(result.detected).toBe("claude-code");
   });
 
-  it("treats root AGENTS.md as ambiguous between Codex and Cursor", async () => {
+  it("treats root AGENTS.md as ambiguous between Codex, Cursor, and OpenCode", async () => {
     await writeFile(join(testDir, "AGENTS.md"), "# Agents");
     const result = await detectPlatform(testDir);
     expect(result.detected).toBeNull();
     expect(result.candidates).toContain("codex");
     expect(result.candidates).toContain("cursor");
+    expect(result.candidates).toContain("opencode");
   });
 
   it("returns null when no markers found", async () => {
@@ -54,6 +55,7 @@ describe("detectPlatform", () => {
     const result = await detectPlatform(testDir);
     expect(result.candidates).toContain("claude-code");
     expect(result.candidates).toContain("codex");
+    expect(result.candidates).toContain("opencode");
   });
 
   it("returns cursor when .cursor/ exists", async () => {
@@ -71,6 +73,22 @@ describe("detectPlatform", () => {
 
     expect(result.detected).toBe("cursor");
     expect(result.candidates).toEqual(["cursor"]);
+  });
+
+  it("returns opencode when .opencode/ exists", async () => {
+    await mkdir(join(testDir, ".opencode"), { recursive: true });
+    const result = await detectPlatform(testDir);
+    expect(result.detected).toBe("opencode");
+  });
+
+  it("lets .opencode take precedence over root AGENTS.md", async () => {
+    await mkdir(join(testDir, ".opencode"), { recursive: true });
+    await writeFile(join(testDir, "AGENTS.md"), "# Agents");
+
+    const result = await detectPlatform(testDir);
+
+    expect(result.detected).toBe("opencode");
+    expect(result.candidates).toEqual(["opencode"]);
   });
 
   it("treats root CLAUDE.md as ambiguous between Claude Code and Cursor", async () => {

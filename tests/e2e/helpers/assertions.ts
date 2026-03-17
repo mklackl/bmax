@@ -111,6 +111,7 @@ export interface PlatformAssertionConfig {
   instructionsFile: string;
   commandDelivery: "directory" | "index" | "skills";
   tier: "full" | "instructions-only";
+  skillsDir?: string;
 }
 
 /**
@@ -150,8 +151,9 @@ export async function expectBmalphInitializedForPlatform(
 
   // Skills structure
   if (platform.commandDelivery === "skills") {
-    await expectDirectoryExists(join(projectPath, ".agents/skills/bmad-analyst"));
-    await expectFileExists(join(projectPath, ".agents/skills/bmad-analyst/SKILL.md"));
+    const skillsDir = platform.skillsDir ?? ".agents/skills";
+    await expectDirectoryExists(join(projectPath, skillsDir, "bmad-analyst"));
+    await expectFileExists(join(projectPath, skillsDir, "bmad-analyst", "SKILL.md"));
   }
 }
 

@@ -13,6 +13,14 @@ const CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE =
   'ALLOWED_TOOLS="Write,Read,Edit,MultiEdit,Glob,Grep,Task,TodoWrite,WebFetch,WebSearch,EnterPlanMode,ExitPlanMode,NotebookEdit,Bash"';
 const PREVIOUS_CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE =
   'ALLOWED_TOOLS="Write,Read,Edit,MultiEdit,Glob,Grep,Task,TodoWrite,WebFetch,WebSearch,NotebookEdit,Bash"';
+const RALPHRC_DRIVER_COMMENT_LINE =
+  "# Platform driver for Ralph loop (claude-code, codex, opencode, copilot, or cursor)";
+const PREVIOUS_RALPHRC_DRIVER_COMMENT_LINE =
+  "# Platform driver for Ralph loop (claude-code, codex, copilot, or cursor)";
+const RALPHRC_IGNORED_DRIVERS_COMMENT_LINE =
+  "# Ignored by the codex, opencode, cursor, and copilot drivers.";
+const PREVIOUS_RALPHRC_IGNORED_DRIVERS_COMMENT_LINE =
+  "# Ignored by the codex, cursor, and copilot drivers.";
 const CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK = `# Permission mode for Claude Code CLI (default: bypassPermissions)
 # Options: auto, acceptEdits, bypassPermissions, default, dontAsk, plan
 CLAUDE_PERMISSION_MODE="bypassPermissions"
@@ -21,6 +29,33 @@ CLAUDE_PERMISSION_MODE="bypassPermissions"
 const PREVIOUS_CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK = `# Permission mode for Claude Code CLI (default: auto)
 # Options: auto, acceptEdits, bypassPermissions, default, dontAsk, plan
 CLAUDE_PERMISSION_MODE="auto"
+
+`;
+const QUALITY_GATES_TEMPLATE_BLOCK = `# =============================================================================
+# QUALITY GATES
+# =============================================================================
+
+# Test command to verify TESTS_STATUS claims (e.g. "npm test", "pytest")
+# When set, runs after each loop to confirm the agent's test status report.
+# Leave empty to trust the agent's TESTS_STATUS without verification.
+TEST_COMMAND="\${TEST_COMMAND:-}"
+
+# Semicolon-separated quality gate commands (e.g. "npm run lint;npm run type-check")
+# Each command runs after the loop iteration completes.
+# Commands must not contain literal semicolons; use wrapper scripts if needed.
+QUALITY_GATES="\${QUALITY_GATES:-}"
+
+# Failure mode: warn | block | circuit-breaker
+#   warn            - log failures, continue normally (default)
+#   block           - suppress exit signal so the loop keeps running
+#   circuit-breaker - feed no-progress to circuit breaker
+QUALITY_GATE_MODE="\${QUALITY_GATE_MODE:-warn}"
+
+# Timeout in seconds for each gate command
+QUALITY_GATE_TIMEOUT="\${QUALITY_GATE_TIMEOUT:-120}"
+
+# Only run gates when the agent signals completion (EXIT_SIGNAL=true)
+QUALITY_GATE_ON_COMPLETION_ONLY="\${QUALITY_GATE_ON_COMPLETION_ONLY:-false}"
 
 `;
 
@@ -139,6 +174,12 @@ function renderLegacyRalphrcTemplate(platformId: string): string {
   return LEGACY_RALPHRC_TEMPLATE.replace("__PLATFORM_DRIVER__", platformId);
 }
 
+function normalizeManagedRalphrcContent(content: string): string {
+  return content
+    .replace(PREVIOUS_RALPHRC_DRIVER_COMMENT_LINE, RALPHRC_DRIVER_COMMENT_LINE)
+    .replace(PREVIOUS_RALPHRC_IGNORED_DRIVERS_COMMENT_LINE, RALPHRC_IGNORED_DRIVERS_COMMENT_LINE);
+}
+
 function renderCurrentRalphrcTemplate(templateContent: string, platformId: string): string {
   return templateContent.replace(
     /PLATFORM_DRIVER="\$\{PLATFORM_DRIVER:-[^"]*\}"/,
@@ -152,36 +193,60 @@ export async function renderRalphrcTemplate(platformId: string): Promise<string>
   return renderCurrentRalphrcTemplate(templateContent, platformId);
 }
 
+function matchesManagedPermissionVariants(content: string, template: string): boolean {
+  if (content === template) {
+    return true;
+  }
+
+  if (
+    content ===
+    template
+      .replace(CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE, PREVIOUS_CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE)
+      .replace(CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK, "")
+  ) {
+    return true;
+  }
+
+  if (
+    content ===
+    template
+      .replace(CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE, PREVIOUS_CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE)
+      .replace(
+        CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK,
+        PREVIOUS_CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK
+      )
+  ) {
+    return true;
+  }
+
+  if (
+    content ===
+    template.replace(
+      CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK,
+      PREVIOUS_CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK
+    )
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 async function isRalphrcCustomized(filePath: string, platformId: string): Promise<boolean> {
-  const content = await readFile(filePath, "utf-8");
+  const content = normalizeManagedRalphrcContent(await readFile(filePath, "utf-8"));
   const currentTemplate = await renderRalphrcTemplate(platformId);
-  if (content === currentTemplate) {
+
+  if (matchesManagedPermissionVariants(content, currentTemplate)) {
     return false;
   }
 
-  const previousManagedWithoutPermissionModeTemplate = currentTemplate
-    .replace(CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE, PREVIOUS_CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE)
-    .replace(CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK, "");
-  if (content === previousManagedWithoutPermissionModeTemplate) {
+  // Check variants without quality gates block (pre-quality-gates installs)
+  const templateWithoutQG = currentTemplate.replace(QUALITY_GATES_TEMPLATE_BLOCK, "");
+  if (matchesManagedPermissionVariants(content, templateWithoutQG)) {
     return false;
   }
 
-  const previousDefaultModeTemplate = currentTemplate
-    .replace(CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE, PREVIOUS_CLAUDE_ALLOWED_TOOLS_TEMPLATE_LINE)
-    .replace(CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK, PREVIOUS_CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK);
-  if (content === previousDefaultModeTemplate) {
-    return false;
-  }
-
-  const previousPermissionModeManagedTemplate = currentTemplate.replace(
-    CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK,
-    PREVIOUS_CLAUDE_PERMISSION_MODE_TEMPLATE_BLOCK
-  );
-  if (content === previousPermissionModeManagedTemplate) {
-    return false;
-  }
-
-  const legacyTemplate = renderLegacyRalphrcTemplate(platformId);
+  const legacyTemplate = normalizeManagedRalphrcContent(renderLegacyRalphrcTemplate(platformId));
   return content !== legacyTemplate;
 }
 

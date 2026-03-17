@@ -1,6 +1,7 @@
 import type { Platform, PlatformId } from "./types.js";
 import { claudeCodePlatform } from "./claude-code.js";
 import { codexPlatform } from "./codex.js";
+import { opencodePlatform } from "./opencode.js";
 import { cursorPlatform } from "./cursor.js";
 import { windsurfPlatform } from "./windsurf.js";
 import { copilotPlatform } from "./copilot.js";
@@ -9,6 +10,7 @@ import { aiderPlatform } from "./aider.js";
 const PLATFORMS: ReadonlyMap<PlatformId, Platform> = new Map([
   ["claude-code", claudeCodePlatform],
   ["codex", codexPlatform],
+  ["opencode", opencodePlatform],
   ["cursor", cursorPlatform],
   ["windsurf", windsurfPlatform],
   ["copilot", copilotPlatform],

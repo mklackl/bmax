@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { atomicWriteFile } from "../utils/file-system.js";
 import { isEnoent } from "../utils/errors.js";
-import { SKILLS_DIR, SKILLS_PREFIX } from "../utils/constants.js";
+import { CODEX_SKILLS_DIR, SKILLS_PREFIX } from "../utils/constants.js";
 import type { Platform } from "../platform/types.js";
 import type { ClassifiedCommand } from "./types.js";
 
@@ -324,9 +324,18 @@ export async function generateCommandIndex(
  */
 export async function generateSkills(
   projectDir: string,
-  classified: ClassifiedCommand[]
+  classified: ClassifiedCommand[],
+  platform?: Platform
 ): Promise<void> {
-  const skillsBaseDir = join(projectDir, SKILLS_DIR);
+  const delivery =
+    platform?.commandDelivery.kind === "skills"
+      ? platform.commandDelivery
+      : {
+          kind: "skills" as const,
+          dir: CODEX_SKILLS_DIR,
+          frontmatterName: "command" as const,
+        };
+  const skillsBaseDir = join(projectDir, delivery.dir);
 
   // Cleanup: remove existing bmad-* skill directories
   try {
@@ -346,9 +355,11 @@ export async function generateSkills(
 
     const skillDir = join(skillsBaseDir, `${SKILLS_PREFIX}${cmd.name}`);
     await mkdir(skillDir, { recursive: true });
+    const frontmatterName =
+      delivery.frontmatterName === "directory" ? `${SKILLS_PREFIX}${cmd.name}` : cmd.name;
 
     const skillContent = `---
-name: ${cmd.name}
+name: ${frontmatterName}
 description: >
   ${cmd.description}. Use when the user asks about ${cmd.name.replace(/-/g, " ")}.
 metadata:

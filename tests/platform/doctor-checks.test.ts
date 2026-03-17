@@ -8,6 +8,7 @@ import {
 } from "../../src/platform/doctor-checks.js";
 import { claudeCodePlatform } from "../../src/platform/claude-code.js";
 import { codexPlatform } from "../../src/platform/codex.js";
+import { opencodePlatform } from "../../src/platform/opencode.js";
 import { aiderPlatform } from "../../src/platform/aider.js";
 
 describe("doctor-checks", () => {
@@ -141,6 +142,18 @@ describe("doctor-checks", () => {
       const result = await skillsCheck.check(testDir);
       expect(result.passed).toBe(false);
       expect(result.detail).toContain("not found");
+    });
+
+    it("skills check uses the OpenCode skills root for opencode", async () => {
+      await mkdir(join(testDir, ".opencode/skills/bmad-analyst"), { recursive: true });
+      await writeFile(
+        join(testDir, ".opencode/skills/bmad-analyst/SKILL.md"),
+        "---\nname: bmad-analyst\n---\nContent"
+      );
+      const checks = buildPlatformDoctorChecks(opencodePlatform);
+      const skillsCheck = checks.find((c) => c.id === "skills")!;
+      const result = await skillsCheck.check(testDir);
+      expect(result.passed).toBe(true);
     });
   });
 });

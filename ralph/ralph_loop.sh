@@ -33,6 +33,7 @@ LIVE_LOG_FILE="$RALPH_DIR/live.log"  # Fixed file for live output monitoring
 CALL_COUNT_FILE="$RALPH_DIR/.call_count"
 TIMESTAMP_FILE="$RALPH_DIR/.last_reset"
 USE_TMUX=false
+PENDING_EXIT_REASON=""
 
 # Save environment variable state BEFORE setting defaults
 # These are used by load_ralphrc() to determine which values came from environment
@@ -68,6 +69,11 @@ _cli_CLAUDE_SESSION_EXPIRY_HOURS="${CLAUDE_SESSION_EXPIRY_HOURS:-}"
 _cli_VERBOSE_PROGRESS="${VERBOSE_PROGRESS:-}"
 _env_CB_COOLDOWN_MINUTES="${CB_COOLDOWN_MINUTES:-}"
 _env_CB_AUTO_RESET="${CB_AUTO_RESET:-}"
+_env_TEST_COMMAND="${TEST_COMMAND:-}"
+_env_QUALITY_GATES="${QUALITY_GATES:-}"
+_env_QUALITY_GATE_MODE="${QUALITY_GATE_MODE:-}"
+_env_QUALITY_GATE_TIMEOUT="${QUALITY_GATE_TIMEOUT:-}"
+_env_QUALITY_GATE_ON_COMPLETION_ONLY="${QUALITY_GATE_ON_COMPLETION_ONLY:-}"
 
 # Now set defaults (only if not already set by environment)
 MAX_CALLS_PER_HOUR="${MAX_CALLS_PER_HOUR:-100}"
@@ -92,6 +98,14 @@ RALPH_SESSION_HISTORY_FILE="$RALPH_DIR/.ralph_session_history"  # Session transi
 # Session expiration: 24 hours default balances project continuity with fresh context
 # Too short = frequent context loss; Too long = stale context causes unpredictable behavior
 CLAUDE_SESSION_EXPIRY_HOURS=${CLAUDE_SESSION_EXPIRY_HOURS:-24}
+
+# Quality gates configuration
+TEST_COMMAND="${TEST_COMMAND:-}"
+QUALITY_GATES="${QUALITY_GATES:-}"
+QUALITY_GATE_MODE="${QUALITY_GATE_MODE:-warn}"
+QUALITY_GATE_TIMEOUT="${QUALITY_GATE_TIMEOUT:-120}"
+QUALITY_GATE_ON_COMPLETION_ONLY="${QUALITY_GATE_ON_COMPLETION_ONLY:-false}"
+QUALITY_GATE_RESULTS_FILE="$RALPH_DIR/.quality_gate_results"
 
 # Valid tool patterns for --allowed-tools validation
 # Default: Claude Code tools. Platform driver overwrites via driver_valid_tools() in main().
@@ -237,6 +251,11 @@ load_ralphrc() {
     [[ "$_CLI_VERBOSE_PROGRESS" == "true" ]] && VERBOSE_PROGRESS="$_cli_VERBOSE_PROGRESS"
     [[ -n "$_env_CB_COOLDOWN_MINUTES" ]] && CB_COOLDOWN_MINUTES="$_env_CB_COOLDOWN_MINUTES"
     [[ -n "$_env_CB_AUTO_RESET" ]] && CB_AUTO_RESET="$_env_CB_AUTO_RESET"
+    [[ -n "$_env_TEST_COMMAND" ]] && TEST_COMMAND="$_env_TEST_COMMAND"
+    [[ -n "$_env_QUALITY_GATES" ]] && QUALITY_GATES="$_env_QUALITY_GATES"
+    [[ -n "$_env_QUALITY_GATE_MODE" ]] && QUALITY_GATE_MODE="$_env_QUALITY_GATE_MODE"
+    [[ -n "$_env_QUALITY_GATE_TIMEOUT" ]] && QUALITY_GATE_TIMEOUT="$_env_QUALITY_GATE_TIMEOUT"
+    [[ -n "$_env_QUALITY_GATE_ON_COMPLETION_ONLY" ]] && QUALITY_GATE_ON_COMPLETION_ONLY="$_env_QUALITY_GATE_ON_COMPLETION_ONLY"
 
     normalize_claude_permission_mode
     RALPHRC_FILE="$config_file"
@@ -513,6 +532,17 @@ update_status() {
             exit_reason: $exit_reason,
             next_reset: $next_reset
         }' > "$STATUS_FILE"
+
+    # Merge quality gate status if results exist
+    if [[ -f "$QUALITY_GATE_RESULTS_FILE" ]]; then
+        local qg_tmp="$STATUS_FILE.qg_tmp"
+        if jq -s '.[0] * {quality_gates: {overall_status: .[1].overall_status, mode: .[1].mode}}' \
+            "$STATUS_FILE" "$QUALITY_GATE_RESULTS_FILE" > "$qg_tmp" 2>/dev/null; then
+            mv "$qg_tmp" "$STATUS_FILE"
+        else
+            rm -f "$qg_tmp" 2>/dev/null
+        fi
+    fi
 }
 
 validate_permission_denial_mode() {
@@ -528,6 +558,31 @@ validate_permission_denial_mode() {
             return 1
             ;;
     esac
+}
+
+validate_quality_gate_mode() {
+    local mode=$1
+
+    case "$mode" in
+        warn|block|circuit-breaker)
+            return 0
+            ;;
+        *)
+            echo "Error: Invalid QUALITY_GATE_MODE: '$mode'"
+            echo "Valid modes: warn block circuit-breaker"
+            return 1
+            ;;
+    esac
+}
+
+validate_quality_gate_timeout() {
+    local timeout=$1
+
+    if [[ ! "$timeout" =~ ^[0-9]+$ ]] || [[ "$timeout" -eq 0 ]]; then
+        echo "Error: QUALITY_GATE_TIMEOUT must be a positive integer, got: '$timeout'"
+        return 1
+    fi
+    return 0
 }
 
 normalize_claude_permission_mode() {
@@ -796,9 +851,207 @@ enforce_fix_plan_progress_tracking() {
     return 0
 }
 
+# Run the built-in test gate
+# Reads tests_status from .response_analysis. If FAILING and TEST_COMMAND is set,
+# runs the command to verify. Returns JSON with status/verified/output on stdout.
+run_test_gate() {
+    local analysis_file=$1
+
+    if [[ ! -f "$analysis_file" ]]; then
+        echo '{"status":"skip","tests_status_reported":"","verified":false,"output":""}'
+        return 0
+    fi
+
+    local tests_status
+    tests_status=$(jq -r '.analysis.tests_status // "UNKNOWN"' "$analysis_file" 2>/dev/null || echo "UNKNOWN")
+
+    if [[ "$tests_status" == "UNKNOWN" && -z "$TEST_COMMAND" ]]; then
+        echo '{"status":"skip","tests_status_reported":"UNKNOWN","verified":false,"output":""}'
+        return 0
+    fi
+
+    if [[ "$tests_status" == "PASSING" && -z "$TEST_COMMAND" ]]; then
+        jq -n --arg ts "$tests_status" '{"status":"pass","tests_status_reported":$ts,"verified":false,"output":""}'
+        return 0
+    fi
+
+    if [[ -n "$TEST_COMMAND" ]]; then
+        local cmd_output=""
+        local cmd_exit=0
+        cmd_output=$(portable_timeout "${QUALITY_GATE_TIMEOUT}s" bash -c "$TEST_COMMAND" 2>&1) || cmd_exit=$?
+        cmd_output="${cmd_output:0:500}"
+
+        local verified_status="pass"
+        if [[ $cmd_exit -ne 0 ]]; then
+            verified_status="fail"
+        fi
+
+        jq -n \
+            --arg status "$verified_status" \
+            --arg ts "$tests_status" \
+            --arg out "$cmd_output" \
+            '{"status":$status,"tests_status_reported":$ts,"verified":true,"output":$out}'
+        return 0
+    fi
+
+    # No TEST_COMMAND, trust the reported status
+    local gate_status="pass"
+    if [[ "$tests_status" == "FAILING" ]]; then
+        gate_status="fail"
+    fi
+
+    jq -n \
+        --arg status "$gate_status" \
+        --arg ts "$tests_status" \
+        '{"status":$status,"tests_status_reported":$ts,"verified":false,"output":""}'
+}
+
+# Run user-defined quality gate commands
+# Splits QUALITY_GATES on semicolons, runs each with portable_timeout.
+# Returns JSON array of results on stdout.
+run_custom_gates() {
+    if [[ -z "$QUALITY_GATES" ]]; then
+        echo "[]"
+        return 0
+    fi
+
+    local results="[]"
+    local gates
+    IFS=";" read -ra gates <<< "$QUALITY_GATES"
+
+    for gate_cmd in "${gates[@]}"; do
+        gate_cmd=$(echo "$gate_cmd" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [[ -z "$gate_cmd" ]] && continue
+
+        local cmd_output=""
+        local cmd_exit=0
+        local start_time
+        start_time=$(date +%s)
+        local timed_out="false"
+
+        cmd_output=$(portable_timeout "${QUALITY_GATE_TIMEOUT}s" bash -c "$gate_cmd" 2>&1) || cmd_exit=$?
+
+        local end_time
+        end_time=$(date +%s)
+        local duration=$((end_time - start_time))
+
+        # portable_timeout returns 124 on timeout
+        if [[ $cmd_exit -eq 124 ]]; then
+            timed_out="true"
+        fi
+
+        cmd_output="${cmd_output:0:500}"
+
+        local gate_status="pass"
+        if [[ $cmd_exit -ne 0 ]]; then
+            gate_status="fail"
+        fi
+
+        results=$(echo "$results" | jq \
+            --arg cmd "$gate_cmd" \
+            --arg status "$gate_status" \
+            --argjson exit_code "$cmd_exit" \
+            --arg out "$cmd_output" \
+            --argjson dur "$duration" \
+            --argjson timed_out "$timed_out" \
+            '. += [{"command":$cmd,"status":$status,"exit_code":$exit_code,"output":$out,"duration_seconds":$dur,"timed_out":$timed_out}]'
+        )
+    done
+
+    echo "$results"
+}
+
+# Orchestrator: run all quality gates and write results file
+# Args: loop_number exit_signal_active
+# Returns (on stdout): 0=pass/warn, 1=block failure, 2=circuit-breaker failure
+run_quality_gates() {
+    local loop_number=$1
+    local exit_signal_active=${2:-"false"}
+
+    # Skip if no gates configured
+    if [[ -z "$TEST_COMMAND" && -z "$QUALITY_GATES" ]]; then
+        echo "0"
+        return 0
+    fi
+
+    # Skip if completion-only mode and not completing
+    if [[ "$QUALITY_GATE_ON_COMPLETION_ONLY" == "true" && "$exit_signal_active" != "true" ]]; then
+        echo "0"
+        return 0
+    fi
+
+    local test_gate_json
+    test_gate_json=$(run_test_gate "$RESPONSE_ANALYSIS_FILE")
+
+    local custom_gates_json
+    custom_gates_json=$(run_custom_gates)
+
+    # Determine overall status
+    local overall_status="pass"
+    local test_gate_status
+    test_gate_status=$(echo "$test_gate_json" | jq -r '.status' 2>/dev/null || echo "skip")
+    if [[ "$test_gate_status" == "fail" ]]; then
+        overall_status="fail"
+    fi
+
+    local custom_fail_count
+    custom_fail_count=$(echo "$custom_gates_json" | jq '[.[] | select(.status == "fail")] | length' 2>/dev/null || echo "0")
+    if [[ $custom_fail_count -gt 0 ]]; then
+        overall_status="fail"
+    fi
+
+    # Write results file atomically (tmp+mv to avoid truncation on jq failure)
+    local qg_tmp="$QUALITY_GATE_RESULTS_FILE.tmp"
+    if jq -n \
+        --arg timestamp "$(get_iso_timestamp)" \
+        --argjson loop_number "$loop_number" \
+        --argjson test_gate "$test_gate_json" \
+        --argjson custom_gates "$custom_gates_json" \
+        --arg overall_status "$overall_status" \
+        --arg mode "$QUALITY_GATE_MODE" \
+        '{
+            timestamp: $timestamp,
+            loop_number: $loop_number,
+            test_gate: $test_gate,
+            custom_gates: $custom_gates,
+            overall_status: $overall_status,
+            mode: $mode
+        }' > "$qg_tmp" 2>/dev/null; then
+        mv "$qg_tmp" "$QUALITY_GATE_RESULTS_FILE"
+    else
+        rm -f "$qg_tmp" 2>/dev/null
+    fi
+
+    if [[ "$overall_status" == "fail" ]]; then
+        log_status "WARN" "Quality gate failure (mode=$QUALITY_GATE_MODE): test_gate=$test_gate_status, custom_failures=$custom_fail_count"
+    fi
+
+    # Return code based on mode
+    if [[ "$overall_status" == "pass" ]]; then
+        echo "0"
+        return 0
+    fi
+
+    case "$QUALITY_GATE_MODE" in
+        block)
+            echo "1"
+            return 0
+            ;;
+        circuit-breaker)
+            echo "2"
+            return 0
+            ;;
+        *)
+            # warn mode: return 0 even on failure
+            echo "0"
+            return 0
+            ;;
+    esac
+}
+
 # Check if we should gracefully exit
 should_exit_gracefully() {
-    
+
     if [[ ! -f "$EXIT_SIGNALS_FILE" ]]; then
         return 1  # Don't exit, file doesn't exist
     fi
@@ -989,7 +1242,28 @@ build_loop_context() {
     if [[ -f "$RESPONSE_ANALYSIS_FILE" ]]; then
         local prev_summary=$(jq -r '.analysis.work_summary // ""' "$RESPONSE_ANALYSIS_FILE" 2>/dev/null | head -c 200)
         if [[ -n "$prev_summary" && "$prev_summary" != "null" ]]; then
-            context+="Previous: ${prev_summary}"
+            context+="Previous: ${prev_summary}. "
+        fi
+    fi
+
+    # Add quality gate failure feedback (block and circuit-breaker modes only)
+    if [[ -f "$QUALITY_GATE_RESULTS_FILE" ]]; then
+        local qg_status qg_mode
+        qg_status=$(jq -r '.overall_status // "pass"' "$QUALITY_GATE_RESULTS_FILE" 2>/dev/null)
+        qg_mode=$(jq -r '.mode // "warn"' "$QUALITY_GATE_RESULTS_FILE" 2>/dev/null)
+
+        if [[ "$qg_status" == "fail" && "$qg_mode" != "warn" ]]; then
+            local test_gate_status
+            test_gate_status=$(jq -r '.test_gate.status // "skip"' "$QUALITY_GATE_RESULTS_FILE" 2>/dev/null)
+            if [[ "$test_gate_status" == "fail" ]]; then
+                context+="TESTS FAILING. "
+            fi
+
+            local failed_gates
+            failed_gates=$(jq -r '[.custom_gates[] | select(.status == "fail") | .command | split(" ")[0:2] | join(" ")] | join(", ")' "$QUALITY_GATE_RESULTS_FILE" 2>/dev/null)
+            if [[ -n "$failed_gates" ]]; then
+                context+="QG fail: ${failed_gates}. "
+            fi
         fi
     fi
 
@@ -1102,7 +1376,15 @@ save_claude_session() {
     # Try to extract session ID from structured output
     if [[ -f "$output_file" ]]; then
         local session_id
-        session_id=$(extract_session_id_from_output "$output_file" 2>/dev/null || echo "")
+        if declare -F driver_extract_session_id_from_output >/dev/null; then
+            session_id=$(driver_extract_session_id_from_output "$output_file" 2>/dev/null || echo "")
+        fi
+        if [[ -z "$session_id" || "$session_id" == "null" ]]; then
+            session_id=$(extract_session_id_from_output "$output_file" 2>/dev/null || echo "")
+        fi
+        if [[ -z "$session_id" || "$session_id" == "null" ]] && declare -F driver_fallback_session_id >/dev/null; then
+            session_id=$(driver_fallback_session_id "$output_file" 2>/dev/null || echo "")
+        fi
         if [[ -n "$session_id" && "$session_id" != "null" ]]; then
             echo "$session_id" > "$CLAUDE_SESSION_FILE"
             sync_ralph_session_with_driver "$session_id"
@@ -1741,11 +2023,31 @@ EOF
         read -r fix_plan_completed_after _ _ < <(count_fix_plan_checkboxes "$RALPH_DIR/@fix_plan.md")
         enforce_fix_plan_progress_tracking "$RESPONSE_ANALYSIS_FILE" "$fix_plan_completed_before" "$fix_plan_completed_after"
 
+        # Run quality gates
+        local exit_signal_for_gates
+        exit_signal_for_gates=$(jq -r '.analysis.exit_signal // false' "$RESPONSE_ANALYSIS_FILE" 2>/dev/null || echo "false")
+        local qg_result
+        qg_result=$(run_quality_gates "$loop_count" "$exit_signal_for_gates")
+
+        # Block mode: suppress exit signals so the loop keeps running
+        if [[ "$qg_result" == "1" ]]; then
+            log_status "WARN" "Quality gate block: suppressing completion signals"
+            local qg_tmp="$RESPONSE_ANALYSIS_FILE.qg_tmp"
+            if jq '.analysis.has_completion_signal = false | .analysis.exit_signal = false' \
+                "$RESPONSE_ANALYSIS_FILE" > "$qg_tmp" 2>/dev/null; then
+                mv "$qg_tmp" "$RESPONSE_ANALYSIS_FILE"
+            else
+                rm -f "$qg_tmp" 2>/dev/null
+            fi
+        fi
+
         # Update exit signals based on analysis
         update_exit_signals
 
         # Log analysis summary
         log_analysis_summary
+
+        PENDING_EXIT_REASON=$(should_exit_gracefully)
 
         # Get file change count for circuit breaker
         # Fix #141: Detect both uncommitted changes AND committed changes
@@ -1807,6 +2109,13 @@ EOF
         fi
         local output_length=$(wc -c < "$output_file" 2>/dev/null || echo 0)
 
+        # Circuit-breaker mode: override progress signals so circuit breaker sees no-progress
+        if [[ "$qg_result" == "2" ]]; then
+            log_status "WARN" "Quality gate circuit-breaker: overriding progress signals"
+            files_changed=0
+            has_errors="true"
+        fi
+
         # Record result in circuit breaker
         record_loop_result "$loop_count" "$files_changed" "$has_errors" "$output_length"
         local circuit_result=$?
@@ -1852,6 +2161,18 @@ main() {
 
     if ! validate_permission_denial_mode "$PERMISSION_DENIAL_MODE"; then
         exit 1
+    fi
+
+    if [[ -n "$QUALITY_GATES" || -n "$TEST_COMMAND" ]]; then
+        if ! validate_quality_gate_mode "$QUALITY_GATE_MODE"; then
+            exit 1
+        fi
+        if ! validate_quality_gate_timeout "$QUALITY_GATE_TIMEOUT"; then
+            exit 1
+        fi
+        if ! has_timeout_command; then
+            log_status "WARN" "No timeout command available. Quality gate and test commands will fail. Install coreutils to enable timeout support."
+        fi
     fi
 
     if [[ "$(driver_name)" == "claude-code" ]]; then
@@ -1998,6 +2319,21 @@ main() {
                 continue
             fi
 
+            if [[ -n "$PENDING_EXIT_REASON" ]]; then
+                local exit_reason="$PENDING_EXIT_REASON"
+                PENDING_EXIT_REASON=""
+
+                log_status "SUCCESS" "🏁 Graceful exit triggered: $exit_reason"
+                reset_session "project_complete"
+                update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "graceful_exit" "completed" "$exit_reason"
+
+                log_status "SUCCESS" "🎉 Ralph has completed the project! Final stats:"
+                log_status "INFO" "  - Total loops: $loop_count"
+                log_status "INFO" "  - API calls used: $(cat "$CALL_COUNT_FILE")"
+                log_status "INFO" "  - Exit reason: $exit_reason"
+                break
+            fi
+
             update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "completed" "success"
 
             # Brief pause between successful executions
@@ -2083,7 +2419,7 @@ Options:
 Modern CLI Options (Phase 1.1):
     --output-format FORMAT  Set driver output format: json or text (default: $CLAUDE_OUTPUT_FORMAT)
                             Note: --live mode requires JSON and will auto-switch
-    --allowed-tools TOOLS   Claude Code only. Ignored by codex, cursor, and copilot
+    --allowed-tools TOOLS   Claude Code only. Ignored by codex, opencode, cursor, and copilot
     --no-continue           Disable session continuity across loops
     --session-expiry HOURS  Set session expiration time in hours (default: $CLAUDE_SESSION_EXPIRY_HOURS)
 

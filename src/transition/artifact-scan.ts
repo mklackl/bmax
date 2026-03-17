@@ -2,6 +2,14 @@ import { readdir } from "node:fs/promises";
 import { relative } from "node:path";
 import { findArtifactsDir } from "./artifacts.js";
 import { ARTIFACT_DEFINITIONS } from "../utils/artifact-definitions.js";
+import { getPlatform } from "../platform/registry.js";
+import {
+  getPlatformAnalysisHint,
+  getPlatformArchitectureHint,
+  getPlatformEpicsStoriesHint,
+  getPlatformPrdHint,
+  getPlatformReadinessHint,
+} from "../platform/guidance.js";
 import type { PlatformId } from "../platform/types.js";
 
 export interface ArtifactClassification {
@@ -84,6 +92,7 @@ export function suggestNext(
   platformId?: PlatformId
 ): string {
   const foundNames = new Set([...phases[1], ...phases[2], ...phases[3]].map((a) => a.name));
+  const platform = platformId ? getPlatform(platformId) : null;
 
   if (platformId === "cursor") {
     const allPlanningArtifactsPresent =
@@ -98,23 +107,29 @@ export function suggestNext(
   }
 
   if (detectedPhase <= 1 && phases[1].length === 0) {
-    return "Run /analyst to start analysis";
+    return platform ? getPlatformAnalysisHint(platform) : "Run /analyst to start analysis";
   }
 
   if (!foundNames.has("PRD")) {
-    return "Run /create-prd to create the PRD";
+    return platform ? getPlatformPrdHint(platform) : "Run /create-prd to create the PRD";
   }
 
   if (!foundNames.has("Architecture")) {
-    return "Run /architect to create architecture";
+    return platform
+      ? getPlatformArchitectureHint(platform)
+      : "Run /architect to create architecture";
   }
 
   if (!foundNames.has("Epics & Stories")) {
-    return "Run /create-epics-stories to define epics and stories";
+    return platform
+      ? getPlatformEpicsStoriesHint(platform)
+      : "Run /create-epics-stories to define epics and stories";
   }
 
   if (!foundNames.has("Readiness Report")) {
-    return "Run /architect to generate readiness report";
+    return platform
+      ? getPlatformReadinessHint(platform)
+      : "Run /architect to generate readiness report";
   }
 
   return "Run: bmalph implement";

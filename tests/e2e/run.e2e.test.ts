@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runCli, runInit, runImplement, runRun } from "./helpers/cli-runner.js";
 import { setupCursorRunEnv } from "./helpers/cursor-runtime.js";
+import { setupOpencodeRunEnv } from "./helpers/opencode-runtime.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 
 describe("bmalph run e2e", { timeout: 60000 }, () => {
@@ -94,6 +95,54 @@ describe("bmalph run e2e", { timeout: 60000 }, () => {
       expect(status.exit_reason).toBe("completion_signals");
     }
   );
+
+  it(
+    "runs OpenCode with JSON events and resumes the saved session on the next loop",
+    { timeout: 240000 },
+    async () => {
+      project = await createTestProject();
+      await runInit(project.path, "opencode-project", "OpenCode run smoke test", "opencode");
+      await setupBmadArtifacts(project.path);
+
+      const implementResult = await runImplement(project.path);
+      expect(implementResult.exitCode).toBe(0);
+
+      const opencodeEnv = await setupOpencodeRunEnv(project.path);
+
+      const result = await runCli(["run", "--driver", "opencode", "--no-dashboard"], {
+        cwd: project.path,
+        env: opencodeEnv,
+        timeout: 220000,
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toContain("Ralph has completed the project");
+
+      const opencodeLog = await readFile(join(project.path, ".opencode.calls.log"), "utf-8");
+
+      const runInvocations = opencodeLog
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("run|") && line.length > 0);
+      expect(runInvocations).toHaveLength(2);
+      expect(runInvocations[0]).toContain("--agent build --format json");
+      expect(runInvocations[0]).not.toContain("--continue");
+      expect(runInvocations[0]).not.toContain("--session");
+      expect(runInvocations[1]).toContain("--agent build --format json");
+      expect(runInvocations[1]).toContain("--continue");
+      expect(runInvocations[1]).toContain("--session opencode-session-123");
+
+      const sessionListInvocations = opencodeLog
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("session|list"));
+      expect(sessionListInvocations).toHaveLength(0);
+
+      const status = JSON.parse(
+        await readFile(join(project.path, ".ralph/status.json"), "utf-8")
+      ) as { status: string; exit_reason: string };
+      expect(status.status).toBe("completed");
+      expect(status.exit_reason).toBe("completion_signals");
+    }
+  );
 });
 
 const SAMPLE_EPICS_STORIES = `# Epics and Stories
@@ -126,7 +175,7 @@ const SAMPLE_PRD = `# Product Requirements Document
 
 ## Executive Summary
 
-Test project for Cursor run smoke coverage.
+Test project for Ralph run smoke coverage.
 
 ## Functional Requirements
 

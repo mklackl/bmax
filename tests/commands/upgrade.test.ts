@@ -26,17 +26,31 @@ vi.mock("../../src/utils/json.js", () => ({
 vi.mock("../../src/platform/registry.js", () => ({
   getPlatform: vi.fn((id: string) => ({
     id,
-    displayName: id === "claude-code" ? "Claude Code" : id === "codex" ? "OpenAI Codex" : id,
-    tier: id === "claude-code" || id === "codex" ? "full" : "instructions-only",
+    displayName:
+      id === "claude-code"
+        ? "Claude Code"
+        : id === "codex"
+          ? "OpenAI Codex"
+          : id === "opencode"
+            ? "OpenCode"
+            : id,
+    tier:
+      id === "claude-code" || id === "codex" || id === "opencode" ? "full" : "instructions-only",
     instructionsFile: id === "claude-code" ? "CLAUDE.md" : "AGENTS.md",
     commandDelivery:
-      id === "claude-code" ? { kind: "directory", dir: ".claude/commands" } : { kind: "index" },
+      id === "claude-code"
+        ? { kind: "directory", dir: ".claude/commands" }
+        : id === "codex"
+          ? { kind: "skills", dir: ".agents/skills", frontmatterName: "command" }
+          : id === "opencode"
+            ? { kind: "skills", dir: ".opencode/skills", frontmatterName: "directory" }
+            : { kind: "index" },
     instructionsSectionMarker: "## BMAD-METHOD Integration",
     generateInstructionsSnippet: () => "## BMAD-METHOD Integration\n\nSnippet content",
     getDoctorChecks: () => [],
   })),
   isPlatformId: vi.fn((value: string) =>
-    ["claude-code", "codex", "cursor", "windsurf", "copilot", "aider"].includes(value)
+    ["claude-code", "codex", "opencode", "cursor", "windsurf", "copilot", "aider"].includes(value)
   ),
 }));
 

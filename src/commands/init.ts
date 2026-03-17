@@ -15,7 +15,8 @@ import { exists } from "../utils/file-system.js";
 import { join } from "node:path";
 import { isPlatformId, getPlatform, getAllPlatforms } from "../platform/registry.js";
 import { detectPlatform } from "../platform/detect.js";
-import type { Platform, PlatformId } from "../platform/types.js";
+import { getPlatformMasterAgentHint } from "../platform/guidance.js";
+import { PLATFORM_IDS, type Platform, type PlatformId } from "../platform/types.js";
 
 interface InitOptions {
   name?: string;
@@ -41,8 +42,7 @@ async function resolvePlatform(projectDir: string, explicit?: string): Promise<P
   if (explicit) {
     if (!isPlatformId(explicit)) {
       throw new Error(
-        `Unknown platform: "${explicit}". ` +
-          `Valid platforms: claude-code, codex, cursor, windsurf, copilot, aider`
+        `Unknown platform: "${explicit}". ` + `Valid platforms: ${PLATFORM_IDS.join(", ")}`
       );
     }
     return getPlatform(explicit);
@@ -165,6 +165,8 @@ async function runInit(options: InitOptions): Promise<void> {
   console.log(`  .ralph/            Ralph loop and templates`);
   if (platform.commandDelivery.kind === "directory") {
     console.log(`  ${platform.commandDelivery.dir}/  Slash commands`);
+  } else if (platform.commandDelivery.kind === "skills") {
+    console.log(`  ${platform.commandDelivery.dir}/  BMAD skills`);
   }
   console.log(`  bmalph/            State management`);
 
@@ -174,6 +176,10 @@ async function runInit(options: InitOptions): Promise<void> {
     console.log(
       `  Use ${chalk.cyan("/bmalph")} in Claude Code to see your current phase and commands.`
     );
+  } else if (platform.id === "opencode") {
+    console.log(`  ${getPlatformMasterAgentHint(platform)}.`);
+  } else if (platform.id === "codex") {
+    console.log(`  ${getPlatformMasterAgentHint(platform)}.`);
   } else if (platform.tier === "full") {
     console.log(
       `  Ask ${platform.displayName} to ${chalk.cyan("run the BMAD master agent")} to navigate phases.`

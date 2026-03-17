@@ -56,8 +56,11 @@ export const BMALPH_DIR = "bmalph";
 /** BMAD output directory (planning artifacts) */
 export const BMAD_OUTPUT_DIR = "_bmad-output";
 
-/** Skills directory (for skills-based command delivery) */
-export const SKILLS_DIR = ".agents/skills";
+/** Skills directory used by the Codex platform */
+export const CODEX_SKILLS_DIR = ".agents/skills";
+
+/** Skills directory used by the OpenCode platform */
+export const OPENCODE_SKILLS_DIR = ".opencode/skills";
 
 /** Prefix for bmalph-managed skill directories */
 export const SKILLS_PREFIX = "bmad-";

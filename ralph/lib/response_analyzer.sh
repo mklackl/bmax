@@ -225,6 +225,35 @@ normalize_cursor_stream_json_response() {
     ' "$output_file" > "$normalized_file"
 }
 
+# Normalize OpenCode JSON event output into the object shape expected downstream.
+normalize_opencode_jsonl_response() {
+    local output_file=$1
+    local normalized_file=$2
+
+    jq -rs '
+        def assistant_text($message):
+            [($message.parts // [])[]? | select(.type == "text") | .text]
+            | join("\n");
+
+        (map(
+            select(
+                (.type == "message.updated" or .type == "message.completed")
+                and (.message.role // "") == "assistant"
+            )
+        ) | last | .message // {}) as $assistant_message
+        | {
+            result: assistant_text($assistant_message),
+            sessionId: (
+                map(.session.id // .session_id // .sessionId // empty)
+                | map(select(length > 0))
+                | first
+                // ""
+            ),
+            metadata: {}
+        }
+    ' "$output_file" > "$normalized_file"
+}
+
 # Detect whether a multi-document stream matches Codex JSONL events.
 is_codex_jsonl_output() {
     local output_file=$1
@@ -235,6 +264,25 @@ is_codex_jsonl_output() {
             . or (
                 $item.type == "thread.started" or
                 ($item.type == "item.completed" and ($item.item.type? != null))
+            )
+        )
+    ' < "$output_file" 2>/dev/null
+}
+
+# Detect whether a multi-document stream matches OpenCode JSON events.
+is_opencode_jsonl_output() {
+    local output_file=$1
+
+    jq -n -j '
+        reduce inputs as $item (
+            false;
+            . or (
+                $item.type == "session.created" or
+                $item.type == "session.updated" or
+                (
+                    ($item.type == "message.updated" or $item.type == "message.completed")
+                    and ($item.message.role? != null)
+                )
             )
         )
     ' < "$output_file" 2>/dev/null
@@ -272,6 +320,14 @@ normalize_json_output() {
 
         if [[ "$is_codex_jsonl" == "true" ]]; then
             normalize_codex_jsonl_response "$output_file" "$normalized_file"
+            return $?
+        fi
+
+        local is_opencode_jsonl
+        is_opencode_jsonl=$(is_opencode_jsonl_output "$output_file") || return 1
+
+        if [[ "$is_opencode_jsonl" == "true" ]]; then
+            normalize_opencode_jsonl_response "$output_file" "$normalized_file"
             return $?
         fi
 
@@ -372,6 +428,17 @@ detect_output_format() {
             return
         fi
 
+        local is_opencode_jsonl
+        is_opencode_jsonl=$(is_opencode_jsonl_output "$output_file") || {
+            echo "text"
+            return
+        }
+
+        if [[ "$is_opencode_jsonl" == "true" ]]; then
+            echo "json"
+            return
+        fi
+
         local is_cursor_stream_json
         is_cursor_stream_json=$(is_cursor_stream_json_output "$output_file") || {
             echo "text"
@@ -417,6 +484,7 @@ extract_ralph_status_block_json() {
     local exit_signal="false"
     local exit_signal_found="false"
     local tasks_completed_this_loop=0
+    local tests_status="UNKNOWN"
     local line=""
     local trimmed=""
     local value=""
@@ -442,6 +510,10 @@ extract_ralph_status_block_json() {
                     tasks_completed_this_loop=$value
                 fi
                 ;;
+            TESTS_STATUS:*)
+                value=$(trim_shell_whitespace "${trimmed#TESTS_STATUS:}")
+                [[ -n "$value" ]] && tests_status="$value"
+                ;;
         esac
     done <<< "$block"
 
@@ -450,22 +522,25 @@ extract_ralph_status_block_json() {
         --argjson exit_signal_found "$exit_signal_found" \
         --argjson exit_signal "$exit_signal" \
         --argjson tasks_completed_this_loop "$tasks_completed_this_loop" \
+        --arg tests_status "$tests_status" \
         '{
             status: $status,
             exit_signal_found: $exit_signal_found,
             exit_signal: $exit_signal,
-            tasks_completed_this_loop: $tasks_completed_this_loop
+            tasks_completed_this_loop: $tasks_completed_this_loop,
+            tests_status: $tests_status
         }'
 }
 
 # Parse JSON response and extract structured fields
 # Creates .ralph/.json_parse_result with normalized analysis data
-# Supports FIVE JSON formats:
+# Supports SIX JSON formats:
 # 1. Flat format: { status, exit_signal, work_type, files_modified, ... }
 # 2. Claude CLI object format: { result, sessionId, metadata: { files_changed, has_errors, completion_status, ... } }
 # 3. Claude CLI array format: [ {type: "system", ...}, {type: "assistant", ...}, {type: "result", ...} ]
 # 4. Codex JSONL format: {"type":"thread.started",...}\n{"type":"item.completed","item":{...}}
-# 5. Cursor stream-json format: {"type":"assistant",...}\n{"type":"result",...}
+# 5. OpenCode JSON event format: {"type":"session.created",...}\n{"type":"message.updated",...}
+# 6. Cursor stream-json format: {"type":"assistant",...}\n{"type":"result",...}
 parse_json_response() {
     local output_file=$1
     local result_file="${2:-$RALPH_DIR/.json_parse_result}"
@@ -503,39 +578,143 @@ parse_json_response() {
         output_file="$normalized_file"
 
         if [[ "$response_shape" == "jsonl" ]]; then
-            if is_codex_jsonl_output "$original_output_file" >/dev/null 2>&1; then
+            if [[ "$(is_codex_jsonl_output "$original_output_file")" == "true" ]]; then
                 response_shape="codex_jsonl"
+            elif [[ "$(is_opencode_jsonl_output "$original_output_file")" == "true" ]]; then
+                response_shape="opencode_jsonl"
             else
                 response_shape="cursor_stream_jsonl"
             fi
         fi
     fi
 
-    # Detect JSON format by checking for Claude CLI fields
-    local has_result_field=$(jq -r -j 'has("result")' "$output_file" 2>/dev/null)
-
-    # Extract fields - support both flat format and Claude CLI format
-    # Priority: Claude CLI fields first, then flat format fields
-
-    # Status: from flat format OR derived from metadata.completion_status
-    local status=$(jq -r -j '.status // "UNKNOWN"' "$output_file" 2>/dev/null)
-    local completion_status=$(jq -r -j '.metadata.completion_status // ""' "$output_file" 2>/dev/null)
-    if [[ "$completion_status" == "complete" || "$completion_status" == "COMPLETE" ]]; then
-        status="COMPLETE"
-    fi
-
-    # Exit signal: from flat format OR derived from completion_status
-    # Track whether EXIT_SIGNAL was explicitly provided (vs inferred from STATUS)
-    local exit_signal=$(jq -r -j '.exit_signal // false' "$output_file" 2>/dev/null)
-    local explicit_exit_signal_found=$(jq -r -j 'has("exit_signal")' "$output_file" 2>/dev/null)
-    local tasks_completed_this_loop=$(jq -r -j '.tasks_completed_this_loop // 0' "$output_file" 2>/dev/null)
-    if [[ ! "$tasks_completed_this_loop" =~ ^-?[0-9]+$ ]]; then
-        tasks_completed_this_loop=0
-    fi
-
+    local has_result_field="false"
+    local status="UNKNOWN"
+    local completion_status=""
+    local exit_signal="false"
+    local explicit_exit_signal_found="false"
+    local tasks_completed_this_loop=0
+    local tests_status="UNKNOWN"
     local result_text=""
-    if [[ "$has_result_field" == "true" ]]; then
-        result_text=$(jq -r -j '.result // ""' "$output_file" 2>/dev/null)
+    local work_type="UNKNOWN"
+    local files_modified=0
+    local error_count=0
+    local has_errors="false"
+    local summary=""
+    local session_id=""
+    local loop_number=0
+    local confidence=0
+    local progress_count=0
+    local permission_denial_count=0
+    local has_permission_denials="false"
+    local denied_commands_json="[]"
+
+    if [[ "$response_shape" == "codex_jsonl" || "$response_shape" == "opencode_jsonl" || "$response_shape" == "cursor_stream_jsonl" ]]; then
+        local driver_fields=""
+        driver_fields=$(jq -r '
+            [
+                (.result // ""),
+                (.sessionId // .metadata.session_id // .session_id // ""),
+                ((.permission_denials // []) | length),
+                ((.permission_denials // []) | map(
+                    if .tool_name == "Bash" then
+                        "Bash(\(.tool_input.command // "?" | split("\n")[0] | .[0:60]))"
+                    else
+                        .tool_name // "unknown"
+                    end
+                ) | @json)
+            ] | @tsv
+        ' "$output_file" 2>/dev/null)
+
+        local denied_commands_field="[]"
+        IFS=$'\t' read -r result_text session_id permission_denial_count denied_commands_field <<< "$driver_fields"
+
+        has_result_field="true"
+        summary="$result_text"
+        denied_commands_json="${denied_commands_field:-[]}"
+
+        if [[ ! "$permission_denial_count" =~ ^-?[0-9]+$ ]]; then
+            permission_denial_count=0
+        fi
+
+        if [[ $permission_denial_count -gt 0 ]]; then
+            has_permission_denials="true"
+        fi
+    else
+        # Detect JSON format by checking for Claude CLI fields
+        has_result_field=$(jq -r -j 'has("result")' "$output_file" 2>/dev/null)
+
+        # Extract fields - support both flat format and Claude CLI format
+        # Priority: Claude CLI fields first, then flat format fields
+
+        # Status: from flat format OR derived from metadata.completion_status
+        status=$(jq -r -j '.status // "UNKNOWN"' "$output_file" 2>/dev/null)
+        completion_status=$(jq -r -j '.metadata.completion_status // ""' "$output_file" 2>/dev/null)
+        if [[ "$completion_status" == "complete" || "$completion_status" == "COMPLETE" ]]; then
+            status="COMPLETE"
+        fi
+
+        # Exit signal: from flat format OR derived from completion_status
+        # Track whether EXIT_SIGNAL was explicitly provided (vs inferred from STATUS)
+        exit_signal=$(jq -r -j '.exit_signal // false' "$output_file" 2>/dev/null)
+        explicit_exit_signal_found=$(jq -r -j 'has("exit_signal")' "$output_file" 2>/dev/null)
+        tasks_completed_this_loop=$(jq -r -j '.tasks_completed_this_loop // 0' "$output_file" 2>/dev/null)
+        if [[ ! "$tasks_completed_this_loop" =~ ^-?[0-9]+$ ]]; then
+            tasks_completed_this_loop=0
+        fi
+
+        if [[ "$has_result_field" == "true" ]]; then
+            result_text=$(jq -r -j '.result // ""' "$output_file" 2>/dev/null)
+        fi
+
+        # Work type: from flat format
+        work_type=$(jq -r -j '.work_type // "UNKNOWN"' "$output_file" 2>/dev/null)
+
+        # Files modified: from flat format OR from metadata.files_changed
+        files_modified=$(jq -r -j '.metadata.files_changed // .files_modified // 0' "$output_file" 2>/dev/null)
+
+        # Error count: from flat format OR derived from metadata.has_errors
+        # Note: When only has_errors=true is present (without explicit error_count),
+        # we set error_count=1 as a minimum. This is defensive programming since
+        # the stuck detection threshold is >5 errors, so 1 error won't trigger it.
+        # Actual error count may be higher, but precise count isn't critical for our logic.
+        error_count=$(jq -r -j '.error_count // 0' "$output_file" 2>/dev/null)
+        has_errors=$(jq -r -j '.metadata.has_errors // false' "$output_file" 2>/dev/null)
+        if [[ "$has_errors" == "true" && "$error_count" == "0" ]]; then
+            error_count=1  # At least one error if has_errors is true
+        fi
+
+        # Summary: from flat format OR from result field (Claude CLI format)
+        summary=$(jq -r -j '.result // .summary // ""' "$output_file" 2>/dev/null)
+
+        # Session ID: from Claude CLI format (sessionId) OR from metadata.session_id
+        session_id=$(jq -r -j '.sessionId // .metadata.session_id // .session_id // ""' "$output_file" 2>/dev/null)
+
+        # Loop number: from metadata
+        loop_number=$(jq -r -j '.metadata.loop_number // .loop_number // 0' "$output_file" 2>/dev/null)
+
+        # Confidence: from flat format
+        confidence=$(jq -r -j '.confidence // 0' "$output_file" 2>/dev/null)
+
+        # Progress indicators: from Claude CLI metadata (optional)
+        progress_count=$(jq -r -j '.metadata.progress_indicators | if . then length else 0 end' "$output_file" 2>/dev/null)
+
+        # Permission denials: from Claude Code output (Issue #101)
+        # When Claude Code is denied permission to run commands, it outputs a permission_denials array
+        permission_denial_count=$(jq -r -j '.permission_denials | if . then length else 0 end' "$output_file" 2>/dev/null)
+        permission_denial_count=$((permission_denial_count + 0))  # Ensure integer
+
+        if [[ $permission_denial_count -gt 0 ]]; then
+            has_permission_denials="true"
+        fi
+
+        # Extract denied tool names and commands for logging/display
+        # Shows tool_name for non-Bash tools, and for Bash tools shows the command that was denied
+        # This handles both cases: AskUserQuestion denial shows "AskUserQuestion",
+        # while Bash denial shows "Bash(git commit -m ...)" with truncated command
+        if [[ $permission_denial_count -gt 0 ]]; then
+            denied_commands_json=$(jq -r -j '[.permission_denials[] | if .tool_name == "Bash" then "Bash(\(.tool_input.command // "?" | split("\n")[0] | .[0:60]))" else .tool_name // "unknown" end]' "$output_file" 2>/dev/null || echo "[]")
+        fi
     fi
 
     local ralph_status_json=""
@@ -548,9 +727,14 @@ parse_json_response() {
         embedded_status=$(printf '%s' "$ralph_status_json" | jq -r -j '.status' 2>/dev/null)
         local embedded_tasks_completed
         embedded_tasks_completed=$(printf '%s' "$ralph_status_json" | jq -r -j '.tasks_completed_this_loop' 2>/dev/null)
+        local embedded_tests_status
+        embedded_tests_status=$(printf '%s' "$ralph_status_json" | jq -r -j '.tests_status' 2>/dev/null)
 
         if [[ "$embedded_tasks_completed" =~ ^-?[0-9]+$ ]]; then
             tasks_completed_this_loop=$embedded_tasks_completed
+        fi
+        if [[ -n "$embedded_tests_status" && "$embedded_tests_status" != "null" ]]; then
+            tests_status="$embedded_tests_status"
         fi
 
         if [[ "$embedded_exit_signal_found" == "true" ]]; then
@@ -561,57 +745,6 @@ parse_json_response() {
             exit_signal="true"
             [[ "${VERBOSE_PROGRESS:-}" == "true" ]] && echo "DEBUG: Inferred EXIT_SIGNAL=true from .result STATUS=COMPLETE (no explicit EXIT_SIGNAL found)" >&2
         fi
-    fi
-
-    # Work type: from flat format
-    local work_type=$(jq -r -j '.work_type // "UNKNOWN"' "$output_file" 2>/dev/null)
-
-    # Files modified: from flat format OR from metadata.files_changed
-    local files_modified=$(jq -r -j '.metadata.files_changed // .files_modified // 0' "$output_file" 2>/dev/null)
-
-    # Error count: from flat format OR derived from metadata.has_errors
-    # Note: When only has_errors=true is present (without explicit error_count),
-    # we set error_count=1 as a minimum. This is defensive programming since
-    # the stuck detection threshold is >5 errors, so 1 error won't trigger it.
-    # Actual error count may be higher, but precise count isn't critical for our logic.
-    local error_count=$(jq -r -j '.error_count // 0' "$output_file" 2>/dev/null)
-    local has_errors=$(jq -r -j '.metadata.has_errors // false' "$output_file" 2>/dev/null)
-    if [[ "$has_errors" == "true" && "$error_count" == "0" ]]; then
-        error_count=1  # At least one error if has_errors is true
-    fi
-
-    # Summary: from flat format OR from result field (Claude CLI format)
-    local summary=$(jq -r -j '.result // .summary // ""' "$output_file" 2>/dev/null)
-
-    # Session ID: from Claude CLI format (sessionId) OR from metadata.session_id
-    local session_id=$(jq -r -j '.sessionId // .metadata.session_id // .session_id // ""' "$output_file" 2>/dev/null)
-
-    # Loop number: from metadata
-    local loop_number=$(jq -r -j '.metadata.loop_number // .loop_number // 0' "$output_file" 2>/dev/null)
-
-    # Confidence: from flat format
-    local confidence=$(jq -r -j '.confidence // 0' "$output_file" 2>/dev/null)
-
-    # Progress indicators: from Claude CLI metadata (optional)
-    local progress_count=$(jq -r -j '.metadata.progress_indicators | if . then length else 0 end' "$output_file" 2>/dev/null)
-
-    # Permission denials: from Claude Code output (Issue #101)
-    # When Claude Code is denied permission to run commands, it outputs a permission_denials array
-    local permission_denial_count=$(jq -r -j '.permission_denials | if . then length else 0 end' "$output_file" 2>/dev/null)
-    permission_denial_count=$((permission_denial_count + 0))  # Ensure integer
-
-    local has_permission_denials="false"
-    if [[ $permission_denial_count -gt 0 ]]; then
-        has_permission_denials="true"
-    fi
-
-    # Extract denied tool names and commands for logging/display
-    # Shows tool_name for non-Bash tools, and for Bash tools shows the command that was denied
-    # This handles both cases: AskUserQuestion denial shows "AskUserQuestion",
-    # while Bash denial shows "Bash(git commit -m ...)" with truncated command
-    local denied_commands_json="[]"
-    if [[ $permission_denial_count -gt 0 ]]; then
-        denied_commands_json=$(jq -r -j '[.permission_denials[] | if .tool_name == "Bash" then "Bash(\(.tool_input.command // "?" | split("\n")[0] | .[0:60]))" else .tool_name // "unknown" end]' "$output_file" 2>/dev/null || echo "[]")
     fi
 
     # Heuristic permission-denial matching is limited to the refusal-shaped
@@ -626,7 +759,7 @@ parse_json_response() {
     # completion markers are absent. This keeps JSONL analysis aligned with text mode.
     local summary_has_completion_keyword="false"
     local summary_has_no_work_pattern="false"
-    if [[ "$response_shape" == "codex_jsonl" || "$response_shape" == "cursor_stream_jsonl" ]] && [[ "$explicit_exit_signal_found" != "true" && -n "$summary" ]]; then
+    if [[ "$response_shape" == "codex_jsonl" || "$response_shape" == "opencode_jsonl" || "$response_shape" == "cursor_stream_jsonl" ]] && [[ "$explicit_exit_signal_found" != "true" && -n "$summary" ]]; then
         for keyword in "${COMPLETION_KEYWORDS[@]}"; do
             if echo "$summary" | grep -qi "$keyword"; then
                 summary_has_completion_keyword="true"
@@ -709,6 +842,7 @@ parse_json_response() {
         --argjson has_permission_denials "$has_permission_denials" \
         --argjson permission_denial_count "$permission_denial_count" \
         --argjson denied_commands "$denied_commands_json" \
+        --arg tests_status "$tests_status" \
         '{
             status: $status,
             exit_signal: $exit_signal,
@@ -722,6 +856,7 @@ parse_json_response() {
             session_id: $session_id,
             confidence: $confidence,
             tasks_completed_this_loop: $tasks_completed_this_loop,
+            tests_status: $tests_status,
             has_permission_denials: $has_permission_denials,
             permission_denial_count: $permission_denial_count,
             denied_commands: $denied_commands,
@@ -755,6 +890,7 @@ analyze_response() {
     local work_summary=""
     local files_modified=0
     local tasks_completed_this_loop=0
+    local tests_status="UNKNOWN"
 
     # Read output file
     if [[ ! -f "$output_file" ]]; then
@@ -781,6 +917,7 @@ analyze_response() {
             work_summary=$(jq -r -j '.summary' "$json_parse_result_file" 2>/dev/null || echo "")
             files_modified=$(jq -r -j '.files_modified' "$json_parse_result_file" 2>/dev/null || echo "0")
             tasks_completed_this_loop=$(jq -r -j '.tasks_completed_this_loop // 0' "$json_parse_result_file" 2>/dev/null || echo "0")
+            tests_status=$(jq -r -j '.tests_status // "UNKNOWN"' "$json_parse_result_file" 2>/dev/null || echo "UNKNOWN")
             local json_confidence=$(jq -r -j '.confidence' "$json_parse_result_file" 2>/dev/null || echo "0")
             local session_id=$(jq -r -j '.session_id' "$json_parse_result_file" 2>/dev/null || echo "")
 
@@ -863,6 +1000,7 @@ analyze_response() {
                 --argjson has_permission_denials "$has_permission_denials" \
                 --argjson permission_denial_count "$permission_denial_count" \
                 --argjson denied_commands "$denied_commands_json" \
+                --arg tests_status "$tests_status" \
                 '{
                     loop_number: $loop_number,
                     timestamp: $timestamp,
@@ -877,6 +1015,7 @@ analyze_response() {
                         confidence_score: $confidence_score,
                         exit_signal: $exit_signal,
                         tasks_completed_this_loop: $tasks_completed_this_loop,
+                        tests_status: $tests_status,
                         fix_plan_completed_delta: 0,
                         has_progress_tracking_mismatch: false,
                         work_summary: $work_summary,
@@ -910,9 +1049,14 @@ analyze_response() {
         exit_sig=$(printf '%s' "$ralph_status_json" | jq -r -j '.exit_signal' 2>/dev/null)
         local parsed_tasks_completed
         parsed_tasks_completed=$(printf '%s' "$ralph_status_json" | jq -r -j '.tasks_completed_this_loop' 2>/dev/null)
+        local parsed_tests_status
+        parsed_tests_status=$(printf '%s' "$ralph_status_json" | jq -r -j '.tests_status' 2>/dev/null)
 
         if [[ "$parsed_tasks_completed" =~ ^-?[0-9]+$ ]]; then
             tasks_completed_this_loop=$parsed_tasks_completed
+        fi
+        if [[ -n "$parsed_tests_status" && "$parsed_tests_status" != "null" ]]; then
+            tests_status="$parsed_tests_status"
         fi
 
         # If EXIT_SIGNAL is explicitly provided, respect it
@@ -1095,6 +1239,7 @@ analyze_response() {
         --argjson has_permission_denials "$has_permission_denials" \
         --argjson permission_denial_count "$permission_denial_count" \
         --argjson denied_commands "$denied_commands_json" \
+        --arg tests_status "$tests_status" \
         '{
             loop_number: $loop_number,
             timestamp: $timestamp,
@@ -1109,6 +1254,7 @@ analyze_response() {
                 confidence_score: $confidence_score,
                 exit_signal: $exit_signal,
                 tasks_completed_this_loop: $tasks_completed_this_loop,
+                tests_status: $tests_status,
                 fix_plan_completed_delta: 0,
                 has_progress_tracking_mismatch: false,
                 work_summary: $work_summary,
@@ -1386,8 +1532,10 @@ export -f detect_output_format
 export -f count_json_documents
 export -f normalize_cli_array_response
 export -f normalize_codex_jsonl_response
+export -f normalize_opencode_jsonl_response
 export -f normalize_cursor_stream_json_response
 export -f is_codex_jsonl_output
+export -f is_opencode_jsonl_output
 export -f is_cursor_stream_json_output
 export -f normalize_json_output
 export -f extract_session_id_from_output

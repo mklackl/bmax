@@ -302,6 +302,20 @@ describe("artifact-scan", () => {
       expect(suggestion).not.toContain("/architect");
     });
 
+    it("uses OpenCode-specific skill guidance instead of slash commands", () => {
+      const phases = {
+        1: [],
+        2: [{ phase: 2, name: "PRD", required: true, filename: "prd.md" }],
+        3: [],
+      };
+
+      const suggestion = suggestNext(phases, 3, "opencode");
+
+      expect(suggestion).toContain(".opencode/skills");
+      expect(suggestion).toContain("bmad-architect");
+      expect(suggestion).not.toContain("/architect");
+    });
+
     it("suggests create epics when architecture exists but no stories", () => {
       const phases = {
         1: [],

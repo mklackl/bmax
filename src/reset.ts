@@ -13,7 +13,6 @@ import {
   RALPH_DIR,
   BMALPH_DIR,
   BMAD_OUTPUT_DIR,
-  SKILLS_DIR,
   SKILLS_PREFIX,
 } from "./utils/constants.js";
 import type { Platform } from "./platform/types.js";
@@ -67,10 +66,10 @@ export async function buildResetPlan(projectDir: string, platform: Platform): Pr
   // Check for skills to remove (skills delivery only)
   if (platform.commandDelivery.kind === "skills") {
     try {
-      const existingDirs = await readdir(join(projectDir, SKILLS_DIR));
+      const existingDirs = await readdir(join(projectDir, platform.commandDelivery.dir));
       for (const dir of existingDirs) {
         if (dir.startsWith(SKILLS_PREFIX)) {
-          plan.commandFiles.push(posix.join(SKILLS_DIR, dir));
+          plan.commandFiles.push(posix.join(platform.commandDelivery.dir, dir));
         }
       }
     } catch (err) {

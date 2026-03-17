@@ -9,6 +9,7 @@ interface DetectionResult {
 
 const STRONG_DETECTION_MARKERS: Array<{ platform: PlatformId; markers: string[] }> = [
   { platform: "claude-code", markers: [".claude"] },
+  { platform: "opencode", markers: [".opencode"] },
   { platform: "cursor", markers: [".cursor"] },
   { platform: "windsurf", markers: [".windsurf"] },
   { platform: "copilot", markers: [".github/copilot-instructions.md"] },
@@ -16,7 +17,7 @@ const STRONG_DETECTION_MARKERS: Array<{ platform: PlatformId; markers: string[] 
 ];
 
 const ROOT_INSTRUCTION_MARKERS: Array<{ marker: string; candidates: PlatformId[] }> = [
-  { marker: "AGENTS.md", candidates: ["codex", "cursor"] },
+  { marker: "AGENTS.md", candidates: ["codex", "opencode", "cursor"] },
   { marker: "CLAUDE.md", candidates: ["claude-code", "cursor"] },
 ];
 
@@ -33,8 +34,11 @@ export async function detectPlatform(projectDir: string): Promise<DetectionResul
     }
   }
 
-  if (strongCandidates.includes("cursor") && strongCandidates.length === 1) {
-    return { detected: "cursor", candidates: ["cursor"] };
+  const strongExclusivePlatforms: PlatformId[] = ["cursor", "opencode"];
+  for (const platform of strongExclusivePlatforms) {
+    if (strongCandidates.includes(platform) && strongCandidates.length === 1) {
+      return { detected: platform, candidates: [platform] };
+    }
   }
 
   for (const { marker, candidates: inferred } of ROOT_INSTRUCTION_MARKERS) {

@@ -10,7 +10,9 @@ vi.mock("../../src/utils/config.js", () => ({
 vi.mock("../../src/platform/registry.js", () => ({
   getPlatform: vi.fn(),
   isPlatformId: vi.fn(),
-  getFullTierPlatformNames: vi.fn(() => "Claude Code, OpenAI Codex, GitHub Copilot CLI, Cursor"),
+  getFullTierPlatformNames: vi.fn(
+    () => "Claude Code, OpenAI Codex, OpenCode, GitHub Copilot CLI, Cursor"
+  ),
 }));
 
 vi.mock("../../src/run/ralph-process.js", () => ({
@@ -174,6 +176,52 @@ describe("runCommand", () => {
       if (id === "cursor") {
         expect(validateCursorRuntime).toHaveBeenCalledWith("/test/project");
       }
+    });
+
+    it("accepts opencode as a full-tier platform", async () => {
+      const { readConfig } = await import("../../src/utils/config.js");
+      const { isPlatformId, getPlatform } = await import("../../src/platform/registry.js");
+      const { validateBashAvailable, validateRalphLoop, spawnRalphLoop } =
+        await import("../../src/run/ralph-process.js");
+      const { startRunDashboard } = await import("../../src/run/run-dashboard.js");
+      const { validateCursorRuntime } = await import("../../src/platform/cursor-runtime-checks.js");
+
+      vi.mocked(readConfig).mockResolvedValue({
+        name: "test",
+        description: "",
+        createdAt: "2026-02-28",
+        platform: "opencode",
+      });
+      vi.mocked(isPlatformId).mockReturnValue(true);
+      vi.mocked(getPlatform).mockReturnValue(
+        mockPlatform({ id: "opencode", displayName: "OpenCode", tier: "full" })
+      );
+      vi.mocked(validateBashAvailable).mockResolvedValue(undefined);
+      vi.mocked(validateRalphLoop).mockResolvedValue(undefined);
+      vi.mocked(validateCursorRuntime).mockResolvedValue(undefined);
+      vi.mocked(spawnRalphLoop).mockReturnValue({
+        child: { pid: 123 },
+        state: "running",
+        exitCode: null,
+        kill: vi.fn(),
+        detach: vi.fn(),
+        onExit: vi.fn(),
+      } as never);
+      vi.mocked(startRunDashboard).mockResolvedValue(undefined);
+
+      const { runCommand } = await import("../../src/commands/run.js");
+      await runCommand({
+        projectDir: "/test/project",
+        driver: "opencode",
+        interval: "2000",
+        dashboard: true,
+      });
+
+      expect(process.exitCode).toBeUndefined();
+      expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "opencode", {
+        inheritStdio: false,
+      });
+      expect(validateCursorRuntime).not.toHaveBeenCalled();
     });
 
     it("fails when Cursor runtime preflight fails", async () => {

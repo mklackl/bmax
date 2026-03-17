@@ -60,7 +60,11 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
   const projectDir = options.projectDir;
   const platform = await resolveProjectPlatform(projectDir);
   const checks = buildCheckRegistry(platform);
-  const results: CheckResult[] = await Promise.all(checks.map((check) => check.run(projectDir)));
+  const results: CheckResult[] = [];
+
+  for (const check of checks) {
+    results.push(await check.run(projectDir));
+  }
 
   const passed = results.filter((r) => r.passed).length;
   const failed = results.filter((r) => !r.passed).length;

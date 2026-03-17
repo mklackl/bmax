@@ -7,7 +7,7 @@ import type { RalphProcess, RalphProcessState } from "./types.js";
 const RALPH_LOOP_PATH = `${RALPH_DIR}/ralph_loop.sh`;
 const BASH_RALPH_LOOP_PATH = `./${RALPH_LOOP_PATH}`;
 const BASH_VALIDATION_TIMEOUT_MS = 3000;
-const BASH_COMMAND_TIMEOUT_MS = 5000;
+const BASH_COMMAND_TIMEOUT_MS = 15000;
 const DEFAULT_WINDOWS_GIT_BASH_PATHS = [
   "C:\\Program Files\\Git\\bin\\bash.exe",
   "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
@@ -16,6 +16,7 @@ const DEFAULT_WINDOWS_GIT_BASH_PATHS = [
 ] as const;
 
 let cachedBashCommand: string | undefined;
+let pendingBashCommand: Promise<string> | undefined;
 
 export interface BashCommandResult {
   exitCode: number | null;
@@ -28,16 +29,28 @@ export async function resolveBashCommand(): Promise<string> {
     return cachedBashCommand;
   }
 
-  const candidates = process.platform === "win32" ? getWindowsBashCandidates() : ["bash"];
-
-  for (const candidate of candidates) {
-    if (await canExecuteBash(candidate)) {
-      cachedBashCommand = candidate;
-      return candidate;
-    }
+  if (pendingBashCommand) {
+    return pendingBashCommand;
   }
 
-  throw new Error(getMissingBashMessage());
+  pendingBashCommand = (async () => {
+    const candidates = process.platform === "win32" ? getWindowsBashCandidates() : ["bash"];
+
+    for (const candidate of candidates) {
+      if (await canExecuteBash(candidate)) {
+        cachedBashCommand = candidate;
+        return candidate;
+      }
+    }
+
+    throw new Error(getMissingBashMessage());
+  })();
+
+  try {
+    return await pendingBashCommand;
+  } finally {
+    pendingBashCommand = undefined;
+  }
 }
 
 export async function validateBashAvailable(): Promise<void> {

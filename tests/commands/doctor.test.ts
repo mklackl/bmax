@@ -38,6 +38,33 @@ vi.mock("../../src/utils/github.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../../src/run/ralph-process.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/run/ralph-process.js")>();
+  return {
+    ...actual,
+    resolveBashCommand: vi.fn(async () => "bash"),
+    runBashCommand: vi.fn(async (command: string) => {
+      if (command === "command -v jq") {
+        return { exitCode: 0, stdout: "/usr/bin/jq\n", stderr: "" };
+      }
+
+      if (command === "command -v cursor-agent") {
+        return { exitCode: 0, stdout: "/usr/bin/cursor-agent\n", stderr: "" };
+      }
+
+      if (command === "cursor-agent status") {
+        return {
+          exitCode: 0,
+          stdout: "Authenticated as cursor-test@example.com\n",
+          stderr: "",
+        };
+      }
+
+      return { exitCode: 0, stdout: "", stderr: "" };
+    }),
+  };
+});
+
 describe("doctor command", { timeout: 15000 }, () => {
   let testDir: string;
   let consoleSpy: ReturnType<typeof vi.spyOn>;
@@ -54,6 +81,10 @@ describe("doctor command", { timeout: 15000 }, () => {
   afterEach(async () => {
     consoleSpy.mockRestore();
     consoleErrorSpy.mockRestore();
+    vi.doUnmock("../../src/platform/resolve.js");
+    vi.doUnmock("../../src/commands/doctor-checks.js");
+    vi.doUnmock("../../src/commands/doctor-health-checks.js");
+    vi.doUnmock("../../src/commands/doctor-runtime-checks.js");
     vi.restoreAllMocks();
     try {
       await rm(testDir, { recursive: true, force: true });
@@ -138,6 +169,90 @@ describe("doctor command", { timeout: 15000 }, () => {
         expect(result.detail).toBe("jq not found in PATH");
         expect(result.hint).toBeDefined();
       }
+    });
+  });
+
+  describe("check execution", () => {
+    it("runs doctor checks sequentially", async () => {
+      const order: string[] = [];
+      let activeCheck: string | null = null;
+
+      const createCheck =
+        (id: string, label: string) => async (): Promise<{ label: string; passed: boolean }> => {
+          if (activeCheck) {
+            throw new Error(`check overlap: ${activeCheck} and ${id}`);
+          }
+
+          activeCheck = id;
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          order.push(id);
+          activeCheck = null;
+
+          return { label, passed: true };
+        };
+
+      vi.doMock("../../src/platform/resolve.js", () => ({
+        resolveProjectPlatform: vi.fn(async () => ({
+          getDoctorChecks: () => [
+            {
+              id: "platform-one",
+              label: "platform one",
+              check: createCheck("platform-one", "platform one"),
+            },
+            {
+              id: "platform-two",
+              label: "platform two",
+              check: createCheck("platform-two", "platform two"),
+            },
+          ],
+        })),
+      }));
+
+      vi.doMock("../../src/commands/doctor-checks.js", () => ({
+        checkNodeVersion: createCheck("node-version", "Node version >= 20"),
+        checkBash: createCheck("bash-available", "bash available"),
+        checkJq: createCheck("jq-available", "jq available"),
+        checkConfig: createCheck("config-valid", "bmalph/config.json exists and valid"),
+        checkBmadDir: createCheck("bmad-dir", "_bmad/ directory present"),
+        checkRalphLoop: createCheck("ralph-loop", "ralph_loop.sh present and has content"),
+        checkRalphLib: createCheck("ralph-lib", ".ralph/lib/ directory present"),
+      }));
+
+      vi.doMock("../../src/commands/doctor-health-checks.js", () => ({
+        checkGitignore: createCheck("gitignore", ".gitignore contains bmalph entries"),
+        checkVersionMarker: createCheck("version-marker", "version marker present"),
+        checkUpstreamVersions: createCheck("upstream-versions", "upstream versions recorded"),
+      }));
+
+      vi.doMock("../../src/commands/doctor-runtime-checks.js", () => ({
+        checkCircuitBreaker: createCheck("circuit-breaker", "circuit breaker healthy"),
+        checkRalphSession: createCheck("ralph-session", "ralph session healthy"),
+        checkApiCalls: createCheck("api-calls", "api call tracking healthy"),
+        checkUpstreamGitHubStatus: createCheck("upstream-github", "GitHub status healthy"),
+      }));
+
+      const { runDoctor } = await import("../../src/commands/doctor.js");
+      const result = await runDoctor({ projectDir: testDir });
+
+      expect(result.failed).toBe(0);
+      expect(order).toEqual([
+        "node-version",
+        "bash-available",
+        "jq-available",
+        "config-valid",
+        "bmad-dir",
+        "ralph-loop",
+        "ralph-lib",
+        "platform-one",
+        "platform-two",
+        "gitignore",
+        "version-marker",
+        "upstream-versions",
+        "circuit-breaker",
+        "ralph-session",
+        "api-calls",
+        "upstream-github",
+      ]);
     });
   });
 

@@ -97,6 +97,7 @@ export async function createProjectWithRalphUserFiles(
 const PLATFORM_MARKERS: Record<string, { type: "dir" | "file"; path: string }> = {
   "claude-code": { type: "dir", path: ".claude" },
   codex: { type: "file", path: "AGENTS.md" },
+  opencode: { type: "dir", path: ".opencode" },
   cursor: { type: "dir", path: ".cursor" },
   windsurf: { type: "dir", path: ".windsurf" },
   copilot: { type: "file", path: ".github/copilot-instructions.md" },

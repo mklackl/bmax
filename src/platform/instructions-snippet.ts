@@ -68,6 +68,22 @@ ${FULL_TIER_PHASES}
 }
 
 /**
+ * Instructions snippet for OpenCode's native skills layout.
+ */
+export function generateOpencodeSkillsTierSnippet(): string {
+  return `
+## BMAD-METHOD Integration
+
+BMAD commands are available as native OpenCode skills in \`.opencode/skills/\`.
+Load the matching skill name (for example \`bmad-analyst\` or \`bmad-create-prd\`)
+when the user asks for a BMAD workflow or agent. Use the OpenCode question tool (\`question\`)
+when a BMAD workflow needs interactive answers. See \`_bmad/COMMANDS.md\` for a full reference.
+
+${FULL_TIER_PHASES}
+`;
+}
+
+/**
  * Shared instructions snippet for instructions-only platforms.
  * Used by: windsurf, aider.
  */

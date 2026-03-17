@@ -157,6 +157,20 @@ describe("status command", () => {
       expect(output).not.toContain("/pm");
     });
 
+    it("uses OpenCode-specific BMAD guidance instead of slash commands", async () => {
+      await setupProject("opencode");
+      await setupState({ currentPhase: 1, status: "planning" });
+
+      const { runStatus } = await import("../../src/commands/status.js");
+      await runStatus({ projectDir: testDir });
+
+      const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(output).toContain(".opencode/skills");
+      expect(output).toContain("bmad-analyst");
+      expect(output).not.toContain("/analyst");
+      expect(output).not.toContain("/pm");
+    });
+
     it("suggests bmalph implement for phase 3", async () => {
       await setupProject();
       await setupState({ currentPhase: 3, status: "planning" });
@@ -385,6 +399,20 @@ describe("status command", () => {
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
       expect(output).toContain("_bmad/COMMANDS.md");
       expect(output).toContain("run the BMAD master agent");
+      expect(output).not.toContain("/architect");
+      expect(output).not.toContain("/create-epics-stories");
+    });
+
+    it("uses OpenCode-specific artifact guidance without slash commands", async () => {
+      await setupProject("opencode");
+      await setupArtifacts(["prd.md"]);
+
+      const { runStatus } = await import("../../src/commands/status.js");
+      await runStatus({ projectDir: testDir });
+
+      const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(output).toContain(".opencode/skills");
+      expect(output).toContain("bmad-architect");
       expect(output).not.toContain("/architect");
       expect(output).not.toContain("/create-epics-stories");
     });

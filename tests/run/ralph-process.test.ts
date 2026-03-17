@@ -148,6 +148,35 @@ describe("validateBashAvailable", () => {
       Object.defineProperty(process, "platform", { value: originalPlatform, configurable: true });
     }
   });
+
+  it("deduplicates concurrent bash resolution while discovery is in flight", async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, "platform", { value: "win32", configurable: true });
+
+    try {
+      mockExecFileSync.mockReturnValue("C:\\Program Files\\Git\\bin\\bash.exe\r\n");
+      mockSpawn.mockImplementation((_command: string, args: string[]) => {
+        const child = createMockChild();
+        process.nextTick(() => {
+          if (args[0] === "--version") {
+            child.emit("close", 0);
+          }
+        });
+        return child;
+      });
+
+      const { resolveBashCommand } = await import("../../src/run/ralph-process.js");
+      const results = await Promise.all([resolveBashCommand(), resolveBashCommand()]);
+
+      expect(results).toEqual([
+        "C:\\Program Files\\Git\\bin\\bash.exe",
+        "C:\\Program Files\\Git\\bin\\bash.exe",
+      ]);
+      expect(mockSpawn).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform, configurable: true });
+    }
+  });
 });
 
 describe("validateRalphLoop", () => {

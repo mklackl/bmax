@@ -67,6 +67,19 @@ setup() {
     _env_VERBOSE_PROGRESS=""
     _env_CB_COOLDOWN_MINUTES=""
     _env_CB_AUTO_RESET=""
+    _env_TEST_COMMAND=""
+    _env_QUALITY_GATES=""
+    _env_QUALITY_GATE_MODE=""
+    _env_QUALITY_GATE_TIMEOUT=""
+    _env_QUALITY_GATE_ON_COMPLETION_ONLY=""
+
+    # Reset quality gate defaults
+    TEST_COMMAND=""
+    QUALITY_GATES=""
+    QUALITY_GATE_MODE="warn"
+    QUALITY_GATE_TIMEOUT=120
+    QUALITY_GATE_ON_COMPLETION_ONLY="false"
+    QUALITY_GATE_RESULTS_FILE="$RALPH_DIR/.quality_gate_results"
 
     unset ALLOWED_TOOLS SESSION_CONTINUITY SESSION_EXPIRY_HOURS RALPH_VERBOSE
     _cli_MAX_CALLS_PER_HOUR=""
@@ -1073,6 +1086,14 @@ EOF
     assert_equal "$DRIVER_DISPLAY_NAME" "Cursor CLI"
 }
 
+@test "load_platform_driver: loads opencode driver and sets display name" {
+    PLATFORM_DRIVER="opencode"
+    SCRIPT_DIR="$PROJECT_ROOT/ralph"
+    load_platform_driver
+    assert_equal "$CLAUDE_CODE_CMD" "opencode"
+    assert_equal "$DRIVER_DISPLAY_NAME" "OpenCode"
+}
+
 @test "setup_tmux_session uses the active driver name for the output pane" {
     PLATFORM_DRIVER="cursor"
     SCRIPT_DIR="$PROJECT_ROOT/ralph"
@@ -1123,6 +1144,7 @@ TMUX
     assert_output --partial "Use 'bmalph init'"
     assert_output --partial "Show live driver output in real-time"
     assert_output --partial "Set driver execution timeout in minutes"
+    assert_output --partial "Ignored by codex, opencode, cursor, and copilot"
     assert_output --partial "bmalph run"
     refute_output --partial "Ralph Loop for Claude Code"
     refute_output --partial "Show Claude Code output in real-time"
@@ -1551,6 +1573,93 @@ EOF
     assert_output --partial "stale-session-123"
 }
 
+@test "execute_claude_code: opencode driver resumes saved sessions from stream output" {
+    _skip_if_xargs_broken
+    echo "0" > "$CALL_COUNT_FILE"
+    echo '{"test_only_loops": [], "done_signals": [], "completion_indicators": []}' > "$EXIT_SIGNALS_FILE"
+    echo "stale-opencode-session-123" > "$CLAUDE_SESSION_FILE"
+
+    mkdir -p "$RALPH_DIR/bin"
+    cat > "$RALPH_DIR/bin/opencode" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" > "$RALPH_DIR/opencode_args.log"
+cat <<'OUT'
+{"type":"session.created","session":{"id":"opencode-session-123"}}
+{"type":"message.updated","message":{"role":"assistant","parts":[{"type":"text","text":"Completed the OpenCode run.\n\n---RALPH_STATUS---\nSTATUS: COMPLETE\nEXIT_SIGNAL: true\n---END_RALPH_STATUS---"}]}}
+OUT
+exit 0
+EOF
+    chmod +x "$RALPH_DIR/bin/opencode"
+    export PATH="$RALPH_DIR/bin:$PATH"
+
+    CLAUDE_USE_CONTINUE="true"
+    LIVE_OUTPUT=false
+
+    echo "Implement the task" > "$RALPH_DIR/PROMPT.md"
+    PROMPT_FILE="$RALPH_DIR/PROMPT.md"
+
+    SCRIPT_DIR="$PROJECT_ROOT/ralph"
+    PLATFORM_DRIVER="opencode"
+    load_platform_driver
+
+    run execute_claude_code 1
+    assert_success
+
+    run grep -- "--continue" "$RALPH_DIR/opencode_args.log"
+    assert_success
+
+    run grep -- "--session" "$RALPH_DIR/opencode_args.log"
+    assert_success
+    assert_output --partial "stale-opencode-session-123"
+
+    run cat "$CLAUDE_SESSION_FILE"
+    assert_output "opencode-session-123"
+}
+
+@test "execute_claude_code: opencode driver falls back to session list when stream omits session id" {
+    _skip_if_xargs_broken
+    echo "0" > "$CALL_COUNT_FILE"
+    echo '{"test_only_loops": [], "done_signals": [], "completion_indicators": []}' > "$EXIT_SIGNALS_FILE"
+
+    mkdir -p "$RALPH_DIR/bin"
+    cat > "$RALPH_DIR/bin/opencode" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$RALPH_DIR/opencode_fallback.log"
+if [[ "$1" == "session" && "$2" == "list" ]]; then
+    cat <<'JSON'
+[{"id":"opencode-session-fallback-456"}]
+JSON
+    exit 0
+fi
+
+cat <<'OUT'
+{"type":"message.updated","message":{"role":"assistant","parts":[{"type":"text","text":"Completed the OpenCode run without a session event.\n\n---RALPH_STATUS---\nSTATUS: COMPLETE\nEXIT_SIGNAL: true\n---END_RALPH_STATUS---"}]}}
+OUT
+exit 0
+EOF
+    chmod +x "$RALPH_DIR/bin/opencode"
+    export PATH="$RALPH_DIR/bin:$PATH"
+
+    CLAUDE_USE_CONTINUE="true"
+    LIVE_OUTPUT=false
+
+    echo "Implement the task" > "$RALPH_DIR/PROMPT.md"
+    PROMPT_FILE="$RALPH_DIR/PROMPT.md"
+
+    SCRIPT_DIR="$PROJECT_ROOT/ralph"
+    PLATFORM_DRIVER="opencode"
+    load_platform_driver
+
+    run execute_claude_code 1
+    assert_success
+
+    run cat "$CLAUDE_SESSION_FILE"
+    assert_output "opencode-session-fallback-456"
+
+    run grep -- "session list --format json" "$RALPH_DIR/opencode_fallback.log"
+    assert_success
+}
+
 @test "prepare_live_command_args converts Claude JSON mode into stream-json" {
     echo "Implement auth" > "$RALPH_DIR/PROMPT.md"
     PROMPT_FILE="$RALPH_DIR/PROMPT.md"
@@ -1608,6 +1717,25 @@ EOF
     assert_output --partial '.type == "assistant"'
 }
 
+@test "prepare_live_command_args keeps OpenCode JSON event command unchanged" {
+    echo "Implement auth" > "$RALPH_DIR/PROMPT.md"
+    PROMPT_FILE="$RALPH_DIR/PROMPT.md"
+
+    SCRIPT_DIR="$PROJECT_ROOT/ralph"
+    PLATFORM_DRIVER="opencode"
+    load_platform_driver
+    build_claude_command "$PROMPT_FILE" "" ""
+
+    prepare_live_command_args
+    local args_str="${LIVE_CMD_ARGS[*]}"
+    [[ "$args_str" =~ "--agent build --format json" ]]
+    [[ "$args_str" == "${CLAUDE_CMD_ARGS[*]}" ]]
+
+    run get_live_stream_filter
+    assert_success
+    assert_output --partial 'message.updated'
+}
+
 @test "supports_live_output rejects drivers without structured streams" {
     SCRIPT_DIR="$PROJECT_ROOT/ralph"
     PLATFORM_DRIVER="copilot"
@@ -1615,4 +1743,588 @@ EOF
 
     run supports_live_output
     assert_failure
+}
+
+# ===========================================================================
+# load_ralphrc — quality gate config
+# ===========================================================================
+
+@test "validate_quality_gate_mode accepts valid modes" {
+    local modes=(warn block circuit-breaker)
+    for mode in "${modes[@]}"; do
+        run validate_quality_gate_mode "$mode"
+        assert_success
+    done
+}
+
+@test "validate_quality_gate_mode rejects invalid mode" {
+    run validate_quality_gate_mode "blokc"
+    assert_failure
+    assert_output --partial "Invalid QUALITY_GATE_MODE"
+    assert_output --partial "Valid modes: warn block circuit-breaker"
+}
+
+@test "validate_quality_gate_timeout accepts positive integers" {
+    run validate_quality_gate_timeout 120
+    assert_success
+
+    run validate_quality_gate_timeout 1
+    assert_success
+}
+
+@test "validate_quality_gate_timeout rejects non-numeric values" {
+    run validate_quality_gate_timeout "abc"
+    assert_failure
+    assert_output --partial "must be a positive integer"
+}
+
+@test "validate_quality_gate_timeout rejects zero" {
+    run validate_quality_gate_timeout 0
+    assert_failure
+    assert_output --partial "must be a positive integer"
+}
+
+@test "load_ralphrc applies QUALITY_GATES from config" {
+    cat > "$RALPH_DIR/.ralphrc" <<'EOF'
+QUALITY_GATES="npm run lint;npm run type-check"
+QUALITY_GATE_MODE="block"
+TEST_COMMAND="npm test"
+EOF
+    RALPHRC_FILE="$RALPH_DIR/.ralphrc"
+
+    load_ralphrc
+
+    assert_equal "$QUALITY_GATES" "npm run lint;npm run type-check"
+    assert_equal "$QUALITY_GATE_MODE" "block"
+    assert_equal "$TEST_COMMAND" "npm test"
+}
+
+@test "load_ralphrc applies QUALITY_GATE_TIMEOUT and QUALITY_GATE_ON_COMPLETION_ONLY from config" {
+    cat > "$RALPH_DIR/.ralphrc" <<'EOF'
+QUALITY_GATE_TIMEOUT="60"
+QUALITY_GATE_ON_COMPLETION_ONLY="true"
+EOF
+    RALPHRC_FILE="$RALPH_DIR/.ralphrc"
+
+    load_ralphrc
+
+    assert_equal "$QUALITY_GATE_TIMEOUT" "60"
+    assert_equal "$QUALITY_GATE_ON_COMPLETION_ONLY" "true"
+}
+
+@test "load_ralphrc env vars override QUALITY_GATE_TIMEOUT and QUALITY_GATE_ON_COMPLETION_ONLY" {
+    cat > "$RALPH_DIR/.ralphrc" <<'EOF'
+QUALITY_GATE_TIMEOUT="60"
+QUALITY_GATE_ON_COMPLETION_ONLY="true"
+EOF
+    RALPHRC_FILE="$RALPH_DIR/.ralphrc"
+    _env_QUALITY_GATE_TIMEOUT="30"
+    _env_QUALITY_GATE_ON_COMPLETION_ONLY="false"
+
+    load_ralphrc
+
+    assert_equal "$QUALITY_GATE_TIMEOUT" "30"
+    assert_equal "$QUALITY_GATE_ON_COMPLETION_ONLY" "false"
+}
+
+@test "load_ralphrc env vars override quality gate config" {
+    cat > "$RALPH_DIR/.ralphrc" <<'EOF'
+QUALITY_GATE_MODE="block"
+TEST_COMMAND="npm test"
+EOF
+    RALPHRC_FILE="$RALPH_DIR/.ralphrc"
+    _env_QUALITY_GATE_MODE="circuit-breaker"
+    _env_TEST_COMMAND="pytest"
+
+    load_ralphrc
+
+    assert_equal "$QUALITY_GATE_MODE" "circuit-breaker"
+    assert_equal "$TEST_COMMAND" "pytest"
+}
+
+# ===========================================================================
+# run_test_gate
+# ===========================================================================
+
+@test "run_test_gate skips when no analysis file exists" {
+    run run_test_gate "$RALPH_DIR/nonexistent.json"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "skip"
+}
+
+@test "run_test_gate passes when tests_status is PASSING" {
+    jq -n '{analysis: {tests_status: "PASSING"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "pass"
+}
+
+@test "run_test_gate fails when tests_status is FAILING and no TEST_COMMAND" {
+    jq -n '{analysis: {tests_status: "FAILING"}}' > "$RESPONSE_ANALYSIS_FILE"
+    TEST_COMMAND=""
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "fail"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "false"
+}
+
+@test "run_test_gate verifies with TEST_COMMAND when tests_status is FAILING and command succeeds" {
+    jq -n '{analysis: {tests_status: "FAILING"}}' > "$RESPONSE_ANALYSIS_FILE"
+    _mock_cli "npm" 0 "All tests passed"
+    TEST_COMMAND="npm test"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "pass"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "true"
+}
+
+@test "run_test_gate verifies with TEST_COMMAND when tests_status is FAILING and command fails" {
+    jq -n '{analysis: {tests_status: "FAILING"}}' > "$RESPONSE_ANALYSIS_FILE"
+    _mock_cli "npm" 1 "3 tests failed"
+    TEST_COMMAND="npm test"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "fail"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "true"
+}
+
+@test "run_test_gate verifies with TEST_COMMAND when tests_status is PASSING and command fails" {
+    jq -n '{analysis: {tests_status: "PASSING"}}' > "$RESPONSE_ANALYSIS_FILE"
+    _mock_cli "npm" 1 "3 tests failed"
+    TEST_COMMAND="npm test"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "fail"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "true"
+}
+
+@test "run_test_gate verifies with TEST_COMMAND when tests_status is PASSING and command succeeds" {
+    jq -n '{analysis: {tests_status: "PASSING"}}' > "$RESPONSE_ANALYSIS_FILE"
+    _mock_cli "npm" 0 "All tests passed"
+    TEST_COMMAND="npm test"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "pass"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "true"
+}
+
+@test "run_test_gate skips when tests_status is UNKNOWN and no TEST_COMMAND" {
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+    TEST_COMMAND=""
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "skip"
+}
+
+@test "run_test_gate runs TEST_COMMAND when tests_status is UNKNOWN and TEST_COMMAND is set" {
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+    _mock_cli "npm" 0 "All tests passed"
+    TEST_COMMAND="npm test"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "pass"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "true"
+
+    run jq -r '.tests_status_reported' <<< "$json"
+    assert_output "UNKNOWN"
+}
+
+@test "run_test_gate reports fail when TEST_COMMAND times out" {
+    jq -n '{analysis: {tests_status: "PASSING"}}' > "$RESPONSE_ANALYSIS_FILE"
+    _mock_cli "npm" 124 "Command timed out"
+    TEST_COMMAND="npm test"
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "fail"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "true"
+}
+
+@test "run_test_gate passes for unexpected status values without TEST_COMMAND" {
+    jq -n '{analysis: {tests_status: "NOT_RUN"}}' > "$RESPONSE_ANALYSIS_FILE"
+    TEST_COMMAND=""
+
+    run run_test_gate "$RESPONSE_ANALYSIS_FILE"
+    assert_success
+
+    local json="$output"
+    run jq -r '.status' <<< "$json"
+    assert_output "pass"
+
+    run jq -r '.verified' <<< "$json"
+    assert_output "false"
+}
+
+# ===========================================================================
+# run_custom_gates
+# ===========================================================================
+
+@test "run_custom_gates returns empty array when no gates configured" {
+    QUALITY_GATES=""
+
+    run run_custom_gates
+    assert_success
+
+    local json="$output"
+    run jq 'length' <<< "$json"
+    assert_output "0"
+}
+
+@test "run_custom_gates runs semicolon-separated commands" {
+    QUALITY_GATES="true;true"
+    QUALITY_GATE_TIMEOUT=5
+
+    run run_custom_gates
+    assert_success
+
+    local json="$output"
+    run jq 'length' <<< "$json"
+    assert_output "2"
+
+    run jq -r '.[0].status' <<< "$json"
+    assert_output "pass"
+
+    run jq -r '.[1].status' <<< "$json"
+    assert_output "pass"
+}
+
+@test "run_custom_gates records failure exit codes" {
+    _mock_cli "failing-lint" 1 "lint error found"
+    QUALITY_GATES="failing-lint"
+    QUALITY_GATE_TIMEOUT=5
+
+    run run_custom_gates
+    assert_success
+
+    local json="$output"
+    run jq -r '.[0].status' <<< "$json"
+    assert_output "fail"
+
+    run jq -r '.[0].exit_code' <<< "$json"
+    assert_output "1"
+}
+
+@test "run_custom_gates records timeout when command exceeds limit" {
+    mkdir -p "$RALPH_DIR/bin"
+    cat > "$RALPH_DIR/bin/slow-lint" <<'SCRIPT'
+#!/usr/bin/env bash
+sleep 10
+SCRIPT
+    chmod +x "$RALPH_DIR/bin/slow-lint"
+    export PATH="$RALPH_DIR/bin:$PATH"
+
+    QUALITY_GATES="slow-lint"
+    QUALITY_GATE_TIMEOUT=1
+
+    run run_custom_gates
+    assert_success
+
+    local json="$output"
+    run jq -r '.[0].status' <<< "$json"
+    assert_output "fail"
+
+    run jq -r '.[0].timed_out' <<< "$json"
+    assert_output "true"
+}
+
+@test "run_custom_gates captures output truncation" {
+    # Create a command that produces a lot of output
+    mkdir -p "$RALPH_DIR/bin"
+    cat > "$RALPH_DIR/bin/verbose-lint" <<'SCRIPT'
+#!/usr/bin/env bash
+for i in $(seq 1 200); do echo "lint warning $i: unused variable"; done
+exit 1
+SCRIPT
+    chmod +x "$RALPH_DIR/bin/verbose-lint"
+    export PATH="$RALPH_DIR/bin:$PATH"
+
+    QUALITY_GATES="verbose-lint"
+    QUALITY_GATE_TIMEOUT=5
+
+    run run_custom_gates
+    assert_success
+
+    local json="$output"
+    run jq -r '.[0].status' <<< "$json"
+    assert_output "fail"
+
+    # Output should be truncated (max 500 chars)
+    local output_len
+    output_len=$(jq -r '.[0].output | length' <<< "$json")
+    [[ $output_len -le 500 ]]
+}
+
+@test "run_custom_gates skips empty entries from double semicolons" {
+    _mock_cli "lint-a" 0 "ok"
+    _mock_cli "lint-b" 0 "ok"
+    QUALITY_GATES="lint-a;;lint-b"
+    QUALITY_GATE_TIMEOUT=5
+
+    run run_custom_gates
+    assert_success
+
+    local json="$output"
+    run jq 'length' <<< "$json"
+    assert_output "2"
+
+    run jq -r '.[0].command' <<< "$json"
+    assert_output "lint-a"
+
+    run jq -r '.[1].command' <<< "$json"
+    assert_output "lint-b"
+}
+
+# ===========================================================================
+# run_quality_gates
+# ===========================================================================
+
+@test "run_quality_gates returns 0 when no gates configured" {
+    TEST_COMMAND=""
+    QUALITY_GATES=""
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "0"
+}
+
+@test "run_quality_gates skips in completion-only mode when not completing" {
+    QUALITY_GATE_ON_COMPLETION_ONLY="true"
+    TEST_COMMAND="npm test"
+    QUALITY_GATES="npm run lint"
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "0"
+}
+
+@test "run_quality_gates runs in completion-only mode when completing" {
+    QUALITY_GATE_ON_COMPLETION_ONLY="true"
+    TEST_COMMAND=""
+    QUALITY_GATES="true"
+    QUALITY_GATE_MODE="warn"
+    QUALITY_GATE_TIMEOUT=5
+
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 1 "true"
+    assert_success
+    assert_output "0"
+
+    assert [ -f "$QUALITY_GATE_RESULTS_FILE" ]
+}
+
+@test "run_quality_gates returns 0 when all gates pass" {
+    QUALITY_GATES="true"
+    QUALITY_GATE_MODE="block"
+    QUALITY_GATE_TIMEOUT=5
+    TEST_COMMAND=""
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "0"
+}
+
+@test "run_quality_gates returns 1 in block mode on failure" {
+    _mock_cli "failing-lint" 1 "error"
+    QUALITY_GATES="failing-lint"
+    QUALITY_GATE_MODE="block"
+    QUALITY_GATE_TIMEOUT=5
+    TEST_COMMAND=""
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "1"
+}
+
+@test "run_quality_gates returns 2 in circuit-breaker mode on failure" {
+    _mock_cli "failing-lint" 1 "error"
+    QUALITY_GATES="failing-lint"
+    QUALITY_GATE_MODE="circuit-breaker"
+    QUALITY_GATE_TIMEOUT=5
+    TEST_COMMAND=""
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "2"
+}
+
+@test "run_quality_gates returns 0 in warn mode even on failure" {
+    _mock_cli "failing-lint" 1 "error"
+    QUALITY_GATES="failing-lint"
+    QUALITY_GATE_MODE="warn"
+    QUALITY_GATE_TIMEOUT=5
+    TEST_COMMAND=""
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "0"
+}
+
+@test "run_quality_gates detects combined test and custom gate failure" {
+    _mock_cli "failing-lint" 1 "error"
+    QUALITY_GATES="failing-lint"
+    QUALITY_GATE_MODE="block"
+    QUALITY_GATE_TIMEOUT=5
+    TEST_COMMAND=""
+    jq -n '{analysis: {tests_status: "FAILING"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 1 "false"
+    assert_success
+    assert_output "1"
+
+    run jq -r '.test_gate.status' "$QUALITY_GATE_RESULTS_FILE"
+    assert_output "fail"
+
+    run jq -r '.custom_gates[0].status' "$QUALITY_GATE_RESULTS_FILE"
+    assert_output "fail"
+
+    run jq -r '.overall_status' "$QUALITY_GATE_RESULTS_FILE"
+    assert_output "fail"
+}
+
+@test "run_quality_gates writes results file" {
+    QUALITY_GATES="true"
+    QUALITY_GATE_MODE="warn"
+    QUALITY_GATE_TIMEOUT=5
+    TEST_COMMAND=""
+    jq -n '{analysis: {tests_status: "UNKNOWN"}}' > "$RESPONSE_ANALYSIS_FILE"
+
+    run run_quality_gates 3 "false"
+    assert_success
+
+    assert [ -f "$QUALITY_GATE_RESULTS_FILE" ]
+
+    run jq -r '.loop_number' "$QUALITY_GATE_RESULTS_FILE"
+    assert_output "3"
+
+    run jq -r '.overall_status' "$QUALITY_GATE_RESULTS_FILE"
+    assert_output "pass"
+}
+
+# ===========================================================================
+# build_loop_context — quality gate feedback
+# ===========================================================================
+
+@test "build_loop_context includes gate failure info in block mode" {
+    jq -n '{
+        overall_status: "fail",
+        mode: "block",
+        test_gate: {status: "skip"},
+        custom_gates: [{command: "lint", status: "fail"}]
+    }' > "$QUALITY_GATE_RESULTS_FILE"
+
+    run build_loop_context 5
+    assert_success
+    assert_output --partial "QG fail:"
+}
+
+@test "build_loop_context includes test failure info in block mode" {
+    jq -n '{
+        overall_status: "fail",
+        mode: "block",
+        test_gate: {status: "fail"},
+        custom_gates: []
+    }' > "$QUALITY_GATE_RESULTS_FILE"
+
+    run build_loop_context 5
+    assert_success
+    assert_output --partial "TESTS FAILING."
+}
+
+@test "build_loop_context omits gate failure info in warn mode" {
+    jq -n '{
+        overall_status: "fail",
+        mode: "warn",
+        test_gate: {status: "fail"},
+        custom_gates: [{command: "lint", status: "fail"}]
+    }' > "$QUALITY_GATE_RESULTS_FILE"
+
+    run build_loop_context 5
+    assert_success
+    refute_output --partial "TESTS FAILING"
+    refute_output --partial "QG fail"
+}
+
+@test "build_loop_context includes gate failure info in circuit-breaker mode" {
+    jq -n '{
+        overall_status: "fail",
+        mode: "circuit-breaker",
+        test_gate: {status: "fail"},
+        custom_gates: [{command: "lint", status: "fail"}]
+    }' > "$QUALITY_GATE_RESULTS_FILE"
+
+    run build_loop_context 5
+    assert_success
+    assert_output --partial "TESTS FAILING."
+    assert_output --partial "QG fail:"
+}
+
+@test "build_loop_context omits gate feedback when gates pass" {
+    jq -n '{
+        overall_status: "pass",
+        mode: "block",
+        test_gate: {status: "pass"},
+        custom_gates: [{command: "lint", status: "pass"}]
+    }' > "$QUALITY_GATE_RESULTS_FILE"
+
+    run build_loop_context 5
+    assert_success
+    refute_output --partial "TESTS FAILING"
+    refute_output --partial "QG fail"
 }

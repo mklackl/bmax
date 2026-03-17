@@ -67,6 +67,11 @@ EXIT_SIGNAL: false
     assert_output "json"
 }
 
+@test "detect_output_format identifies OpenCode JSON events" {
+    run detect_output_format "$FIXTURES_DIR/opencode_jsonl_response.jsonl"
+    assert_output "json"
+}
+
 @test "detect_output_format identifies text file" {
     run detect_output_format "$FIXTURES_DIR/text_response_complete.txt"
     assert_output "text"
@@ -307,6 +312,21 @@ EOF
     assert_output "codex-thread-456"
 }
 
+@test "parse_json_response parses OpenCode JSON events with assistant message parts" {
+    _skip_if_xargs_broken
+    local result="$RALPH_DIR/result.json"
+    parse_json_response "$FIXTURES_DIR/opencode_jsonl_response.jsonl" "$result"
+
+    run jq -r '.exit_signal' "$result"
+    assert_output "true"
+
+    run jq -r '.summary' "$result"
+    assert_output --partial "Completed the OpenCode run."
+
+    run jq -r '.session_id' "$result"
+    assert_output "opencode-session-123"
+}
+
 # ===========================================================================
 # parse_json_response — permission denials
 # ===========================================================================
@@ -451,6 +471,22 @@ EOF
 
     run jq -r '.analysis.work_summary' "$analysis"
     assert_output --partial "Completed the auth module updates."
+}
+
+@test "analyze_response parses OpenCode JSON events with structured confidence" {
+    local analysis="$RALPH_DIR/.response_analysis"
+
+    run analyze_response "$FIXTURES_DIR/opencode_jsonl_response.jsonl" 6 "$analysis"
+    assert_success
+
+    run jq -r '.output_format' "$analysis"
+    assert_output "json"
+
+    run jq -r '.analysis.exit_signal' "$analysis"
+    assert_output "true"
+
+    run jq -r '.analysis.work_summary' "$analysis"
+    assert_output --partial "Completed the OpenCode run."
 }
 
 @test "analyze_response does not abort on Codex JSONL without agent message" {
@@ -1015,4 +1051,107 @@ JSON
 @test "log_analysis_summary returns 1 when file missing" {
     run log_analysis_summary "$RALPH_DIR/nonexistent.json"
     assert_failure
+}
+
+# ===========================================================================
+# extract_ralph_status_block_json — TESTS_STATUS parsing
+# ===========================================================================
+
+@test "extract_ralph_status_block_json parses TESTS_STATUS field" {
+    local text='---RALPH_STATUS---
+STATUS: IN_PROGRESS
+TESTS_STATUS: FAILING
+EXIT_SIGNAL: false
+---END_RALPH_STATUS---'
+
+    run extract_ralph_status_block_json "$text"
+    assert_success
+
+    local json="$output"
+    run jq -r '.tests_status' <<< "$json"
+    assert_output "FAILING"
+}
+
+@test "extract_ralph_status_block_json defaults tests_status to UNKNOWN when absent" {
+    local text='---RALPH_STATUS---
+STATUS: COMPLETE
+EXIT_SIGNAL: true
+---END_RALPH_STATUS---'
+
+    run extract_ralph_status_block_json "$text"
+    assert_success
+
+    local json="$output"
+    run jq -r '.tests_status' <<< "$json"
+    assert_output "UNKNOWN"
+}
+
+@test "extract_ralph_status_block_json parses PASSING tests status" {
+    local text='---RALPH_STATUS---
+STATUS: COMPLETE
+TESTS_STATUS: PASSING
+EXIT_SIGNAL: true
+---END_RALPH_STATUS---'
+
+    run extract_ralph_status_block_json "$text"
+    assert_success
+
+    local json="$output"
+    run jq -r '.tests_status' <<< "$json"
+    assert_output "PASSING"
+}
+
+@test "analyze_response persists tests_status from JSON output" {
+    _skip_if_jq_missing
+    local output_file="$RALPH_DIR/tests_status_json.json"
+    cat > "$output_file" <<'EOF'
+{
+  "result": "Ran all tests.\n\n---RALPH_STATUS---\nSTATUS: IN_PROGRESS\nTESTS_STATUS: FAILING\nEXIT_SIGNAL: false\n---END_RALPH_STATUS---",
+  "sessionId": "session-tests-1",
+  "metadata": {
+    "files_changed": 2
+  }
+}
+EOF
+
+    local analysis="$RALPH_DIR/.response_analysis"
+    run analyze_response "$output_file" 4 "$analysis"
+    assert_success
+
+    run jq -r '.analysis.tests_status' "$analysis"
+    assert_success
+    assert_output "FAILING"
+}
+
+@test "analyze_response persists tests_status from text output" {
+    _skip_if_jq_missing
+    local text_file="$RALPH_DIR/tests_status_text.txt"
+    cat > "$text_file" <<'EOF'
+Implemented the feature and ran the test suite.
+
+---RALPH_STATUS---
+STATUS: COMPLETE
+TESTS_STATUS: PASSING
+EXIT_SIGNAL: true
+---END_RALPH_STATUS---
+EOF
+
+    local analysis="$RALPH_DIR/.response_analysis"
+    run analyze_response "$text_file" 5 "$analysis"
+    assert_success
+
+    run jq -r '.analysis.tests_status' "$analysis"
+    assert_success
+    assert_output "PASSING"
+}
+
+@test "analyze_response defaults tests_status to UNKNOWN when not in RALPH_STATUS" {
+    local analysis="$RALPH_DIR/.response_analysis"
+
+    run analyze_response "$FIXTURES_DIR/flat_response.json" 1 "$analysis"
+    assert_success
+
+    run jq -r '.analysis.tests_status' "$analysis"
+    assert_success
+    assert_output "UNKNOWN"
 }

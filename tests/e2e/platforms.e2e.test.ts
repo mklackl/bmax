@@ -9,6 +9,7 @@ import {
   expectDoctorCheckPassed,
   expectFileExists,
   expectFileContains,
+  expectFileNotContains,
   expectFileNotExists,
   type PlatformAssertionConfig,
 } from "./helpers/assertions.js";
@@ -18,7 +19,20 @@ import {
  * Excludes claude-code (already covered by existing E2E tests).
  */
 const PLATFORM_CONFIGS: PlatformAssertionConfig[] = [
-  { id: "codex", instructionsFile: "AGENTS.md", commandDelivery: "skills", tier: "full" },
+  {
+    id: "codex",
+    instructionsFile: "AGENTS.md",
+    commandDelivery: "skills",
+    tier: "full",
+    skillsDir: ".agents/skills",
+  },
+  {
+    id: "opencode",
+    instructionsFile: "AGENTS.md",
+    commandDelivery: "skills",
+    tier: "full",
+    skillsDir: ".opencode/skills",
+  },
   {
     id: "cursor",
     instructionsFile: ".cursor/rules/bmad.mdc",
@@ -48,6 +62,7 @@ const PLATFORM_CONFIGS: PlatformAssertionConfig[] = [
 /** Doctor check labels per platform (from platform definitions) */
 const DOCTOR_LABELS: Record<string, string> = {
   codex: "AGENTS.md contains BMAD snippet",
+  opencode: "AGENTS.md contains BMAD snippet",
   cursor: ".cursor/rules/bmad.mdc contains BMAD snippet",
   windsurf: ".windsurf/rules/bmad.md contains BMAD snippet",
   copilot: ".github/copilot-instructions.md contains BMAD snippet",
@@ -189,6 +204,48 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       await expectFileContains(
         join(project.path, ".ralph/.ralphrc"),
         'PLATFORM_DRIVER="${PLATFORM_DRIVER:-codex}"'
+      );
+    });
+  });
+
+  describe("opencode-specific", () => {
+    it("generates OpenCode skills in .opencode/skills/", async () => {
+      project = await createTestProject();
+
+      await runInit(project.path, "test-project", "E2E test", "opencode");
+
+      await expectFileExists(join(project.path, ".opencode/skills/bmad-analyst/SKILL.md"));
+      await expectFileContains(
+        join(project.path, ".opencode/skills/bmad-analyst/SKILL.md"),
+        "name: bmad-analyst"
+      );
+
+      await expectFileExists(join(project.path, ".opencode/skills/bmad-create-prd/SKILL.md"));
+
+      await expectFileNotExists(join(project.path, ".opencode/skills/bmad-bmalph-implement"));
+      await expectFileNotExists(join(project.path, ".opencode/skills/bmad-bmalph-status"));
+    });
+
+    it("instructions reference OpenCode skills and the question tool", async () => {
+      project = await createTestProject();
+
+      await runInit(project.path, "test-project", "E2E test", "opencode");
+
+      await expectFileContains(join(project.path, "AGENTS.md"), ".opencode/skills");
+      await expectFileContains(join(project.path, "AGENTS.md"), "question tool");
+      await expectFileContains(join(project.path, "AGENTS.md"), "bmad-analyst");
+      await expectFileNotContains(join(project.path, "AGENTS.md"), "$command-name");
+    });
+
+    it(".ralphrc has correct platform driver", async () => {
+      project = await createTestProject();
+
+      await runInit(project.path, "test-project", "E2E test", "opencode");
+
+      await expectFileExists(join(project.path, ".ralph/.ralphrc"));
+      await expectFileContains(
+        join(project.path, ".ralph/.ralphrc"),
+        'PLATFORM_DRIVER="${PLATFORM_DRIVER:-opencode}"'
       );
     });
   });

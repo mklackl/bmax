@@ -7,7 +7,7 @@ import {
   replaceSection,
 } from "../utils/file-system.js";
 import { isEnoent } from "../utils/errors.js";
-import { CONFIG_FILE, SKILLS_DIR, STATE_DIR } from "../utils/constants.js";
+import { CONFIG_FILE, STATE_DIR } from "../utils/constants.js";
 import type { Platform } from "../platform/types.js";
 import { getDefaultPlatform } from "./metadata.js";
 import { isTemplateCustomized } from "./template-files.js";
@@ -94,7 +94,7 @@ export async function previewInstall(
   if (p.commandDelivery.kind === "directory") {
     dirsToCreate.push(`${p.commandDelivery.dir}/`);
   } else if (p.commandDelivery.kind === "skills") {
-    dirsToCreate.push(`${SKILLS_DIR}/`);
+    dirsToCreate.push(`${p.commandDelivery.dir}/`);
   }
 
   for (const dir of dirsToCreate) {
@@ -102,7 +102,7 @@ export async function previewInstall(
       if (
         dir === "_bmad/" ||
         (p.commandDelivery.kind === "directory" && dir === `${p.commandDelivery.dir}/`) ||
-        (p.commandDelivery.kind === "skills" && dir === `${SKILLS_DIR}/`)
+        (p.commandDelivery.kind === "skills" && dir === `${p.commandDelivery.dir}/`)
       ) {
         wouldModify.push(dir);
       }
@@ -174,7 +174,7 @@ export async function previewUpgrade(
   if (p.commandDelivery.kind === "directory") {
     managedPaths.push({ path: `${p.commandDelivery.dir}/`, isDir: true });
   } else if (p.commandDelivery.kind === "skills") {
-    managedPaths.push({ path: `${SKILLS_DIR}/`, isDir: true });
+    managedPaths.push({ path: `${p.commandDelivery.dir}/`, isDir: true });
   }
 
   const wouldUpdate: string[] = [];

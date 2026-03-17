@@ -48,7 +48,11 @@ const mockCodexPlatform: Platform = {
   displayName: "OpenAI Codex",
   tier: "full",
   instructionsFile: "AGENTS.md",
-  commandDelivery: { kind: "skills" },
+  commandDelivery: {
+    kind: "skills",
+    dir: ".agents/skills",
+    frontmatterName: "command",
+  },
   instructionsSectionMarker: "## BMAD-METHOD Integration",
   generateInstructionsSnippet: () => "",
   getDoctorChecks: () => [],

@@ -6,6 +6,7 @@ import { formatStatus } from "../utils/format-status.js";
 import { ARTIFACT_DEFINITIONS } from "../utils/artifact-definitions.js";
 import { resolveProjectPlatform } from "../platform/resolve.js";
 import { getFullTierPlatformNames } from "../platform/registry.js";
+import { getPlatformAnalysisHint, getPlatformPrdHint } from "../platform/guidance.js";
 import { scanProjectArtifacts } from "../transition/artifact-scan.js";
 import type { Platform } from "../platform/types.js";
 import type { ProjectArtifactScan, ScannedArtifact } from "../transition/artifact-scan.js";
@@ -214,12 +215,12 @@ function getNextAction(
       if (platform.id === "cursor") {
         return getCursorNextAction();
       }
-      return "Run /analyst to start analysis";
+      return getPlatformAnalysisHint(platform);
     case 2:
       if (platform.id === "cursor") {
         return getCursorNextAction();
       }
-      return "Run /pm to create PRD";
+      return getPlatformPrdHint(platform);
     case 3:
       return "Run: bmalph implement";
     case 4:

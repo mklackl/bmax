@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { exists } from "../utils/file-system.js";
-import { SKILLS_DIR, SKILLS_PREFIX } from "../utils/constants.js";
+import { SKILLS_PREFIX } from "../utils/constants.js";
 import { isEnoent, formatError } from "../utils/errors.js";
 import type { Platform, PlatformDoctorCheck } from "./types.js";
 
@@ -74,7 +74,7 @@ export function buildPlatformDoctorChecks(platform: Platform): PlatformDoctorChe
     checks.push(
       createFileExistsCheck(
         "skills",
-        `${SKILLS_DIR}/${SKILLS_PREFIX}analyst/SKILL.md`,
+        `${platform.commandDelivery.dir}/${SKILLS_PREFIX}analyst/SKILL.md`,
         "Run: bmalph upgrade"
       )
     );
