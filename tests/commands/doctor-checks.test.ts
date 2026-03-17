@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-const { mockResolveBashCommand, mockRunBashCommand } = vi.hoisted(() => ({
+const { mockResolveBashCommand, mockRunBashCommand, mockDetectBashVersion } = vi.hoisted(() => ({
   mockResolveBashCommand: vi.fn(),
   mockRunBashCommand: vi.fn(),
+  mockDetectBashVersion: vi.fn(),
 }));
 
 vi.mock("node:fs/promises", () => ({
@@ -29,11 +30,16 @@ vi.mock("../../src/utils/constants.js", () => ({
 vi.mock("../../src/run/ralph-process.js", () => ({
   resolveBashCommand: mockResolveBashCommand,
   runBashCommand: mockRunBashCommand,
+  detectBashVersion: mockDetectBashVersion,
 }));
 
 import { readFile, stat } from "node:fs/promises";
 import { readJsonFile } from "../../src/utils/json.js";
-import { resolveBashCommand, runBashCommand } from "../../src/run/ralph-process.js";
+import {
+  resolveBashCommand,
+  runBashCommand,
+  detectBashVersion,
+} from "../../src/run/ralph-process.js";
 import {
   checkNodeVersion,
   checkBash,
@@ -52,6 +58,7 @@ const mockStat = vi.mocked(stat);
 const mockReadJsonFile = vi.mocked(readJsonFile);
 const mockedResolveBashCommand = vi.mocked(resolveBashCommand);
 const mockedRunBashCommand = vi.mocked(runBashCommand);
+const mockedDetectBashVersion = vi.mocked(detectBashVersion);
 
 function enoentError(): NodeJS.ErrnoException {
   const err = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException;
@@ -118,10 +125,43 @@ describe("checkBash", () => {
 
   it("passes when a compatible bash executable resolves", async () => {
     mockedResolveBashCommand.mockResolvedValue("C:\\Program Files\\Git\\bin\\bash.exe");
+    mockedDetectBashVersion.mockResolvedValue("5.2.37");
 
     const result = await checkBash("/projects/webapp");
 
     expect(result.passed).toBe(true);
+  });
+
+  it("includes bash version in detail when available", async () => {
+    mockedResolveBashCommand.mockResolvedValue("/usr/bin/bash");
+    mockedDetectBashVersion.mockResolvedValue("5.2.37");
+
+    const result = await checkBash("/projects/webapp");
+
+    expect(result.passed).toBe(true);
+    expect(result.detail).toBe("v5.2.37");
+    expect(result.hint).toBeUndefined();
+  });
+
+  it("includes hint when bash version is below 4", async () => {
+    mockedResolveBashCommand.mockResolvedValue("/bin/bash");
+    mockedDetectBashVersion.mockResolvedValue("3.2.57");
+
+    const result = await checkBash("/projects/webapp");
+
+    expect(result.passed).toBe(true);
+    expect(result.detail).toBe("v3.2.57");
+    expect(result.hint).toContain("Bash 4+");
+  });
+
+  it("passes with no detail when version detection fails", async () => {
+    mockedResolveBashCommand.mockResolvedValue("/usr/bin/bash");
+    mockedDetectBashVersion.mockResolvedValue(undefined);
+
+    const result = await checkBash("/projects/webapp");
+
+    expect(result.passed).toBe(true);
+    expect(result.detail).toBeUndefined();
     expect(result.hint).toBeUndefined();
   });
 

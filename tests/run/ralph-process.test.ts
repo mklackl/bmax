@@ -179,6 +179,118 @@ describe("validateBashAvailable", () => {
   });
 });
 
+describe("parseBashVersion", () => {
+  it("extracts version from standard bash --version output", async () => {
+    const { parseBashVersion } = await import("../../src/run/ralph-process.js");
+    const output = "GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu)\n";
+    expect(parseBashVersion(output)).toBe("5.2.37");
+  });
+
+  it("extracts version from macOS system bash output", async () => {
+    const { parseBashVersion } = await import("../../src/run/ralph-process.js");
+    const output =
+      "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin24)\nCopyright (C) 2007 Free Software Foundation, Inc.\n";
+    expect(parseBashVersion(output)).toBe("3.2.57");
+  });
+
+  it("returns undefined for empty output", async () => {
+    const { parseBashVersion } = await import("../../src/run/ralph-process.js");
+    expect(parseBashVersion("")).toBeUndefined();
+  });
+
+  it("returns undefined for malformed output", async () => {
+    const { parseBashVersion } = await import("../../src/run/ralph-process.js");
+    expect(parseBashVersion("not a bash version string")).toBeUndefined();
+  });
+});
+
+describe("detectBashVersion", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  function createPipedMockChild(): ChildProcess {
+    const mockStdout = new EventEmitter();
+    const mockStderr = new EventEmitter();
+    return createMockChild({
+      stdout: mockStdout as unknown as ChildProcess["stdout"],
+      stderr: mockStderr as unknown as ChildProcess["stderr"],
+    });
+  }
+
+  function mockSpawnForVersionDetection(versionOutput: string): void {
+    mockSpawn.mockImplementation((_cmd: string, args: string[]) => {
+      if (args[0] === "--version") {
+        const child = createMockChild();
+        process.nextTick(() => child.emit("close", 0));
+        return child;
+      }
+
+      // runBashCommand spawns bash -lc "bash --version"
+      const child = createPipedMockChild();
+      process.nextTick(() => {
+        child.stdout!.emit("data", Buffer.from(versionOutput));
+        child.emit("close", 0);
+      });
+      return child;
+    });
+  }
+
+  it("returns version string after spawning the resolved bash", async () => {
+    mockSpawnForVersionDetection("GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu)\n");
+
+    const { resolveBashCommand, detectBashVersion } =
+      await import("../../src/run/ralph-process.js");
+    await resolveBashCommand();
+
+    const version = await detectBashVersion();
+    expect(version).toBe("5.2.37");
+  });
+
+  it("returns undefined when bash --version output is unparseable", async () => {
+    mockSpawnForVersionDetection("some other shell\n");
+
+    const { resolveBashCommand, detectBashVersion } =
+      await import("../../src/run/ralph-process.js");
+    await resolveBashCommand();
+
+    const version = await detectBashVersion();
+    expect(version).toBeUndefined();
+  });
+
+  it("caches the result across multiple calls", async () => {
+    let bashLcCount = 0;
+    mockSpawn.mockImplementation((_cmd: string, args: string[]) => {
+      if (args[0] === "--version") {
+        const child = createMockChild();
+        process.nextTick(() => child.emit("close", 0));
+        return child;
+      }
+
+      bashLcCount++;
+      const child = createPipedMockChild();
+      process.nextTick(() => {
+        child.stdout!.emit(
+          "data",
+          Buffer.from("GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu)\n")
+        );
+        child.emit("close", 0);
+      });
+      return child;
+    });
+
+    const { resolveBashCommand, detectBashVersion } =
+      await import("../../src/run/ralph-process.js");
+    await resolveBashCommand();
+
+    await detectBashVersion();
+    await detectBashVersion();
+
+    expect(bashLcCount).toBe(1);
+  });
+});
+
 describe("validateRalphLoop", () => {
   beforeEach(() => {
     vi.resetModules();

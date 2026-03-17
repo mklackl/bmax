@@ -1,6 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { resolveBashCommand, runBashCommand } from "../run/ralph-process.js";
+import { resolveBashCommand, runBashCommand, detectBashVersion } from "../run/ralph-process.js";
 import { readJsonFile } from "../utils/json.js";
 import { isEnoent, formatError } from "../utils/errors.js";
 import { CONFIG_FILE } from "../utils/constants.js";
@@ -30,10 +30,6 @@ export async function checkNodeVersion(_projectDir: string): Promise<CheckResult
 export async function checkBash(_projectDir: string): Promise<CheckResult> {
   try {
     await resolveBashCommand();
-    return {
-      label: "bash available",
-      passed: true,
-    };
   } catch (err) {
     return {
       label: "bash available",
@@ -45,6 +41,22 @@ export async function checkBash(_projectDir: string): Promise<CheckResult> {
           : "Install bash via your package manager (apt, brew, etc.)",
     };
   }
+
+  const version = await detectBashVersion();
+  if (!version) {
+    return { label: "bash available", passed: true };
+  }
+
+  const major = parseInt(version.split(".")[0]!);
+  return {
+    label: "bash available",
+    passed: true,
+    detail: `v${version}`,
+    hint:
+      major < 4
+        ? "Bash 4+ recommended for best compatibility. macOS: brew install bash"
+        : undefined,
+  };
 }
 
 export async function checkJq(projectDir: string): Promise<CheckResult> {

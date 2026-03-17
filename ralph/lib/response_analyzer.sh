@@ -97,7 +97,8 @@ contains_permission_denial_signal() {
     local line
     while IFS= read -r line; do
         local trimmed="${line#"${line%%[![:space:]]*}"}"
-        local normalized="${trimmed,,}"
+        local normalized
+        normalized="$(printf '%s' "$trimmed" | tr '[:upper:]' '[:lower:]')"
 
         if permission_denial_line_matches "$normalized"; then
             return 0

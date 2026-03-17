@@ -221,6 +221,11 @@ teardown() {
     assert_success
 }
 
+@test "confirm accepts YES in all caps" {
+    run bash -c "source '$RALPH_LIB/wizard_utils.sh'; echo 'YES' | confirm 'Continue?'"
+    assert_success
+}
+
 @test "confirm rejects invalid input then accepts valid" {
     run bash -c "source '$RALPH_LIB/wizard_utils.sh'; printf 'maybe\ny\n' | confirm 'Continue?'"
     assert_success

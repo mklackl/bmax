@@ -17,6 +17,8 @@ const DEFAULT_WINDOWS_GIT_BASH_PATHS = [
 
 let cachedBashCommand: string | undefined;
 let pendingBashCommand: Promise<string> | undefined;
+let cachedBashVersion: string | undefined;
+let versionDetected = false;
 
 export interface BashCommandResult {
   exitCode: number | null;
@@ -124,6 +126,31 @@ export async function runBashCommand(
       )
     );
   });
+}
+
+export function parseBashVersion(output: string): string | undefined {
+  const match = /version (\d+\.\d+\.\d+)/.exec(output);
+  return match?.[1];
+}
+
+export async function detectBashVersion(): Promise<string | undefined> {
+  if (versionDetected) {
+    return cachedBashVersion;
+  }
+
+  try {
+    const result = await runBashCommand("bash --version");
+    cachedBashVersion = parseBashVersion(result.stdout);
+  } catch {
+    cachedBashVersion = undefined;
+  }
+
+  versionDetected = true;
+  return cachedBashVersion;
+}
+
+export function getBashVersion(): string | undefined {
+  return cachedBashVersion;
 }
 
 export async function validateRalphLoop(projectDir: string): Promise<void> {
