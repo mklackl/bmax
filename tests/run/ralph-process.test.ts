@@ -289,6 +289,27 @@ describe("detectBashVersion", () => {
 
     expect(bashLcCount).toBe(1);
   });
+
+  it("returns undefined when runBashCommand throws", async () => {
+    mockSpawn.mockImplementation((_cmd: string, args: string[]) => {
+      if (args[0] === "--version") {
+        const child = createMockChild();
+        process.nextTick(() => child.emit("close", 0));
+        return child;
+      }
+
+      const child = createPipedMockChild();
+      process.nextTick(() => child.emit("error", new Error("spawn failed")));
+      return child;
+    });
+
+    const { resolveBashCommand, detectBashVersion } =
+      await import("../../src/run/ralph-process.js");
+    await resolveBashCommand();
+
+    const version = await detectBashVersion();
+    expect(version).toBeUndefined();
+  });
 });
 
 describe("validateRalphLoop", () => {

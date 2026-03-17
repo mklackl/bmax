@@ -19,6 +19,7 @@ let cachedBashCommand: string | undefined;
 let pendingBashCommand: Promise<string> | undefined;
 let cachedBashVersion: string | undefined;
 let versionDetected = false;
+let pendingBashVersion: Promise<string | undefined> | undefined;
 
 export interface BashCommandResult {
   exitCode: number | null;
@@ -138,19 +139,27 @@ export async function detectBashVersion(): Promise<string | undefined> {
     return cachedBashVersion;
   }
 
-  try {
-    const result = await runBashCommand("bash --version");
-    cachedBashVersion = parseBashVersion(result.stdout);
-  } catch {
-    cachedBashVersion = undefined;
+  if (pendingBashVersion) {
+    return pendingBashVersion;
   }
 
-  versionDetected = true;
-  return cachedBashVersion;
-}
+  pendingBashVersion = (async () => {
+    try {
+      const result = await runBashCommand("bash --version");
+      cachedBashVersion = parseBashVersion(result.stdout);
+    } catch {
+      cachedBashVersion = undefined;
+    }
 
-export function getBashVersion(): string | undefined {
-  return cachedBashVersion;
+    versionDetected = true;
+    return cachedBashVersion;
+  })();
+
+  try {
+    return await pendingBashVersion;
+  } finally {
+    pendingBashVersion = undefined;
+  }
 }
 
 export async function validateRalphLoop(projectDir: string): Promise<void> {
