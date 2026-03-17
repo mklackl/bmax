@@ -1,1 +1,1 @@
-Read and follow the agent defined in `_bmad/core/agents/bmad-master.agent.yaml`.
+Read and execute the workflow/task at `_bmad/core/skills/bmad-help/workflow.md`.

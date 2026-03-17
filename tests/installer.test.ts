@@ -380,10 +380,10 @@ describe("installer", () => {
       await expect(access(join(testDir, ".claude/commands"))).resolves.toBeUndefined();
     });
 
-    it("slash command loads BMAD master agent", async () => {
+    it("slash command loads BMAD help skill", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".claude/commands/bmalph.md"), "utf-8");
-      expect(content).toContain("_bmad/core/agents/bmad-master.agent.yaml");
+      expect(content).toContain("_bmad/core/skills/bmad-help/workflow.md");
     });
 
     it("slash command does not contain hardcoded phase logic", async () => {
@@ -464,16 +464,14 @@ describe("installer", () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".claude/commands/create-prd.md"), "utf-8");
       expect(content).toContain("_bmad/bmm/agents/pm.agent.yaml");
-      expect(content).toContain(
-        "_bmad/bmm/workflows/2-plan-workflows/create-prd/workflow-create-prd.md"
-      );
+      expect(content).toContain("_bmad/core/tasks/bmad-create-prd/workflow.md");
       expect(content).toMatch(/[Cc]reate/);
     });
 
     it("core slash commands execute directly without agent role", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".claude/commands/brainstorming.md"), "utf-8");
-      expect(content).toContain("_bmad/core/workflows/bmad-brainstorming/workflow.md");
+      expect(content).toContain("_bmad/core/skills/bmad-brainstorming/workflow.md");
       expect(content).not.toContain("agent");
     });
   });
@@ -984,10 +982,10 @@ describe("installer", () => {
       expect(config).toContain('project_name: "Lars\'s Project #1: \\"The Best\\" & More"');
     });
 
-    it("slash command delegates to BMAD master agent", async () => {
+    it("slash command delegates to BMAD help skill", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".claude/commands/bmalph.md"), "utf-8");
-      expect(content).toContain("_bmad/core/agents/bmad-master.agent.yaml");
+      expect(content).toContain("_bmad/core/skills/bmad-help/workflow.md");
     });
 
     it("PROMPT.md template contains TDD instructions", async () => {
@@ -1881,7 +1879,7 @@ Content B.
       );
       expect(content).toContain("name: create-prd");
       expect(content).toContain("managed-by: bmalph");
-      expect(content).toContain("workflow-create-prd.md");
+      expect(content).toContain("bmad-create-prd/workflow.md");
     });
 
     it("generates skill for bmalph master agent command", async () => {

@@ -119,7 +119,7 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
     await expectFileExists(join(project.path, ".claude/commands/bmalph.md"));
     await expectFileContains(
       join(project.path, ".claude/commands/bmalph.md"),
-      "bmad-master.agent.yaml"
+      "bmad-help/workflow.md"
     );
   });
 

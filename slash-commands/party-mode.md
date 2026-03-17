@@ -1,1 +1,1 @@
-Read and execute the workflow/task at `_bmad/core/workflows/bmad-party-mode/workflow.md`.
+Read and execute the workflow/task at `_bmad/core/skills/bmad-party-mode/workflow.md`.

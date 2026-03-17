@@ -1,1 +1,1 @@
-Read and execute the workflow/task at `_bmad/core/workflows/advanced-elicitation/workflow.md`.
+Read and execute the workflow/task at `_bmad/core/skills/bmad-advanced-elicitation/workflow.md`.
