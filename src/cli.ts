@@ -65,7 +65,7 @@ program
   .option("-d, --description <desc>", "Project description")
   .option(
     "--platform <id>",
-    "Target platform (claude-code, codex, cursor, windsurf, copilot, aider)"
+    "Target platform (claude-code, codex, opencode, cursor, windsurf, copilot, aider)"
   )
   .option("--dry-run", "Preview changes without writing files")
   .action(async (opts) =>
@@ -131,7 +131,10 @@ program
 program
   .command("run")
   .description("Start Ralph loop with live dashboard")
-  .option("--driver <platform>", "Override platform driver (claude-code, codex, copilot, cursor)")
+  .option(
+    "--driver <platform>",
+    "Override platform driver (claude-code, codex, opencode, copilot, cursor)"
+  )
   .option("--interval <ms>", "Dashboard refresh interval in milliseconds (default: 2000)")
   .option("--no-dashboard", "Run Ralph without the dashboard overlay")
   .action(async (opts) =>

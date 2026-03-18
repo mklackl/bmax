@@ -36,14 +36,15 @@ bmalph provides:
 
 bmalph works with multiple AI coding assistants. Each platform gets BMAD planning (Phases 1-3). The Ralph autonomous loop (Phase 4) requires a CLI-based platform.
 
-| Platform       | ID            | Tier                | Instructions File                 | Commands                         |
-| -------------- | ------------- | ------------------- | --------------------------------- | -------------------------------- |
-| Claude Code    | `claude-code` | full                | `CLAUDE.md`                       | `.claude/commands/` directory    |
-| OpenAI Codex   | `codex`       | full                | `AGENTS.md`                       | Codex Skills (`.agents/skills/`) |
-| Cursor         | `cursor`      | full (experimental) | `.cursor/rules/bmad.mdc`          | `_bmad/COMMANDS.md`              |
-| Windsurf       | `windsurf`    | instructions-only   | `.windsurf/rules/bmad.md`         | `_bmad/COMMANDS.md`              |
-| GitHub Copilot | `copilot`     | full (experimental) | `.github/copilot-instructions.md` | `_bmad/COMMANDS.md`              |
-| Aider          | `aider`       | instructions-only   | `CONVENTIONS.md`                  | `_bmad/COMMANDS.md`              |
+| Platform       | ID            | Tier                | Instructions File                 | Commands                              |
+| -------------- | ------------- | ------------------- | --------------------------------- | ------------------------------------- |
+| Claude Code    | `claude-code` | full                | `CLAUDE.md`                       | `.claude/commands/` directory         |
+| OpenAI Codex   | `codex`       | full                | `AGENTS.md`                       | Codex Skills (`.agents/skills/`)      |
+| OpenCode       | `opencode`    | full                | `AGENTS.md`                       | OpenCode Skills (`.opencode/skills/`) |
+| Cursor         | `cursor`      | full (experimental) | `.cursor/rules/bmad.mdc`          | `_bmad/COMMANDS.md`                   |
+| Windsurf       | `windsurf`    | instructions-only   | `.windsurf/rules/bmad.md`         | `_bmad/COMMANDS.md`                   |
+| GitHub Copilot | `copilot`     | full (experimental) | `.github/copilot-instructions.md` | `_bmad/COMMANDS.md`                   |
+| Aider          | `aider`       | instructions-only   | `CONVENTIONS.md`                  | `_bmad/COMMANDS.md`                   |
 
 **Tiers:**
 
@@ -55,7 +56,7 @@ bmalph works with multiple AI coding assistants. Each platform gets BMAD plannin
 - Node.js 20+
 - Bash (WSL or Git Bash on Windows)
 - A supported AI coding platform (see table above)
-- For Ralph loop (Phase 4): Claude Code (`claude`), Codex CLI (`codex`), Copilot CLI (`copilot`), or Cursor CLI (`cursor-agent`; older `agent` installs are also supported)
+- For Ralph loop (Phase 4): Claude Code (`claude`), Codex CLI (`codex`), OpenCode (`opencode`), Copilot CLI (`copilot`), or Cursor CLI (`cursor-agent`; older `agent` installs are also supported)
 
 ## Installation
 
@@ -85,15 +86,15 @@ bmalph init
 
 **Platform resolution:** `--platform` flag > auto-detect from project markers > interactive prompt > default `claude-code`
 
-Strong markers such as `.cursor/`, `.claude/`, `.windsurf/`, `.github/copilot-instructions.md`, and `.aider.conf.yml` are auto-detected directly. Root-only `AGENTS.md` and `CLAUDE.md` are treated as weak hints and may still trigger the interactive platform prompt.
+Strong markers such as `.cursor/`, `.claude/`, `.opencode/`, `.windsurf/`, `.github/copilot-instructions.md`, and `.aider.conf.yml` are auto-detected directly. Root-only `AGENTS.md` and `CLAUDE.md` are treated as weak hints and may still trigger the interactive platform prompt.
 
 This installs:
 
 - `_bmad/` — BMAD agents and workflows
-- `.ralph/` — Ralph loop, libs, templates (drivers for claude-code, codex, copilot, and cursor)
+- `.ralph/` — Ralph loop, libs, templates (drivers for claude-code, codex, opencode, copilot, and cursor)
 - `bmalph/` — State management (config.json, stores selected platform)
 - Updates the platform's instructions file with BMAD workflow instructions (e.g. `CLAUDE.md`, `AGENTS.md`, `.cursor/rules/bmad.mdc`)
-- Delivers BMAD commands using the platform's native mechanism (Claude Code: `.claude/commands/`; Codex: `.agents/skills/`; Cursor, Windsurf, Copilot, and Aider: `_bmad/COMMANDS.md`)
+- Delivers BMAD commands using the platform's native mechanism (Claude Code: `.claude/commands/`; Codex: `.agents/skills/`; OpenCode: `.opencode/skills/`; Cursor, Windsurf, Copilot, and Aider: `_bmad/COMMANDS.md`)
 
 ### Migrating from standalone BMAD
 
@@ -166,7 +167,7 @@ Available in any phase for supporting tasks:
 
 ### Step 3: Implement with Ralph (Phase 4)
 
-> **Note:** Ralph is only available on **full** tier platforms (Claude Code, OpenAI Codex, GitHub Copilot, Cursor). Instructions-only platforms (Windsurf, Aider) support Phases 1-3 only. GitHub Copilot and Cursor support is experimental.
+> **Note:** Ralph is only available on **full** tier platforms (Claude Code, OpenAI Codex, OpenCode, GitHub Copilot, Cursor). Instructions-only platforms (Windsurf, Aider) support Phases 1-3 only. GitHub Copilot and Cursor support is experimental.
 
 Run `bmalph implement` from the terminal, or use the `/bmalph-implement` slash command in Claude Code.
 
@@ -231,12 +232,12 @@ BMAD (add Epic 2) → bmalph implement → Ralph sees changes + picks up Epic 2
 
 ### init options
 
-| Flag                       | Description                                                                        | Default        |
-| -------------------------- | ---------------------------------------------------------------------------------- | -------------- |
-| `-n, --name <name>`        | Project name                                                                       | directory name |
-| `-d, --description <desc>` | Project description                                                                | (prompted)     |
-| `--platform <id>`          | Target platform (`claude-code`, `codex`, `cursor`, `windsurf`, `copilot`, `aider`) | auto-detect    |
-| `--dry-run`                | Preview changes without writing files                                              |                |
+| Flag                       | Description                                                                                    | Default        |
+| -------------------------- | ---------------------------------------------------------------------------------------------- | -------------- |
+| `-n, --name <name>`        | Project name                                                                                   | directory name |
+| `-d, --description <desc>` | Project description                                                                            | (prompted)     |
+| `--platform <id>`          | Target platform (`claude-code`, `codex`, `opencode`, `cursor`, `windsurf`, `copilot`, `aider`) | auto-detect    |
+| `--dry-run`                | Preview changes without writing files                                                          |                |
 
 ### implement options
 
@@ -278,11 +279,11 @@ BMAD (add Epic 2) → bmalph implement → Ralph sees changes + picks up Epic 2
 
 ### run options
 
-| Flag                  | Description                                                    |
-| --------------------- | -------------------------------------------------------------- |
-| `--driver <platform>` | Override platform driver (claude-code, codex, copilot, cursor) |
-| `--interval <ms>`     | Dashboard refresh interval in milliseconds (default: 2000)     |
-| `--no-dashboard`      | Run Ralph without the dashboard overlay                        |
+| Flag                  | Description                                                              |
+| --------------------- | ------------------------------------------------------------------------ |
+| `--driver <platform>` | Override platform driver (claude-code, codex, opencode, copilot, cursor) |
+| `--interval <ms>`     | Dashboard refresh interval in milliseconds (default: 2000)               |
+| `--no-dashboard`      | Run Ralph without the dashboard overlay                                  |
 
 ### watch options
 
@@ -294,10 +295,11 @@ BMAD (add Epic 2) → bmalph implement → Ralph sees changes + picks up Epic 2
 
 ## Command Delivery
 
-bmalph bundles 51 BMAD and bmalph command definitions. Delivery varies by platform:
+bmalph bundles 54 BMAD and bmalph command definitions. Delivery varies by platform:
 
 - **Claude Code** — installed as files in `.claude/commands/` (invoke with `/command-name`)
 - **OpenAI Codex** — delivered as Codex Skills in `.agents/skills/` (invoke with `$command-name`)
+- **OpenCode** — delivered as OpenCode Skills in `.opencode/skills/`
 - **Cursor** — discoverable via `_bmad/COMMANDS.md`; ask Cursor to run the BMAD master agent
 - **Windsurf, Copilot, Aider** — discoverable via `_bmad/COMMANDS.md` reference index
 
@@ -324,6 +326,7 @@ For the full list:
 
 - Claude Code: run `/bmad-help`
 - OpenAI Codex: inspect `.agents/skills/`
+- OpenCode: inspect `.opencode/skills/`
 - Cursor, Windsurf, Copilot, Aider: open `_bmad/COMMANDS.md`
 
 ### Transition to Ralph
@@ -358,7 +361,7 @@ project/
 │   ├── planning-artifacts/    # PRD, architecture, stories
 │   ├── implementation-artifacts/ # Sprint plans (optional)
 │   └── brainstorming/         # Brainstorm sessions (optional)
-├── .ralph/                    # Ralph autonomous loop (drivers for claude-code, codex, copilot, and cursor)
+├── .ralph/                    # Ralph autonomous loop (drivers for claude-code, codex, opencode, copilot, and cursor)
 │   ├── ralph_loop.sh          # Main loop script
 │   ├── ralph_import.sh        # Import requirements into Ralph
 │   ├── ralph_monitor.sh       # Monitor loop progress
@@ -367,6 +370,7 @@ project/
 │   ├── drivers/               # Platform driver scripts
 │   │   ├── claude-code.sh     # Claude Code driver (uses `claude`)
 │   │   ├── codex.sh           # OpenAI Codex driver (uses `codex exec`)
+│   │   ├── opencode.sh        # OpenCode driver (uses `opencode run`)
 │   │   ├── copilot.sh         # GitHub Copilot driver (uses `copilot`, experimental)
 │   │   ├── cursor.sh          # Cursor driver (uses `cursor-agent`/`agent`, experimental)
 │   │   └── cursor-agent-wrapper.sh # Wrapper for Windows .cmd Cursor installs
@@ -396,6 +400,7 @@ Ralph is a bash loop that spawns fresh AI coding sessions using a **platform dri
 
 - **Claude Code driver** — invokes `claude` with `--output-format json`, `--permission-mode bypassPermissions`, `--allowedTools`, and explicit `--resume <session_id>`
 - **Codex driver** — invokes `codex exec --json --sandbox workspace-write` with explicit `--resume <session_id>`
+- **OpenCode driver** — invokes `opencode run --agent build --format json` with optional `--continue --session <session_id>`
 - **Copilot driver** _(experimental)_ — invokes `copilot --autopilot --yolo` with plain-text output
 - **Cursor driver** _(experimental)_ — invokes `cursor-agent -p --force --output-format json`, persists `session_id` for `--resume`, and switches to `stream-json` only for live output
 
@@ -478,7 +483,7 @@ Notes:
 | Ralph stops mid-loop          | Circuit breaker detected stagnation. Check `.ralph/logs/`                                                          |
 | Doctor reports version drift  | Run `bmalph upgrade` to update bundled assets                                                                      |
 | Wrong platform detected       | Re-run `bmalph init --platform <id>` with the correct platform                                                     |
-| Ralph unavailable on platform | Ralph requires a full tier platform (claude-code, codex, copilot, or cursor)                                       |
+| Ralph unavailable on platform | Ralph requires a full tier platform (claude-code, codex, opencode, copilot, or cursor)                             |
 
 ### Windows: Cursor Driver
 
@@ -513,6 +518,7 @@ Then remove the bmalph-managed sections from your instructions file. The file de
 
 - **Claude Code** — remove `.claude/commands/` and bmalph section from `CLAUDE.md`
 - **Codex** — remove bmalph sections from `AGENTS.md`
+- **OpenCode** — remove `.opencode/skills/bmad-*/` and bmalph sections from `AGENTS.md`
 - **Cursor** — remove `.cursor/rules/bmad.mdc`
 - **Windsurf** — remove `.windsurf/rules/bmad.md`
 - **Copilot** — remove bmalph sections from `.github/copilot-instructions.md`
@@ -590,6 +596,21 @@ bmalph run
 
 # 2. Use Codex Skills such as $analyst, $create-prd, and $architect
 #    See .agents/skills/ and _bmad/COMMANDS.md for the full catalog
+
+# 3. Follow phases: Analysis -> Planning -> Solutioning
+
+# 4. Transition to Ralph
+#    Run: bmalph implement
+#    Then: bmalph run
+```
+
+**OpenCode:**
+
+```bash
+# 1. Open your project in your AI coding assistant
+
+# 2. Use OpenCode Skills such as $analyst, $create-prd, and $architect
+#    See .opencode/skills/ and _bmad/COMMANDS.md for the full catalog
 
 # 3. Follow phases: Analysis -> Planning -> Solutioning
 

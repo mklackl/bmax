@@ -32,7 +32,7 @@ npm run ci
 bmalph/
 ├── src/                           # TypeScript source
 │   ├── cli.ts                     # Commander.js CLI entry point
-│   ├── installer.ts               # Asset copying, command index, skills generation
+│   ├── installer/                 # Asset copying, command delivery, skills generation
 │   ├── commands/                  # init, upgrade, doctor, status, implement, run, watch, reset
 │   ├── platform/                  # Platform registry, detection, snippets, runtime checks
 │   │   ├── cursor-runtime-checks.ts
@@ -53,7 +53,7 @@ bmalph/
 │   └── watch/                     # Dashboard/watch tests
 ├── bmad/                          # Bundled BMAD-METHOD assets
 ├── ralph/                         # Bundled Ralph assets and templates
-│   ├── drivers/                   # claude-code.sh, codex.sh, copilot.sh, cursor.sh
+│   ├── drivers/                   # claude-code.sh, codex.sh, opencode.sh, copilot.sh, cursor.sh, cursor-agent-wrapper.sh
 │   ├── lib/                       # Shared shell libraries
 │   ├── templates/                 # PROMPT, AGENT, ralphrc templates
 │   └── RALPH-REFERENCE.md         # Bundled loop/runtime reference

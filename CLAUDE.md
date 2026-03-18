@@ -34,8 +34,8 @@ bmalph: CLI + transition logic
 ```
 project-root/
 ├── _bmad/              # Actual BMAD agents, workflows, core
-├── .ralph/             # Ralph loop, libs, specs, logs (drivers for claude-code, codex, copilot, and cursor)
-│   └── drivers/        # Platform driver scripts (claude-code.sh, codex.sh, copilot.sh, cursor.sh)
+├── .ralph/             # Ralph loop, libs, specs, logs (drivers for claude-code, codex, opencode, copilot, and cursor)
+│   └── drivers/        # Platform driver scripts (claude-code.sh, codex.sh, opencode.sh, copilot.sh, cursor.sh, cursor-agent-wrapper.sh)
 ├── bmalph/             # bmalph state (config.json with platform, state/)
 └── <instructions file> # Varies by platform (CLAUDE.md, AGENTS.md, etc.)
 ```
@@ -58,10 +58,11 @@ The instructions file depends on the configured platform — see `src/platform/`
 
 ## Command Delivery
 
-bmalph bundles 51 BMAD and bmalph command definitions. Delivery varies by platform:
+bmalph bundles 54 BMAD and bmalph command definitions. Delivery varies by platform:
 
 - **Claude Code** — `.claude/commands/` slash commands
 - **OpenAI Codex** — `.agents/skills/` Codex Skills
+- **OpenCode** — `.opencode/skills/` OpenCode Skills
 - **Cursor, Windsurf, Copilot, Aider** — `_bmad/COMMANDS.md` reference index
 
 Key commands in Claude Code syntax:
@@ -87,16 +88,32 @@ Use `bmalph implement` (or `/bmalph-implement`) to transition from BMAD planning
 ## Key Files
 
 - `src/cli.ts` — Commander.js CLI definition
-- `src/installer.ts` — Copies bmad/ and ralph/ into target project
+- `src/installer/install.ts` — Main install orchestrator
+- `src/installer/bmad-assets.ts` — BMAD asset copying and config generation
+- `src/installer/ralph-assets.ts` — Ralph asset copying and template rendering
+- `src/installer/commands.ts` — Command delivery (slash commands, skills, index)
+- `src/installer/project-files.ts` — Instructions file and .gitignore management
+- `src/installer/template-files.ts` — Template customization detection
+- `src/installer/metadata.ts` — Lazy platform loading for command classification
+- `src/installer/types.ts` — Installer type definitions
+- `src/transition/index.ts` — Transition barrel export
 - `src/transition/orchestration.ts` — Main transition orchestrator
 - `src/transition/story-parsing.ts` — Parse BMAD stories
+- `src/transition/story-id.ts` — Story ID extraction and normalization
 - `src/transition/fix-plan.ts` — Generate @fix_plan.md
+- `src/transition/fix-plan-sync.ts` — Merge progress into updated fix plans
 - `src/transition/artifacts.ts` — Locate BMAD artifacts
 - `src/transition/artifact-scan.ts` — Artifact scanning
+- `src/transition/artifact-collection.ts` — Collect and group artifacts
+- `src/transition/artifact-loading.ts` — Load artifact file contents
 - `src/transition/context.ts` — Generate PROJECT_CONTEXT.md
+- `src/transition/context-output.ts` — Context file output formatting
 - `src/transition/preflight.ts` — Pre-flight validation checks
+- `src/transition/section-patterns.ts` — Markdown section pattern matching
 - `src/transition/specs-changelog.ts` — Track spec changes
 - `src/transition/specs-index.ts` — Generate SPECS_INDEX.md
+- `src/transition/specs-sync.ts` — Sync specs to .ralph/specs/
+- `src/transition/sprint-status.ts` — Sprint status tracking
 - `src/transition/tech-stack.ts` — Detect tech stack
 - `src/transition/types.ts` — Shared transition types
 - `src/commands/init.ts` — CLI init handler
@@ -118,6 +135,7 @@ Use `bmalph implement` (or `/bmalph-implement`) to transition from BMAD planning
 - `src/watch/dashboard.ts` — Live dashboard orchestrator
 - `src/watch/renderer.ts` — Terminal UI rendering
 - `src/watch/file-watcher.ts` — File system polling
+- `src/watch/frame-writer.ts` — Terminal frame output
 - `src/watch/state-reader.ts` — Ralph state parsing
 - `src/watch/types.ts` — Watch types
 - `src/utils/state.ts` — Phase tracking + Ralph status reading
@@ -131,6 +149,7 @@ Use `bmalph implement` (or `/bmalph-implement`) to transition from BMAD planning
 - `src/utils/github.ts` — GitHub API client
 - `src/utils/logger.ts` — Debug logging (--verbose)
 - `src/utils/format-status.ts` — Shared status formatting (Ralph + bmalph phases)
+- `src/utils/ralph-runtime-state.ts` — Ralph runtime state reading
 - `src/utils/artifact-definitions.ts` — Shared BMAD artifact definitions
 - `src/platform/types.ts` — Platform type definitions (PlatformId, PlatformTier, CommandDelivery)
 - `src/platform/registry.ts` — Platform registry (getPlatform, getAllPlatforms)
@@ -140,6 +159,8 @@ Use `bmalph implement` (or `/bmalph-implement`) to transition from BMAD planning
 - `src/platform/instructions-snippet.ts` — Generated multi-platform instructions snippets
 - `src/platform/claude-code.ts` — Claude Code platform definition
 - `src/platform/codex.ts` — OpenAI Codex platform definition
+- `src/platform/opencode.ts` — OpenCode platform definition
+- `src/platform/guidance.ts` — Platform-specific guidance hints for status/init
 - `src/platform/cursor.ts` — Cursor platform definition
 - `src/platform/cursor-runtime-checks.ts` — Cursor bash/auth preflight checks for doctor and run
 - `src/platform/windsurf.ts` — Windsurf platform definition
@@ -149,9 +170,11 @@ Use `bmalph implement` (or `/bmalph-implement`) to transition from BMAD planning
 - `ralph/` — Bundled Ralph loop and libraries
 - `ralph/drivers/claude-code.sh` — Ralph driver for Claude Code (`claude` CLI)
 - `ralph/drivers/codex.sh` — Ralph driver for OpenAI Codex (`codex exec`)
+- `ralph/drivers/opencode.sh` — Ralph driver for OpenCode (`opencode run`)
 - `ralph/drivers/copilot.sh` — Ralph driver for GitHub Copilot (`copilot --autopilot`, experimental)
 - `ralph/drivers/cursor.sh` — Ralph driver for Cursor (`cursor-agent -p --force --output-format json`, experimental)
-- `slash-commands/` — Slash commands (6 bmalph + 45 BMAD)
+- `ralph/drivers/cursor-agent-wrapper.sh` — Wrapper for cursor-agent .cmd installs on Windows
+- `slash-commands/` — Slash commands (6 bmalph + 48 BMAD)
 
 ## Dev Workflow
 
