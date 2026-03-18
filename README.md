@@ -10,7 +10,7 @@
 [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD) planning + [Ralph](https://github.com/snarktank/ralph) autonomous implementation, wired through platform-specific instructions, skills, and command indexes.
 
 <p align="center">
-  <img src="docs/bmalph-diagram-light.svg" alt="bmalph workflow diagram" width="800" />
+  <img src="docs/bmalph-diagram.png" alt="bmalph workflow diagram" width="800" />
 </p>
 
 ## What is bmalph?
