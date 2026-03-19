@@ -104,6 +104,7 @@ export async function startDashboard(options: WatchOptions): Promise<void> {
       resolve();
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- setRawMode absent in pseudo-TTY
     if (process.stdin.isTTY && process.stdin.setRawMode) {
       process.stdin.setRawMode(true);
       process.stdin.resume();

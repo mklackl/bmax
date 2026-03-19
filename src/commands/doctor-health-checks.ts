@@ -4,11 +4,12 @@ import { readConfig } from "../utils/config.js";
 import { parseGitignoreLines } from "../utils/file-system.js";
 import { getBundledVersions } from "../installer.js";
 import { isEnoent, formatError } from "../utils/errors.js";
+import { GITIGNORE_ENTRIES } from "../utils/constants.js";
 import type { CheckResult } from "./doctor.js";
 
 export async function checkGitignore(projectDir: string): Promise<CheckResult> {
   const label = ".gitignore has required entries";
-  const required = [".ralph/logs/", "_bmad-output/"];
+  const required = [...GITIGNORE_ENTRIES];
   try {
     const content = await readFile(join(projectDir, ".gitignore"), "utf-8");
     const existingLines = parseGitignoreLines(content);

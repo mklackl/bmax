@@ -487,6 +487,7 @@ export function renderDashboard(
   cols?: number,
   options: DashboardRenderOptions = {}
 ): string {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- columns is undefined in non-TTY
   const width = cols ?? process.stdout.columns ?? 80;
   const referenceTime = state.lastUpdated.getTime();
   const footerRenderer = options.footerRenderer ?? renderFooter;

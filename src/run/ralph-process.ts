@@ -103,11 +103,11 @@ export async function runBashCommand(
       finish(() => reject(new Error(`bash command timed out: ${command}`)));
     }, timeoutMs);
 
-    child.stdout?.on("data", (chunk) => {
+    child.stdout.on("data", (chunk: Buffer) => {
       stdout += chunk.toString();
     });
 
-    child.stderr?.on("data", (chunk) => {
+    child.stderr.on("data", (chunk: Buffer) => {
       stderr += chunk.toString();
     });
 

@@ -1,7 +1,12 @@
 import type { BmalphConfig, UpstreamVersions } from "./config.js";
 import type { BmalphState } from "./state.js";
 import { PLATFORM_IDS, type PlatformId } from "../platform/types.js";
-import { DEFAULT_INTERVAL_MS, MAX_PROJECT_NAME_LENGTH, MIN_INTERVAL_MS } from "./constants.js";
+import {
+  DEFAULT_INTERVAL_MS,
+  MAX_PROJECT_NAME_LENGTH,
+  MIN_INTERVAL_MS,
+  RALPH_STATUS_MAP,
+} from "./constants.js";
 
 const VALID_STATUSES = ["planning", "implementing", "completed"] as const;
 
@@ -275,15 +280,6 @@ export function validateRalphLoopStatus(data: unknown): RalphLoopStatus {
   };
 }
 
-const BASH_STATUS_MAP: Record<string, RalphLoopStatus["status"]> = {
-  running: "running",
-  halted: "blocked",
-  stopped: "blocked",
-  completed: "completed",
-  success: "completed",
-  graceful_exit: "completed",
-};
-
 // Loose normalization helper for non-runtime consumers and legacy tests.
 // Runtime-file parsing uses the stricter contract in ralph-runtime-state.ts.
 export function normalizeRalphStatus(data: unknown): RalphLoopStatus {
@@ -291,7 +287,12 @@ export function normalizeRalphStatus(data: unknown): RalphLoopStatus {
 
   const loopCount = typeof data.loop_count === "number" ? data.loop_count : 0;
   const rawStatus = typeof data.status === "string" ? data.status : undefined;
-  const status = (rawStatus !== undefined ? BASH_STATUS_MAP[rawStatus] : undefined) ?? "unknown";
+  const status =
+    (rawStatus !== undefined
+      ? (RALPH_STATUS_MAP[rawStatus as keyof typeof RALPH_STATUS_MAP] as
+          | RalphLoopStatus["status"]
+          | undefined)
+      : undefined) ?? "unknown";
 
   return {
     loopCount,

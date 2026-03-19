@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
   {
     ignores: ["dist/", "node_modules/"],
   },
@@ -17,6 +17,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      eqeqeq: "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/consistent-type-imports": "error",
@@ -29,14 +30,24 @@ export default tseslint.config(
           allowHigherOrderFunctions: true,
         },
       ],
+      // Allow numbers in template literals (common in CLI output)
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
+      // Allow void returns in arrow shorthands (event handlers)
+      "@typescript-eslint/no-confusing-void-expression": ["error", { ignoreArrowShorthand: true }],
+      // Non-null assertions are used after validation guards
+      "@typescript-eslint/no-non-null-assertion": "warn",
     },
   },
   // Test files - relaxed rules without type checking
   {
     files: ["tests/**/*.ts"],
+    ...tseslint.configs.disableTypeChecked,
     rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false }],
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-dynamic-delete": "off",
     },
   }
 );

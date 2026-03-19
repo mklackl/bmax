@@ -470,8 +470,18 @@ describe("normalizeRalphStatus", () => {
     expect(result.status).toBe("completed");
   });
 
-  it("maps unknown bash status to 'unknown'", () => {
+  it("maps paused bash status to 'blocked'", () => {
     const result = normalizeRalphStatus({ loop_count: 1, status: "paused" });
+    expect(result.status).toBe("blocked");
+  });
+
+  it("maps error bash status to 'blocked'", () => {
+    const result = normalizeRalphStatus({ loop_count: 1, status: "error" });
+    expect(result.status).toBe("blocked");
+  });
+
+  it("maps unknown bash status to 'unknown'", () => {
+    const result = normalizeRalphStatus({ loop_count: 1, status: "banana" });
     expect(result.status).toBe("unknown");
   });
 

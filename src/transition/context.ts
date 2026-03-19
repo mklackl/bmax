@@ -38,7 +38,7 @@ export function extractSectionWithInfo(
   const headingLevelMatch = match[0].match(/^(#{1,6})\s/);
   const level = headingLevelMatch ? headingLevelMatch[1]!.length : 2;
 
-  const startIndex = (match.index ?? 0) + match[0].length;
+  const startIndex = match.index + match[0].length;
   const rest = content.slice(startIndex);
 
   // Find next heading of same or higher level
@@ -119,7 +119,7 @@ export function extractProjectContext(artifacts: Map<string, string>): ExtractPr
   const allContent = prdContent + "\n" + archContent;
   const truncated: TruncationInfo[] = [];
 
-  const fields: { field: string; source: string; patterns: RegExp[] }[] = [
+  const fields: { field: keyof ProjectContext; source: string; patterns: RegExp[] }[] = [
     {
       field: "projectGoals",
       source: prdContent || allContent,
@@ -198,7 +198,7 @@ export function extractProjectContext(artifacts: Map<string, string>): ExtractPr
 
   for (const { field, source, patterns } of fields) {
     const result = extractFirstMatchingSectionWithInfo(source, patterns);
-    context[field as keyof ProjectContext] = result.content;
+    context[field] = result.content;
     if (result.wasTruncated) {
       truncated.push({
         field,

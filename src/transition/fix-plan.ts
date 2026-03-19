@@ -162,17 +162,20 @@ export function mergeFixPlanProgress(
   completedTitles?: Map<string, string>
 ): string {
   // Replace [ ] with [x] for completed story IDs or title matches
-  return newFixPlan.replace(createOpenFixPlanStoryLinePattern(), (match, prefix, suffix, id) => {
-    if (completedIds.has(id)) return `${prefix}[x]${suffix}`;
+  return newFixPlan.replace(
+    createOpenFixPlanStoryLinePattern(),
+    (match: string, prefix: string, suffix: string, id: string) => {
+      if (completedIds.has(id)) return `${prefix}[x]${suffix}`;
 
-    // Title-based fallback: check if title matches a completed story
-    if (titleMap && completedTitles) {
-      const title = titleMap.get(id);
-      if (title && completedTitles.has(normalizeTitle(title))) {
-        return `${prefix}[x]${suffix}`;
+      // Title-based fallback: check if title matches a completed story
+      if (titleMap && completedTitles) {
+        const title = titleMap.get(id);
+        if (title && completedTitles.has(normalizeTitle(title))) {
+          return `${prefix}[x]${suffix}`;
+        }
       }
-    }
 
-    return match;
-  });
+      return match;
+    }
+  );
 }

@@ -75,6 +75,32 @@ export const CONFIG_FILE = "bmalph/config.json";
 export const RALPH_STATUS_FILE = ".ralph/status.json";
 
 // =============================================================================
+// Ralph status mapping
+// =============================================================================
+
+/**
+ * Maps raw Ralph bash status strings to normalized status values.
+ * Single source of truth — used by both validate.ts and ralph-runtime-state.ts.
+ */
+export const RALPH_STATUS_MAP = {
+  running: "running",
+  halted: "blocked",
+  stopped: "blocked",
+  completed: "completed",
+  success: "completed",
+  graceful_exit: "completed",
+  paused: "blocked",
+  error: "blocked",
+} as const;
+
+// =============================================================================
+// Gitignore entries managed by bmalph
+// =============================================================================
+
+/** Entries bmalph adds to .gitignore during init and checks during doctor */
+export const GITIGNORE_ENTRIES = [".ralph/logs/", "_bmad-output/"] as const;
+
+// =============================================================================
 // Dashboard constants
 // =============================================================================
 

@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 vi.mock("chalk");
 
-vi.mock("@inquirer/prompts", () => ({
-  confirm: vi.fn(),
+vi.mock("@inquirer/confirm", () => ({
+  default: vi.fn(),
 }));
 
 vi.mock("../../src/installer.js", () => ({
@@ -111,7 +111,7 @@ describe("reset command", () => {
     const { isInitialized } = await import("../../src/installer.js");
     const { buildResetPlan, executeResetPlan, planToDryRunActions } =
       await import("../../src/reset.js");
-    const { confirm } = await import("@inquirer/prompts");
+    const { default: confirm } = await import("@inquirer/confirm");
 
     vi.mocked(isInitialized).mockResolvedValue(true);
     vi.mocked(buildResetPlan).mockResolvedValue(fullPlan);

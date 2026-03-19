@@ -17,7 +17,7 @@ export async function checkCommandAvailable(command: string): Promise<boolean> {
   }
 }
 
-export async function checkNodeVersion(_projectDir: string): Promise<CheckResult> {
+export function checkNodeVersion(_projectDir: string): CheckResult {
   const major = parseInt(process.versions.node.split(".")[0]!);
   return {
     label: "Node version >= 20",

@@ -7,7 +7,7 @@ import {
   replaceSection,
 } from "../utils/file-system.js";
 import { isEnoent } from "../utils/errors.js";
-import { CONFIG_FILE, STATE_DIR } from "../utils/constants.js";
+import { CONFIG_FILE, GITIGNORE_ENTRIES, STATE_DIR } from "../utils/constants.js";
 import type { Platform } from "../platform/types.js";
 import { getDefaultPlatform } from "./metadata.js";
 import { isTemplateCustomized } from "./template-files.js";
@@ -25,8 +25,7 @@ export async function updateGitignore(projectDir: string): Promise<void> {
 
   const existingLines = parseGitignoreLines(existing);
 
-  const entries = [".ralph/logs/", "_bmad-output/"];
-  const newEntries = entries.filter((e) => !existingLines.has(e));
+  const newEntries = GITIGNORE_ENTRIES.filter((e) => !existingLines.has(e));
 
   if (newEntries.length === 0) return;
 

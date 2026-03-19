@@ -231,10 +231,16 @@ export class GitHubClient {
         !("sha" in data) ||
         typeof (data as GitHubCommitResponse).sha !== "string" ||
         !("commit" in data) ||
-        !(data as GitHubCommitResponse).commit ||
-        typeof (data as GitHubCommitResponse).commit?.message !== "string" ||
-        !(data as GitHubCommitResponse).commit?.author ||
-        typeof (data as GitHubCommitResponse).commit?.author?.date !== "string"
+        !(data as Record<string, unknown>).commit ||
+        typeof ((data as Record<string, unknown>).commit as Record<string, unknown>).message !==
+          "string" ||
+        !((data as Record<string, unknown>).commit as Record<string, unknown>).author ||
+        typeof (
+          ((data as Record<string, unknown>).commit as Record<string, unknown>).author as Record<
+            string,
+            unknown
+          >
+        ).date !== "string"
       ) {
         return {
           success: false,

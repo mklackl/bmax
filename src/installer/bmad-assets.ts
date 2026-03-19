@@ -233,7 +233,7 @@ async function deriveProjectName(projectDir: string): Promise<string> {
   try {
     const configPath = join(projectDir, CONFIG_FILE);
     const raw = await readFile(configPath, "utf-8");
-    const config = JSON.parse(raw);
+    const config = JSON.parse(raw) as { name?: string };
     if (config.name) return config.name;
   } catch (err) {
     if (!isEnoent(err)) {

@@ -36,10 +36,6 @@ interface StatusOutput {
   completionMismatch?: boolean;
 }
 
-function getCursorNextAction(): string {
-  return "Read _bmad/COMMANDS.md and ask Cursor to run the BMAD master agent";
-}
-
 export async function statusCommand(options: StatusOptions): Promise<void> {
   await withErrorHandling(() => runStatus(options));
 }
@@ -212,14 +208,8 @@ function getNextAction(
 
   switch (phase) {
     case 1:
-      if (platform.id === "cursor") {
-        return getCursorNextAction();
-      }
       return getPlatformAnalysisHint(platform);
     case 2:
-      if (platform.id === "cursor") {
-        return getCursorNextAction();
-      }
       return getPlatformPrdHint(platform);
     case 3:
       return "Run: bmalph implement";

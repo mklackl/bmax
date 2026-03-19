@@ -41,11 +41,11 @@ export async function generateSpecsChangelog(
       changes.push({ file, status: "added" });
     } else {
       // Compare content
-      const oldContent = await readFile(join(oldSpecsDir, file), "utf-8").catch((err) => {
+      const oldContent = await readFile(join(oldSpecsDir, file), "utf-8").catch((err: unknown) => {
         debug(`Could not read old spec file ${file}: ${formatError(err)}`);
         return "";
       });
-      const newContent = await readFile(join(newSourceDir, file), "utf-8").catch((err) => {
+      const newContent = await readFile(join(newSourceDir, file), "utf-8").catch((err: unknown) => {
         debug(`Could not read new spec file ${file}: ${formatError(err)}`);
         return "";
       });

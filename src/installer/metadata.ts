@@ -9,10 +9,14 @@ import type { BundledVersions } from "./types.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+interface PackageJson {
+  version?: string;
+}
+
 export async function getPackageVersion(): Promise<string> {
   const pkgPath = join(__dirname, "..", "..", "package.json");
   try {
-    const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
+    const pkg = JSON.parse(await readFile(pkgPath, "utf-8")) as PackageJson;
     return pkg.version ?? "unknown";
   } catch (err) {
     if (!isEnoent(err)) {
@@ -25,8 +29,8 @@ export async function getPackageVersion(): Promise<string> {
 export async function getBundledVersions(): Promise<BundledVersions> {
   const versionsPath = join(__dirname, "..", "..", "bundled-versions.json");
   try {
-    const versions = JSON.parse(await readFile(versionsPath, "utf-8"));
-    if (!versions || typeof versions.bmadCommit !== "string") {
+    const versions = JSON.parse(await readFile(versionsPath, "utf-8")) as BundledVersions;
+    if (typeof versions.bmadCommit !== "string") {
       throw new Error("Invalid bundled-versions.json structure: missing bmadCommit");
     }
     return {

@@ -2,10 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 vi.mock("chalk");
 
-vi.mock("@inquirer/prompts", () => ({
-  select: vi.fn(),
-  input: vi.fn(),
-  confirm: vi.fn(),
+vi.mock("@inquirer/select", () => ({
+  default: vi.fn(),
+}));
+
+vi.mock("@inquirer/input", () => ({
+  default: vi.fn(),
 }));
 
 vi.mock("../../src/installer.js", () => ({
@@ -158,7 +160,7 @@ describe("init command", () => {
     const { isInitialized, installProject, mergeInstructionsFile } =
       await import("../../src/installer.js");
     const { writeConfig } = await import("../../src/utils/config.js");
-    const { input } = await import("@inquirer/prompts");
+    const { default: input } = await import("@inquirer/input");
 
     vi.mocked(isInitialized).mockResolvedValue(false);
     vi.mocked(installProject).mockResolvedValue(undefined);
@@ -518,7 +520,8 @@ describe("init command", () => {
       await import("../../src/installer.js");
     const { writeConfig } = await import("../../src/utils/config.js");
     const { detectPlatform } = await import("../../src/platform/detect.js");
-    const { select, input } = await import("@inquirer/prompts");
+    const { default: select } = await import("@inquirer/select");
+    const { default: input } = await import("@inquirer/input");
 
     vi.mocked(isInitialized).mockResolvedValue(false);
     vi.mocked(installProject).mockResolvedValue(undefined);

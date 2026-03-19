@@ -38,7 +38,7 @@ program
   });
 
 function resolveProjectDir(): string {
-  const dir = program.opts().projectDir;
+  const dir = program.opts().projectDir as string | undefined;
   return dir ? resolve(dir) : process.cwd();
 }
 
@@ -68,8 +68,9 @@ program
     "Target platform (claude-code, codex, opencode, cursor, windsurf, copilot, aider)"
   )
   .option("--dry-run", "Preview changes without writing files")
-  .action(async (opts) =>
-    initCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
+  .action(
+    async (opts: { name?: string; description?: string; platform?: string; dryRun?: boolean }) =>
+      initCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
 program
@@ -77,7 +78,7 @@ program
   .description("Update bundled assets to current version")
   .option("--dry-run", "Preview changes without writing files")
   .option("--force", "Skip confirmation prompts")
-  .action(async (opts) =>
+  .action(async (opts: { dryRun?: boolean; force?: boolean }) =>
     upgradeCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
@@ -85,7 +86,7 @@ program
   .command("doctor")
   .description("Check installation health")
   .option("--json", "Output as JSON")
-  .action(async (opts) =>
+  .action(async (opts: { json?: boolean }) =>
     doctorCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
@@ -99,7 +100,7 @@ program
   .command("status")
   .description("Show current project status and phase")
   .option("--json", "Output as JSON")
-  .action(async (opts) =>
+  .action(async (opts: { json?: boolean }) =>
     statusCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
@@ -107,7 +108,7 @@ program
   .command("implement")
   .description("Transition BMAD planning artifacts to Ralph implementation format")
   .option("--force", "Override pre-flight validation errors")
-  .action(async (opts) =>
+  .action(async (opts: { force?: boolean }) =>
     implementCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
@@ -116,7 +117,7 @@ program
   .description("Remove all bmalph files from the project")
   .option("--dry-run", "Preview changes without removing files")
   .option("--force", "Skip confirmation prompt")
-  .action(async (opts) =>
+  .action(async (opts: { dryRun?: boolean; force?: boolean }) =>
     resetCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
@@ -124,7 +125,7 @@ program
   .command("watch")
   .description("[deprecated] Use 'bmalph run' instead")
   .option("--interval <ms>", "Refresh interval in milliseconds (default: 2000)")
-  .action(async (opts) =>
+  .action(async (opts: { interval?: string }) =>
     watchCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 
@@ -137,7 +138,7 @@ program
   )
   .option("--interval <ms>", "Dashboard refresh interval in milliseconds (default: 2000)")
   .option("--no-dashboard", "Run Ralph without the dashboard overlay")
-  .action(async (opts) =>
+  .action(async (opts: { driver?: string; interval?: string; dashboard: boolean }) =>
     runCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
   );
 

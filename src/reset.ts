@@ -13,6 +13,7 @@ import {
   RALPH_DIR,
   BMALPH_DIR,
   BMAD_OUTPUT_DIR,
+  GITIGNORE_ENTRIES,
   SKILLS_PREFIX,
 } from "./utils/constants.js";
 import type { Platform } from "./platform/types.js";
@@ -100,8 +101,7 @@ export async function buildResetPlan(projectDir: string, platform: Platform): Pr
   try {
     const content = await readFile(join(projectDir, ".gitignore"), "utf-8");
     const existingLines = parseGitignoreLines(content);
-    const bmalpEntries = [".ralph/logs/", "_bmad-output/"];
-    for (const entry of bmalpEntries) {
+    for (const entry of GITIGNORE_ENTRIES) {
       if (existingLines.has(entry)) {
         plan.gitignoreLines.push(entry);
       }

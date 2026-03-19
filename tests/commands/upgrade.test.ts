@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 vi.mock("chalk");
 
-vi.mock("@inquirer/prompts", () => ({
-  confirm: vi.fn(),
+vi.mock("@inquirer/confirm", () => ({
+  default: vi.fn(),
 }));
 
 vi.mock("../../src/installer.js", () => ({
@@ -400,7 +400,7 @@ describe("upgrade command", () => {
     it("shows confirmation prompt without --force", async () => {
       const { isInitialized, copyBundledAssets, mergeInstructionsFile } =
         await import("../../src/installer.js");
-      const { confirm } = await import("@inquirer/prompts");
+      const { default: confirm } = await import("@inquirer/confirm");
       vi.mocked(isInitialized).mockResolvedValue(true);
       vi.mocked(copyBundledAssets).mockResolvedValue({ updatedPaths: ["_bmad/"] });
       vi.mocked(mergeInstructionsFile).mockResolvedValue(undefined);
@@ -415,7 +415,7 @@ describe("upgrade command", () => {
     it("skips prompt with --force", async () => {
       const { isInitialized, copyBundledAssets, mergeInstructionsFile } =
         await import("../../src/installer.js");
-      const { confirm } = await import("@inquirer/prompts");
+      const { default: confirm } = await import("@inquirer/confirm");
       vi.mocked(isInitialized).mockResolvedValue(true);
       vi.mocked(copyBundledAssets).mockResolvedValue({ updatedPaths: ["_bmad/"] });
       vi.mocked(mergeInstructionsFile).mockResolvedValue(undefined);
@@ -428,7 +428,7 @@ describe("upgrade command", () => {
 
     it("aborts when user declines confirmation", async () => {
       const { isInitialized, copyBundledAssets } = await import("../../src/installer.js");
-      const { confirm } = await import("@inquirer/prompts");
+      const { default: confirm } = await import("@inquirer/confirm");
       vi.mocked(isInitialized).mockResolvedValue(true);
       vi.mocked(confirm).mockResolvedValue(false);
 

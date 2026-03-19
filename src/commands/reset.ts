@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { confirm } from "@inquirer/prompts";
+import confirm from "@inquirer/confirm";
 import { isInitialized } from "../installer.js";
 import { buildResetPlan, executeResetPlan, planToDryRunActions } from "../reset.js";
 import { formatDryRunSummary } from "../utils/dryrun.js";

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { RALPH_DIR, RALPH_STATUS_FILE } from "./constants.js";
+import { RALPH_DIR, RALPH_STATUS_FILE, RALPH_STATUS_MAP } from "./constants.js";
 import { isEnoent } from "./errors.js";
 import {
   validateCircuitBreakerState,
@@ -34,16 +34,6 @@ const RALPH_SESSION_FILE = ".ralph_session";
 const CIRCUIT_BREAKER_STATE_FILE = ".circuit_breaker_state";
 const CAMEL_CASE_CORE_KEYS = ["loopCount", "tasksCompleted", "tasksTotal"] as const;
 const SNAKE_CASE_CORE_KEYS = ["loop_count", "tasks_completed", "tasks_total"] as const;
-const RAW_RALPH_STATUS_MAP = {
-  running: "running",
-  halted: "blocked",
-  stopped: "blocked",
-  completed: "completed",
-  success: "completed",
-  graceful_exit: "completed",
-  paused: "blocked",
-  error: "blocked",
-} as const;
 
 type StatusFormat = "camelCase" | "snakeCase";
 
@@ -204,11 +194,12 @@ function validateRalphSnakeCaseStatus(data: Record<string, unknown>): RalphLoopS
     throw new Error("ralphSnakeCaseStatus.status must be a string");
   }
 
-  const mappedStatus =
-    RAW_RALPH_STATUS_MAP[data.status as keyof typeof RAW_RALPH_STATUS_MAP] ?? undefined;
+  const mappedStatus: RalphLoopStatus["status"] | undefined = (
+    RALPH_STATUS_MAP as Record<string, RalphLoopStatus["status"]>
+  )[data.status];
   if (mappedStatus === undefined) {
     throw new Error(
-      `ralphSnakeCaseStatus.status must be one of: ${Object.keys(RAW_RALPH_STATUS_MAP).join(", ")}`
+      `ralphSnakeCaseStatus.status must be one of: ${Object.keys(RALPH_STATUS_MAP).join(", ")}`
     );
   }
 

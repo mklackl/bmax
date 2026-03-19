@@ -7,6 +7,7 @@ import {
   getPlatformAnalysisHint,
   getPlatformArchitectureHint,
   getPlatformEpicsStoriesHint,
+  getPlatformMasterAgentHint,
   getPlatformPrdHint,
   getPlatformReadinessHint,
 } from "../platform/guidance.js";
@@ -35,10 +36,6 @@ export interface ProjectArtifactScan {
   missing: string[];
   phases: PhaseArtifacts;
   nextAction: string;
-}
-
-function getCursorNextAction(): string {
-  return "Read _bmad/COMMANDS.md and ask Cursor to run the BMAD master agent for the next BMAD workflow";
 }
 
 export function classifyArtifact(filename: string): ArtifactClassification | null {
@@ -94,7 +91,7 @@ export function suggestNext(
   const foundNames = new Set([...phases[1], ...phases[2], ...phases[3]].map((a) => a.name));
   const platform = platformId ? getPlatform(platformId) : null;
 
-  if (platformId === "cursor") {
+  if (platform && platform.commandDelivery.kind === "index") {
     const allPlanningArtifactsPresent =
       foundNames.has("PRD") &&
       foundNames.has("Architecture") &&
@@ -102,7 +99,7 @@ export function suggestNext(
       foundNames.has("Readiness Report");
 
     if (!allPlanningArtifactsPresent) {
-      return getCursorNextAction();
+      return getPlatformMasterAgentHint(platform);
     }
   }
 

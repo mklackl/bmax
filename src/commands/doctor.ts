@@ -30,7 +30,7 @@ export interface CheckResult {
   hint?: string;
 }
 
-export type CheckFunction = (projectDir: string) => Promise<CheckResult>;
+export type CheckFunction = (projectDir: string) => CheckResult | Promise<CheckResult>;
 
 export interface CheckDefinition {
   id: string;

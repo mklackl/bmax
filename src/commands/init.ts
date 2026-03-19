@@ -1,5 +1,6 @@
 import chalk from "chalk";
-import { select, input } from "@inquirer/prompts";
+import select from "@inquirer/select";
+import input from "@inquirer/input";
 import { writeConfig, type BmalphConfig } from "../utils/config.js";
 import {
   installProject,
@@ -137,6 +138,7 @@ async function runInit(options: InitOptions): Promise<void> {
   const bundledVersions = await getBundledVersions();
   const config: BmalphConfig = {
     name: validatedName,
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive against future refactors
     description: description ?? "",
     createdAt: new Date().toISOString(),
     platform: platform.id,
