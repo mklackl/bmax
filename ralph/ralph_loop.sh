@@ -2535,6 +2535,7 @@ main() {
             local fix_plan_delta=0
             if [[ -f "$RESPONSE_ANALYSIS_FILE" ]]; then
                 fix_plan_delta=$(jq -r '.analysis.fix_plan_completed_delta // 0' "$RESPONSE_ANALYSIS_FILE" 2>/dev/null || echo "0")
+                [[ ! "$fix_plan_delta" =~ ^-?[0-9]+$ ]] && fix_plan_delta=0
             fi
             if should_run_review "$loop_count" "$fix_plan_delta"; then
                 run_review_loop "$loop_count"
