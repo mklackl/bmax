@@ -8,13 +8,14 @@ import { startRunDashboard } from "../run/run-dashboard.js";
 import { parseInterval } from "../utils/validate.js";
 import { getDashboardTerminalSupport } from "../watch/frame-writer.js";
 import type { Platform, PlatformId } from "../platform/types.js";
+import type { ReviewMode } from "../run/types.js";
 
 interface RunCommandOptions {
   projectDir: string;
   driver?: string;
   interval?: string;
   dashboard: boolean;
-  review?: boolean;
+  review?: boolean | string;
 }
 
 export async function runCommand(options: RunCommandOptions): Promise<void> {
@@ -41,9 +42,11 @@ async function executeRun(options: RunCommandOptions): Promise<void> {
     console.log(chalk.yellow(`Warning: ${platform.displayName} support is experimental`));
   }
 
-  const reviewEnabled = await resolveReviewMode(options.review, platform);
-  if (reviewEnabled) {
+  const reviewMode = await resolveReviewMode(options.review, platform);
+  if (reviewMode === "enhanced") {
     console.log(chalk.cyan("Enhanced mode: code review every 5 implementation loops"));
+  } else if (reviewMode === "ultimate") {
+    console.log(chalk.cyan("Ultimate mode: code review after every completed story"));
   }
 
   const interval = parseInterval(options.interval);
@@ -63,11 +66,11 @@ async function executeRun(options: RunCommandOptions): Promise<void> {
 
   const ralph = spawnRalphLoop(projectDir, platform.id, {
     inheritStdio: !useDashboard,
-    ...(reviewEnabled && { reviewEnabled }),
+    reviewMode,
   });
 
   if (useDashboard) {
-    await startRunDashboard({ projectDir, interval, ralph, reviewEnabled });
+    await startRunDashboard({ projectDir, interval, ralph, reviewMode });
     if (ralph.state === "stopped") {
       applyRalphExitCode(ralph.exitCode);
     }
@@ -96,40 +99,54 @@ function resolvePlatform(
   return getPlatform(id);
 }
 
+const VALID_REVIEW_MODES = new Set<string>(["enhanced", "ultimate"]);
+
 async function resolveReviewMode(
-  reviewFlag: boolean | undefined,
+  reviewFlag: boolean | string | undefined,
   platform: Platform
-): Promise<boolean> {
-  if (reviewFlag === true) {
+): Promise<ReviewMode> {
+  if (reviewFlag === false) {
+    return "off";
+  }
+
+  if (reviewFlag === true || typeof reviewFlag === "string") {
     if (platform.id !== "claude-code") {
       throw new Error("--review requires Claude Code (other drivers lack read-only enforcement)");
     }
-    return true;
-  }
 
-  if (reviewFlag === false) {
-    return false;
+    if (reviewFlag === true) {
+      return "enhanced";
+    }
+
+    if (!VALID_REVIEW_MODES.has(reviewFlag)) {
+      throw new Error(`Unknown review mode: ${reviewFlag}. Valid modes: enhanced, ultimate`);
+    }
+
+    return reviewFlag as ReviewMode;
   }
 
   if (platform.id !== "claude-code") {
-    return false;
+    return "off";
   }
 
   if (!process.stdin.isTTY) {
-    return false;
+    return "off";
   }
 
   const { default: select } = await import("@inquirer/select");
-  const mode = await select({
+  return select<ReviewMode>({
     message: "Quality mode:",
     choices: [
-      { name: "Standard — current behavior (no extra cost)", value: "standard" },
+      { name: "Standard — no code review (no extra cost)", value: "off" },
       {
         name: "Enhanced — periodic code review every 5 loops (~10-14% more tokens)",
         value: "enhanced",
       },
+      {
+        name: "Ultimate — review after every completed story (~20-30% more tokens)",
+        value: "ultimate",
+      },
     ],
-    default: "standard",
+    default: "off",
   });
-  return mode === "enhanced";
 }

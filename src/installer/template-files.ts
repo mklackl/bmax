@@ -63,6 +63,25 @@ const REVIEW_TEMPLATE_BLOCK = `# ===============================================
 # PERIODIC CODE REVIEW
 # =============================================================================
 
+# Review mode: off, enhanced, or ultimate (set via 'bmalph run --review [mode]')
+# - off:      no code review (default)
+# - enhanced: periodic review every REVIEW_INTERVAL loops (~10-14% more tokens)
+# - ultimate: review after every completed story (~20-30% more tokens)
+# The review agent analyzes git diffs and outputs findings for the next implementation loop.
+# Currently supported on Claude Code only.
+REVIEW_MODE="\${REVIEW_MODE:-off}"
+
+# (Legacy) Enables review — prefer REVIEW_MODE instead
+REVIEW_ENABLED="\${REVIEW_ENABLED:-false}"
+
+# Number of implementation loops between review sessions (enhanced mode only)
+REVIEW_INTERVAL="\${REVIEW_INTERVAL:-5}"
+
+`;
+const PREVIOUS_REVIEW_TEMPLATE_BLOCK = `# =============================================================================
+# PERIODIC CODE REVIEW
+# =============================================================================
+
 # Enable periodic code review loops (set via 'bmalph run --review' or manually)
 # When enabled, Ralph runs a read-only review session every REVIEW_INTERVAL loops.
 # The review agent analyzes git diffs and outputs findings for the next implementation loop.
@@ -267,9 +286,27 @@ async function isRalphrcCustomized(filePath: string, platformId: string): Promis
     return false;
   }
 
+  // Check variants with previous review block (pre-ultimate installs)
+  const templateWithPreviousReview = currentTemplate.replace(
+    REVIEW_TEMPLATE_BLOCK,
+    PREVIOUS_REVIEW_TEMPLATE_BLOCK
+  );
+  if (matchesManagedPermissionVariants(content, templateWithPreviousReview)) {
+    return false;
+  }
+
   // Check variants without both quality gates and review blocks
   const templateWithoutQGAndReview = templateWithoutQG.replace(REVIEW_TEMPLATE_BLOCK, "");
   if (matchesManagedPermissionVariants(content, templateWithoutQGAndReview)) {
+    return false;
+  }
+
+  // Check variants without quality gates but with previous review block
+  const templateWithoutQGButPreviousReview = templateWithoutQG.replace(
+    REVIEW_TEMPLATE_BLOCK,
+    PREVIOUS_REVIEW_TEMPLATE_BLOCK
+  );
+  if (matchesManagedPermissionVariants(content, templateWithoutQGButPreviousReview)) {
     return false;
   }
 

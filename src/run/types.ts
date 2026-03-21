@@ -2,6 +2,8 @@ import type { ChildProcess } from "node:child_process";
 
 export type RalphProcessState = "running" | "stopped" | "detached";
 
+export type ReviewMode = "off" | "enhanced" | "ultimate";
+
 export interface RalphProcess {
   readonly child: ChildProcess;
   state: RalphProcessState;

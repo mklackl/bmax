@@ -2,18 +2,19 @@ import { createRefreshCallback } from "../watch/dashboard.js";
 import { createTerminalFrameWriter } from "../watch/frame-writer.js";
 import { FileWatcher } from "../watch/file-watcher.js";
 import { renderFooterLine } from "../watch/renderer.js";
-import type { RalphProcess } from "./types.js";
+import type { RalphProcess, ReviewMode } from "./types.js";
 
 export interface RunDashboardOptions {
   projectDir: string;
   interval: number;
   ralph: RalphProcess;
-  reviewEnabled?: boolean;
+  reviewMode?: ReviewMode;
 }
 
-export function renderStatusBar(ralph: RalphProcess, reviewEnabled?: boolean): string {
+export function renderStatusBar(ralph: RalphProcess, reviewMode?: ReviewMode): string {
   const pid = ralph.child.pid ?? "?";
-  const badge = reviewEnabled ? " [review]" : "";
+  const badge =
+    reviewMode === "ultimate" ? " [ultimate]" : reviewMode === "enhanced" ? " [review]" : "";
   switch (ralph.state) {
     case "running":
       return `Ralph: running (PID ${pid})${badge} | q: stop/detach`;
@@ -29,13 +30,13 @@ export function renderQuitPrompt(): string {
 }
 
 export async function startRunDashboard(options: RunDashboardOptions): Promise<void> {
-  const { projectDir, interval, ralph, reviewEnabled } = options;
+  const { projectDir, interval, ralph, reviewMode } = options;
 
   const frameWriter = createTerminalFrameWriter();
   let showingPrompt = false;
   let stopped = false;
   const footerRenderer = (lastUpdated: Date, cols: number): string => {
-    const leftText = showingPrompt ? renderQuitPrompt() : renderStatusBar(ralph, reviewEnabled);
+    const leftText = showingPrompt ? renderQuitPrompt() : renderStatusBar(ralph, reviewMode);
     return renderFooterLine(leftText, `Updated: ${lastUpdated.toISOString().slice(11, 19)}`, cols);
   };
 

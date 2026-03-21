@@ -76,6 +76,7 @@ _env_QUALITY_GATE_TIMEOUT="${QUALITY_GATE_TIMEOUT:-}"
 _env_QUALITY_GATE_ON_COMPLETION_ONLY="${QUALITY_GATE_ON_COMPLETION_ONLY:-}"
 _env_REVIEW_ENABLED="${REVIEW_ENABLED:-}"
 _env_REVIEW_INTERVAL="${REVIEW_INTERVAL:-}"
+_env_REVIEW_MODE="${REVIEW_MODE:-}"
 
 # Now set defaults (only if not already set by environment)
 MAX_CALLS_PER_HOUR="${MAX_CALLS_PER_HOUR:-100}"
@@ -115,6 +116,11 @@ REVIEW_INTERVAL="${REVIEW_INTERVAL:-5}"
 REVIEW_FINDINGS_FILE="$RALPH_DIR/.review_findings.json"
 REVIEW_PROMPT_FILE="$RALPH_DIR/REVIEW_PROMPT.md"
 REVIEW_LAST_SHA_FILE="$RALPH_DIR/.review_last_sha"
+
+# REVIEW_MODE is derived in initialize_runtime_context() after .ralphrc is loaded.
+# This ensures backwards compat: old .ralphrc files with only REVIEW_ENABLED=true
+# still map to enhanced mode. Env vars always win via the snapshot/restore mechanism.
+REVIEW_MODE="${REVIEW_MODE:-off}"
 
 # Valid tool patterns for --allowed-tools validation
 # Default: Claude Code tools. Platform driver overwrites via driver_valid_tools() in main().
@@ -267,6 +273,7 @@ load_ralphrc() {
     [[ -n "$_env_QUALITY_GATE_ON_COMPLETION_ONLY" ]] && QUALITY_GATE_ON_COMPLETION_ONLY="$_env_QUALITY_GATE_ON_COMPLETION_ONLY"
     [[ -n "$_env_REVIEW_ENABLED" ]] && REVIEW_ENABLED="$_env_REVIEW_ENABLED"
     [[ -n "$_env_REVIEW_INTERVAL" ]] && REVIEW_INTERVAL="$_env_REVIEW_INTERVAL"
+    [[ -n "$_env_REVIEW_MODE" ]] && REVIEW_MODE="$_env_REVIEW_MODE"
 
     normalize_claude_permission_mode
     RALPHRC_FILE="$config_file"
@@ -316,6 +323,14 @@ initialize_runtime_context() {
             log_status "INFO" "Loaded configuration from $RALPHRC_FILE"
         fi
     fi
+
+    # Derive REVIEW_MODE after .ralphrc load so backwards-compat works:
+    # old .ralphrc files with only REVIEW_ENABLED=true map to enhanced mode.
+    if [[ "$REVIEW_MODE" == "off" && "$REVIEW_ENABLED" == "true" ]]; then
+        REVIEW_MODE="enhanced"
+    fi
+    # Keep REVIEW_ENABLED in sync for any code that checks it
+    [[ "$REVIEW_MODE" != "off" ]] && REVIEW_ENABLED="true" || REVIEW_ENABLED="false"
 
     # Load platform driver after config so PLATFORM_DRIVER can be overridden.
     load_platform_driver
@@ -1282,27 +1297,44 @@ build_loop_context() {
     echo "${context:0:500}"
 }
 
-# Check if a periodic code review should run this iteration
+# Check if a code review should run this iteration
 # Returns 0 (true) when review is due, 1 (false) otherwise
+# Args: $1 = loop_count, $2 = fix_plan_completed_delta (optional, for ultimate mode)
 should_run_review() {
-    [[ "$REVIEW_ENABLED" != "true" ]] && return 1
+    [[ "$REVIEW_MODE" == "off" ]] && return 1
     local loop_count=$1
+    local fix_plan_delta=${2:-0}
+
     # Never review on first loop (no implementation yet)
     (( loop_count < 1 )) && return 1
-    (( loop_count % REVIEW_INTERVAL != 0 )) && return 1
+
     # Skip if circuit breaker is not CLOSED
     if [[ -f "$RALPH_DIR/.circuit_breaker_state" ]]; then
         local cb_state
         cb_state=$(jq -r '.state // "CLOSED"' "$RALPH_DIR/.circuit_breaker_state" 2>/dev/null)
         [[ "$cb_state" != "CLOSED" ]] && return 1
     fi
+
+    # Mode-specific trigger
+    case "$REVIEW_MODE" in
+        enhanced)
+            (( loop_count % REVIEW_INTERVAL != 0 )) && return 1
+            ;;
+        ultimate)
+            (( fix_plan_delta < 1 )) && return 1
+            ;;
+        *)
+            # Unknown mode — treat as off
+            return 1
+            ;;
+    esac
+
     # Skip if no changes since last review (committed or uncommitted)
     if command -v git &>/dev/null && git rev-parse --git-dir &>/dev/null 2>&1; then
         local current_sha last_sha
         current_sha=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
         last_sha=""
         [[ -f "$REVIEW_LAST_SHA_FILE" ]] && last_sha=$(cat "$REVIEW_LAST_SHA_FILE" 2>/dev/null)
-        # Check for new commits OR uncommitted workspace changes
         local has_uncommitted
         has_uncommitted=$(git status --porcelain 2>/dev/null | head -1)
         if [[ "$current_sha" == "$last_sha" && -z "$has_uncommitted" ]]; then
@@ -2499,8 +2531,12 @@ main() {
 
             update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "completed" "success"
 
-            # Periodic code review check
-            if should_run_review "$loop_count"; then
+            # Code review check
+            local fix_plan_delta=0
+            if [[ -f "$RESPONSE_ANALYSIS_FILE" ]]; then
+                fix_plan_delta=$(jq -r '.analysis.fix_plan_completed_delta // 0' "$RESPONSE_ANALYSIS_FILE" 2>/dev/null || echo "0")
+            fi
+            if should_run_review "$loop_count" "$fix_plan_delta"; then
                 run_review_loop "$loop_count"
             fi
 

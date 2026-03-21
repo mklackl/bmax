@@ -65,32 +65,44 @@ describe("renderStatusBar", () => {
     expect(result).toContain("detached");
   });
 
-  it("shows [review] badge when reviewEnabled is true", async () => {
+  it("shows [review] badge for enhanced review mode", async () => {
     const { renderStatusBar } = await import("../../src/run/run-dashboard.js");
     const ralph = { state: "running", exitCode: null, child: { pid: 12345 } } as RalphProcess;
 
-    const result = renderStatusBar(ralph, true);
+    const result = renderStatusBar(ralph, "enhanced");
 
     expect(result).toContain("[review]");
     expect(result).toContain("running");
   });
 
-  it("omits [review] badge when reviewEnabled is false", async () => {
+  it("shows [ultimate] badge for ultimate review mode", async () => {
     const { renderStatusBar } = await import("../../src/run/run-dashboard.js");
     const ralph = { state: "running", exitCode: null, child: { pid: 12345 } } as RalphProcess;
 
-    const result = renderStatusBar(ralph, false);
+    const result = renderStatusBar(ralph, "ultimate");
 
-    expect(result).not.toContain("[review]");
+    expect(result).toContain("[ultimate]");
+    expect(result).toContain("running");
   });
 
-  it("omits [review] badge when reviewEnabled is undefined", async () => {
+  it("omits review badge when review mode is off", async () => {
+    const { renderStatusBar } = await import("../../src/run/run-dashboard.js");
+    const ralph = { state: "running", exitCode: null, child: { pid: 12345 } } as RalphProcess;
+
+    const result = renderStatusBar(ralph, "off");
+
+    expect(result).not.toContain("[review]");
+    expect(result).not.toContain("[ultimate]");
+  });
+
+  it("omits review badge when review mode is undefined", async () => {
     const { renderStatusBar } = await import("../../src/run/run-dashboard.js");
     const ralph = { state: "running", exitCode: null, child: { pid: 12345 } } as RalphProcess;
 
     const result = renderStatusBar(ralph);
 
     expect(result).not.toContain("[review]");
+    expect(result).not.toContain("[ultimate]");
   });
 });
 

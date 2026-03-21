@@ -172,6 +172,7 @@ describe("runCommand", () => {
       expect(process.exitCode).toBeUndefined();
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", id, {
         inheritStdio: false,
+        reviewMode: "off",
       });
       if (id === "cursor") {
         expect(validateCursorRuntime).toHaveBeenCalledWith("/test/project");
@@ -220,6 +221,7 @@ describe("runCommand", () => {
       expect(process.exitCode).toBeUndefined();
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "opencode", {
         inheritStdio: false,
+        reviewMode: "off",
       });
       expect(validateCursorRuntime).not.toHaveBeenCalled();
     });
@@ -501,6 +503,7 @@ describe("runCommand", () => {
       expect(startRunDashboard).not.toHaveBeenCalled();
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
         inheritStdio: true,
+        reviewMode: "off",
       });
       expect(consoleSpy.mock.calls.map((call) => call[0]).join("\n")).toContain(
         "interactive terminal"
@@ -544,6 +547,7 @@ describe("runCommand", () => {
       );
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
         inheritStdio: false,
+        reviewMode: "off",
       });
     });
 
@@ -589,6 +593,7 @@ describe("runCommand", () => {
       expect(startRunDashboard).not.toHaveBeenCalled();
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
         inheritStdio: true,
+        reviewMode: "off",
       });
     });
 
@@ -706,7 +711,7 @@ describe("runCommand", () => {
   });
 
   describe("review mode", () => {
-    it("passes reviewEnabled to spawnRalphLoop when --review is set", async () => {
+    it("passes reviewMode enhanced when --review is set without value", async () => {
       const { readConfig } = await import("../../src/utils/config.js");
       const { getPlatform } = await import("../../src/platform/registry.js");
       const { validateBashAvailable, validateRalphLoop, spawnRalphLoop } =
@@ -742,11 +747,91 @@ describe("runCommand", () => {
 
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
         inheritStdio: false,
-        reviewEnabled: true,
+        reviewMode: "enhanced",
       });
     });
 
-    it("does not pass reviewEnabled when --no-review is set", async () => {
+    it("passes reviewMode enhanced when --review enhanced is set", async () => {
+      const { readConfig } = await import("../../src/utils/config.js");
+      const { getPlatform } = await import("../../src/platform/registry.js");
+      const { validateBashAvailable, validateRalphLoop, spawnRalphLoop } =
+        await import("../../src/run/ralph-process.js");
+      const { startRunDashboard } = await import("../../src/run/run-dashboard.js");
+
+      vi.mocked(readConfig).mockResolvedValue({
+        name: "test",
+        description: "",
+        createdAt: "2026-02-28",
+        platform: "claude-code",
+      });
+      vi.mocked(getPlatform).mockReturnValue(mockPlatform());
+      vi.mocked(validateBashAvailable).mockResolvedValue(undefined);
+      vi.mocked(validateRalphLoop).mockResolvedValue(undefined);
+      vi.mocked(spawnRalphLoop).mockReturnValue({
+        child: { pid: 123 },
+        state: "running",
+        exitCode: null,
+        kill: vi.fn(),
+        detach: vi.fn(),
+        onExit: vi.fn(),
+      } as never);
+      vi.mocked(startRunDashboard).mockResolvedValue(undefined);
+
+      const { runCommand } = await import("../../src/commands/run.js");
+      await runCommand({
+        projectDir: "/test/project",
+        interval: "2000",
+        dashboard: true,
+        review: "enhanced",
+      });
+
+      expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
+        inheritStdio: false,
+        reviewMode: "enhanced",
+      });
+    });
+
+    it("passes reviewMode ultimate when --review ultimate is set", async () => {
+      const { readConfig } = await import("../../src/utils/config.js");
+      const { getPlatform } = await import("../../src/platform/registry.js");
+      const { validateBashAvailable, validateRalphLoop, spawnRalphLoop } =
+        await import("../../src/run/ralph-process.js");
+      const { startRunDashboard } = await import("../../src/run/run-dashboard.js");
+
+      vi.mocked(readConfig).mockResolvedValue({
+        name: "test",
+        description: "",
+        createdAt: "2026-02-28",
+        platform: "claude-code",
+      });
+      vi.mocked(getPlatform).mockReturnValue(mockPlatform());
+      vi.mocked(validateBashAvailable).mockResolvedValue(undefined);
+      vi.mocked(validateRalphLoop).mockResolvedValue(undefined);
+      vi.mocked(spawnRalphLoop).mockReturnValue({
+        child: { pid: 123 },
+        state: "running",
+        exitCode: null,
+        kill: vi.fn(),
+        detach: vi.fn(),
+        onExit: vi.fn(),
+      } as never);
+      vi.mocked(startRunDashboard).mockResolvedValue(undefined);
+
+      const { runCommand } = await import("../../src/commands/run.js");
+      await runCommand({
+        projectDir: "/test/project",
+        interval: "2000",
+        dashboard: true,
+        review: "ultimate",
+      });
+
+      expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
+        inheritStdio: false,
+        reviewMode: "ultimate",
+      });
+    });
+
+    it("passes reviewMode off when --no-review is set", async () => {
       const { readConfig } = await import("../../src/utils/config.js");
       const { getPlatform } = await import("../../src/platform/registry.js");
       const { validateBashAvailable, validateRalphLoop, spawnRalphLoop } =
@@ -782,6 +867,7 @@ describe("runCommand", () => {
 
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
         inheritStdio: false,
+        reviewMode: "off",
       });
     });
 
@@ -813,7 +899,60 @@ describe("runCommand", () => {
       expect(errorOutput).toContain("Claude Code");
     });
 
-    it("defaults to no review when review flag is not provided", async () => {
+    it("errors when --review ultimate is used with a non-claude-code driver", async () => {
+      const { readConfig } = await import("../../src/utils/config.js");
+      const { isPlatformId, getPlatform } = await import("../../src/platform/registry.js");
+
+      vi.mocked(readConfig).mockResolvedValue({
+        name: "test",
+        description: "",
+        createdAt: "2026-02-28",
+        platform: "codex",
+      });
+      vi.mocked(isPlatformId).mockReturnValue(true);
+      vi.mocked(getPlatform).mockReturnValue(
+        mockPlatform({ id: "codex", displayName: "OpenAI Codex", tier: "full" })
+      );
+
+      const { runCommand } = await import("../../src/commands/run.js");
+      await runCommand({
+        projectDir: "/test/project",
+        interval: "2000",
+        dashboard: true,
+        review: "ultimate",
+      });
+
+      expect(process.exitCode).toBe(1);
+      const errorOutput = consoleErrorSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(errorOutput).toContain("Claude Code");
+    });
+
+    it("errors when --review is set with an invalid mode", async () => {
+      const { readConfig } = await import("../../src/utils/config.js");
+      const { getPlatform } = await import("../../src/platform/registry.js");
+
+      vi.mocked(readConfig).mockResolvedValue({
+        name: "test",
+        description: "",
+        createdAt: "2026-02-28",
+        platform: "claude-code",
+      });
+      vi.mocked(getPlatform).mockReturnValue(mockPlatform());
+
+      const { runCommand } = await import("../../src/commands/run.js");
+      await runCommand({
+        projectDir: "/test/project",
+        interval: "2000",
+        dashboard: true,
+        review: "invalid",
+      });
+
+      expect(process.exitCode).toBe(1);
+      const errorOutput = consoleErrorSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(errorOutput).toContain("Unknown review mode");
+    });
+
+    it("defaults to no review mode when review flag is not provided", async () => {
       const { readConfig } = await import("../../src/utils/config.js");
       const { getPlatform } = await import("../../src/platform/registry.js");
       const { validateBashAvailable, validateRalphLoop, spawnRalphLoop } =
@@ -848,6 +987,7 @@ describe("runCommand", () => {
 
       expect(spawnRalphLoop).toHaveBeenCalledWith("/test/project", "claude-code", {
         inheritStdio: false,
+        reviewMode: "off",
       });
     });
   });

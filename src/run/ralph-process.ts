@@ -2,7 +2,7 @@ import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { join } from "node:path";
 import { RALPH_DIR } from "../utils/constants.js";
 import { exists } from "../utils/file-system.js";
-import type { RalphProcess, RalphProcessState } from "./types.js";
+import type { RalphProcess, RalphProcessState, ReviewMode } from "./types.js";
 
 const RALPH_LOOP_PATH = `${RALPH_DIR}/ralph_loop.sh`;
 const BASH_RALPH_LOOP_PATH = `./${RALPH_LOOP_PATH}`;
@@ -171,7 +171,7 @@ export async function validateRalphLoop(projectDir: string): Promise<void> {
 
 export interface SpawnOptions {
   inheritStdio: boolean;
-  reviewEnabled?: boolean;
+  reviewMode?: ReviewMode;
 }
 
 export function spawnRalphLoop(
@@ -180,9 +180,14 @@ export function spawnRalphLoop(
   options: SpawnOptions
 ): RalphProcess {
   const env: NodeJS.ProcessEnv = { ...process.env, PLATFORM_DRIVER: platformId };
-  if (options.reviewEnabled) {
-    env.REVIEW_ENABLED = "true";
-    env.REVIEW_INTERVAL = "5";
+  if (options.reviewMode) {
+    env.REVIEW_MODE = options.reviewMode;
+    if (options.reviewMode !== "off") {
+      env.REVIEW_ENABLED = "true";
+      if (options.reviewMode === "enhanced") {
+        env.REVIEW_INTERVAL = "5";
+      }
+    }
   }
 
   const child = spawn(cachedBashCommand ?? "bash", [BASH_RALPH_LOOP_PATH], {
