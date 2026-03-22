@@ -92,7 +92,7 @@ Build the execution command and store it in the global `CLAUDE_CMD_ARGS` array.
 
 | Parameter | Description |
 |---|---|
-| `$1` — prompt_file | Absolute path to the prompt file (e.g. `.ralph/PROMPT.md`) |
+| `$1` — prompt_file | Path to the prompt file (e.g. `.ralph/PROMPT.md`) |
 | `$2` — loop_context | Optional metadata string for session continuity (may be empty) |
 | `$3` — session_id | Optional session ID to resume (may be empty) |
 
@@ -178,11 +178,14 @@ the session ID to stdout; return 0 if found, 1 otherwise.
 Called after successful execution. Falls through to
 `driver_fallback_session_id` if not implemented or if extraction fails.
 
-### `driver_fallback_session_id()`
+### `driver_fallback_session_id(output_file)`
 
 Query the driver's native session API to retrieve the active session ID when
 output parsing fails. Echo the session ID to stdout; return 0 if found, 1
 otherwise.
+
+The orchestrator passes the output file path as `$1`, but implementations may
+ignore it and query the CLI directly instead.
 
 ---
 
