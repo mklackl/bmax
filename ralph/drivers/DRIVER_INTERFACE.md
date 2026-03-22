@@ -224,8 +224,8 @@ The orchestrator (`ralph_loop.sh`) calls driver functions in this order:
 
 > **Note:** `driver_check_available` and `driver_min_version` are part of the
 > interface contract and tested in the driver test suite, but are not currently
-> called by `ralph_loop.sh`. External tooling (e.g. `bmalph doctor`) may use
-> them for preflight validation.
+> called by `ralph_loop.sh` or `bmalph`. They exist so that future tooling can
+> perform preflight validation without re-implementing availability checks.
 
 ---
 
