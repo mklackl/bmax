@@ -163,7 +163,8 @@ Some drivers (codex, opencode) simply copy `CLAUDE_CMD_ARGS` unchanged.
 ### `driver_stream_filter()`
 
 Echo a `jq` filter expression that transforms live stream JSON events into
-readable text. The orchestrator pipes the live log through this filter.
+readable text. The orchestrator pipes the command output through this filter
+via `jq` and writes the result to the live log.
 
 ```bash
 # Example: passthrough (copilot)
@@ -287,4 +288,5 @@ All other drivers rely on their native permission/sandbox models and ignore
 1. Create `ralph/drivers/<name>.sh`
 2. Implement all 9 required functions
 3. Optionally implement session and live output functions
-4. Register the driver in the platform registry (`src/platform/`)
+4. Add a platform definition in `src/platform/<name>.ts` with `tier: "full"`
+   and register it in `src/platform/registry.ts`
