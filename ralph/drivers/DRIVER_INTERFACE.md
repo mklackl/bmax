@@ -103,12 +103,12 @@ executes directly (`"${CLAUDE_CMD_ARGS[@]}"`).
 
 **Environment variables read:**
 
-| Variable | Description |
-|---|---|
-| `CLAUDE_OUTPUT_FORMAT` | `"json"` or `"text"` |
-| `CLAUDE_USE_CONTINUE` | `"true"` to enable session resume (gates `session_id` usage) |
-| `CLAUDE_ALLOWED_TOOLS` | Comma-separated tool list (only if `driver_supports_tool_allowlist` returns 0) |
-| `CLAUDE_PERMISSION_MODE` | Permission mode string (claude-code only) |
+| Variable | Used by | Description |
+|---|---|---|
+| `CLAUDE_USE_CONTINUE` | all session-capable drivers | `"true"` to enable session resume (gates `session_id` usage) |
+| `CLAUDE_OUTPUT_FORMAT` | claude-code | `"json"` or `"text"` — other drivers hardcode their output format flags |
+| `CLAUDE_ALLOWED_TOOLS` | claude-code | Comma-separated tool list (only if `driver_supports_tool_allowlist` returns 0) |
+| `CLAUDE_PERMISSION_MODE` | claude-code | Permission mode string (default: `bypassPermissions`) |
 
 **Convention:** Loop context is typically prepended to the prompt content or
 passed via `--append-system-prompt`, depending on the driver's CLI flags.
