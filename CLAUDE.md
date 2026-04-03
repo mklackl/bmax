@@ -43,6 +43,7 @@ The instructions file depends on the configured platform — see `src/platform/`
 | `bmalph status`        | Show project installation status          |
 | `bmalph implement`     | Transition BMAD artifacts to Ralph format |
 | `bmalph run`           | Start Ralph loop with live dashboard      |
+| `bmalph run --swarm N` | Run N parallel workers in git worktrees   |
 | `bmalph reset`         | Remove all bmalph files from the project  |
 | `bmalph watch`         | _(deprecated)_ Use `bmalph run` instead   |
 

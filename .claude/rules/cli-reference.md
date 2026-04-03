@@ -22,7 +22,7 @@ paths:
 | `status`        | `--json`                                                                                     |
 | `implement`     | `--force`                                                                                    |
 | `reset`         | `--dry-run`, `--force`                                                                       |
-| `run`           | `--driver <platform>`, `--interval <ms>`, `--no-dashboard`, `--review [mode]`, `--no-review` |
+| `run`           | `--driver <platform>`, `--interval <ms>`, `--no-dashboard`, `--review [mode]`, `--no-review`, `--swarm [count]` |
 | `watch`         | `--interval <ms>` _(deprecated)_                                                             |
 
 ## `bmalph run` features
@@ -31,3 +31,4 @@ paths:
 - **Task injection** — injects the next unchecked task into each loop's context
 - **Git diff injection** — summarizes staged/unstaged changes into inter-loop context
 - **Error resilience** — captures stderr, logs exit reason on driver crash/timeout, detects missing git repos
+- **Swarm mode** — `--swarm [N]` runs N parallel workers in git worktrees, each on different epics. Partitions by epic, merges branches sequentially, rebuilds fix plan. Requires clean tree, >= 2 incomplete epics. Default N=2, max 6.
