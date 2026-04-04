@@ -140,7 +140,7 @@ program
   .option("--no-dashboard", "Run Ralph without the dashboard overlay")
   .option("--review [mode]", "Quality review: enhanced (~10-14% tokens) or ultimate (~20-30%)")
   .option("--no-review", "Disable code review")
-  .option("--swarm [count]", "Run N parallel workers in git worktrees (default: 2)")
+  .option("--swarm [count]", "Run N parallel workers in git worktrees (default: 2, max: 6)")
   .action(
     async (opts: {
       driver?: string;

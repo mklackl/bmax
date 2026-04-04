@@ -439,7 +439,7 @@ Run `bmalph run` to start the loop with a live dashboard, or `bmalph run --no-da
 - `.ralph/` state is excluded from merges; the fix plan is rebuilt from combined completions
 - On source code conflict, the merge stops and branches are preserved for manual resolution
 
-Requirements: clean working tree, at least 2 incomplete epics, full-tier platform.
+Requirements: clean working tree, at least 2 incomplete epics, full-tier platform, not on detached HEAD.
 
 ## Troubleshooting
 

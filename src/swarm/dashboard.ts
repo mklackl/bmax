@@ -213,6 +213,7 @@ export async function startSwarmDashboard(options: SwarmDashboardOptions): Promi
         showingPrompt = false;
         if (data === "s") {
           onQuit("stop");
+          stop();
         } else if (data === "d") {
           onQuit("detach");
           stop();

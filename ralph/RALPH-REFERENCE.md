@@ -303,7 +303,7 @@ When using `--monitor` with `--live`, tmux creates a 3-pane layout:
 
 1. **Partitioning** — The fix plan is parsed for epic groupings. Epics are assigned to workers using greedy bin-packing (largest epic first, assigned to least-loaded worker). Stories within the same epic always go to the same worker.
 2. **Worktrees** — Each worker gets a git worktree at `.swarm/worker-{id}/` on branch `swarm/worker-{id}`, with a per-worker `@fix_plan.md` containing only its stories.
-3. **Execution** — Workers start with 5-second stagger. Each gets `MAX_CALLS_PER_HOUR / N` and has `gc.auto=0` to prevent git lock contention on the shared `.git` directory.
+3. **Execution** — Workers start with 5-second stagger. Each gets `MAX_CALLS_PER_HOUR / N` (default base: 100 if not configured) and has `gc.auto=0` to prevent git lock contention on the shared `.git` directory.
 4. **Merging** — After all workers exit, successful workers (exit code 0) are merged sequentially to the starting branch. `.ralph/` state is excluded; the fix plan is rebuilt from merged workers' completions only.
 5. **Conflict handling** — If a source conflict occurs, the merge stops. Conflicted and failed branches are preserved in `.swarm/.conflict-branches` for manual resolution.
 
