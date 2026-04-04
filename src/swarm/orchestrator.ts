@@ -16,7 +16,7 @@ export interface SwarmPrerequisites {
 /**
  * Resolves the current branch name. Throws on detached HEAD.
  */
-export async function resolveStartBranch(projectDir: string): Promise<string> {
+export function resolveStartBranch(projectDir: string): string {
   try {
     const output = execFileSync("git", ["symbolic-ref", "--short", "HEAD"], {
       cwd: projectDir,

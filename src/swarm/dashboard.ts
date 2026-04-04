@@ -76,8 +76,8 @@ export function renderWorkerSummaryRow(
   cols: number
 ): string {
   const { id, status, assignedEpics, dashboardState } = snapshot;
-  const icon = STATUS_ICONS[status] ?? "?";
-  const label = STATUS_LABELS[status] ?? "";
+  const icon = STATUS_ICONS[status];
+  const label = STATUS_LABELS[status];
 
   const loopCount = dashboardState.loop?.loopCount ?? 0;
   const completed = dashboardState.stories?.completed ?? 0;
@@ -185,7 +185,7 @@ export async function startSwarmDashboard(options: SwarmDashboardOptions): Promi
       ? "Stop all (s) | Detach all (d) | Cancel (c)"
       : `q quit | s stop | d detach | 1-${workers.length} focus`;
     const footerRight = `Updated: ${new Date().toISOString().slice(11, 19)}`;
-    const cols = process.stdout.columns ?? 80;
+    const cols = process.stdout.columns || 80;
     const frame =
       renderSwarmDashboard(snapshots, focusedWorker, cols) +
       "\n" +

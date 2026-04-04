@@ -72,7 +72,7 @@ describe("worktree", () => {
     it("creates a git worktree with the expected branch", async () => {
       const result = await createWorktree(project!.path, 1);
 
-      expect(result.worktreePath).toContain(".swarm/worker-1");
+      expect(result.worktreePath).toContain(join(".swarm", "worker-1"));
       expect(result.branchName).toBe("swarm/worker-1");
 
       // Verify git worktree exists
@@ -127,7 +127,7 @@ describe("worktree", () => {
       const result = await createWorktree(project!.path, 1);
       await writeFile(join(result.worktreePath, "dirty.txt"), "uncommitted");
 
-      await expect(removeWorktree(project!.path, 1)).resolves.not.toThrow();
+      expect(() => removeWorktree(project!.path, 1)).not.toThrow();
     });
   });
 

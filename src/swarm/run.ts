@@ -23,7 +23,7 @@ export async function executeSwarmRun(options: SwarmRunOptions): Promise<void> {
   const { projectDir, platformId, reviewMode, workerCount, dashboard, interval } = options;
 
   // --- Validate ---
-  const startBranch = await resolveStartBranch(projectDir);
+  const startBranch = resolveStartBranch(projectDir);
   const prereqs = await validateSwarmPrerequisites(projectDir, workerCount);
 
   for (const w of prereqs.warnings) {
@@ -51,9 +51,12 @@ export async function executeSwarmRun(options: SwarmRunOptions): Promise<void> {
     if (cleanupInProgress) return;
     cleanupInProgress = true;
     killWorkers();
-    cleanupMergedWorkers(projectDir, workers, [])
-      .catch(() => {})
-      .finally(() => process.exit(130));
+    try {
+      cleanupMergedWorkers(projectDir, workers, []);
+    } catch {
+      // best effort
+    }
+    process.exit(130);
   };
   process.on("SIGINT", handleSignal);
   process.on("SIGTERM", handleSignal);
@@ -115,7 +118,7 @@ export async function executeSwarmRun(options: SwarmRunOptions): Promise<void> {
     await persistConflictBranches(projectDir, workers, results);
 
     // Only clean up merged workers' worktrees
-    await cleanupMergedWorkers(projectDir, workers, results);
+    cleanupMergedWorkers(projectDir, workers, results);
 
     const merged = results.filter((r) => r.status === "merged").length;
     const conflicts = results.filter((r) => r.status === "conflict").length;
@@ -124,10 +127,11 @@ export async function executeSwarmRun(options: SwarmRunOptions): Promise<void> {
       chalk.cyan(`\nSwarm complete: ${merged} merged, ${conflicts} conflicts, ${failed} failed`)
     );
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- signal handler may set this concurrently
     if (!cleanupInProgress) {
       cleanupInProgress = true;
       killWorkers();
-      await cleanupMergedWorkers(projectDir, workers, []);
+      cleanupMergedWorkers(projectDir, workers, []);
     }
     throw err;
   } finally {
@@ -197,7 +201,7 @@ function reportResults(results: MergeResult[]): void {
   for (const result of results) {
     if (result.status === "merged") {
       console.log(chalk.green(`Worker ${result.workerId}: merged`));
-    } else if (result.status === "conflict") {
+    } else {
       console.log(
         chalk.red(
           `Worker ${result.workerId}: CONFLICT in ${result.conflictFiles?.join(", ") ?? "unknown files"}`
@@ -229,18 +233,18 @@ async function persistConflictBranches(
   await writeFile(join(projectDir, SWARM_DIR, ".conflict-branches"), branches + "\n");
 }
 
-async function cleanupMergedWorkers(
+function cleanupMergedWorkers(
   projectDir: string,
   workers: SwarmWorker[],
   results: MergeResult[]
-): Promise<void> {
+): void {
   const mergedIds = new Set(results.filter((r) => r.status === "merged").map((r) => r.workerId));
 
   for (const worker of workers) {
     // Only remove worktrees for merged workers; preserve conflict/error branches
     if (results.length === 0 || mergedIds.has(worker.id)) {
       try {
-        await removeWorktree(projectDir, worker.id);
+        removeWorktree(projectDir, worker.id);
       } catch {
         // best effort
       }

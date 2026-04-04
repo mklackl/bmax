@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import {
   createTestProject,
@@ -48,7 +48,7 @@ describe("orchestrator", () => {
 
   describe("resolveStartBranch", () => {
     it("returns the current branch name", async () => {
-      const branch = await resolveStartBranch(project!.path);
+      const branch = resolveStartBranch(project!.path);
       // Default branch varies — just check it's a non-empty string
       expect(branch.length).toBeGreaterThan(0);
     });
@@ -60,7 +60,7 @@ describe("orchestrator", () => {
       }).trim();
       execFileSync("git", ["checkout", sha], { cwd: project!.path, stdio: "ignore" });
 
-      await expect(resolveStartBranch(project!.path)).rejects.toThrow("detached HEAD");
+      expect(() => resolveStartBranch(project!.path)).toThrow("detached HEAD");
     });
   });
 

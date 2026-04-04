@@ -33,7 +33,7 @@ export async function createWorktree(projectDir: string, workerId: number): Prom
 /**
  * Removes a worktree and its branch.
  */
-export async function removeWorktree(projectDir: string, workerId: number): Promise<void> {
+export function removeWorktree(projectDir: string, workerId: number): void {
   const worktreePath = join(projectDir, SWARM_DIR, `${WORKTREE_PREFIX}${workerId}`);
   const branchName = `${BRANCH_PREFIX}${workerId}`;
 
