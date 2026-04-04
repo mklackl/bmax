@@ -88,6 +88,8 @@ async function executeRun(options: RunCommandOptions): Promise<void> {
       platformId: platform.id,
       reviewMode,
       workerCount,
+      dashboard: useDashboard,
+      interval,
     });
     return;
   }

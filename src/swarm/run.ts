@@ -20,7 +20,7 @@ import type { SwarmWorker, SwarmRunOptions, MergeResult } from "./types.js";
  * Runs the Ralph loop in swarm mode: N parallel workers in git worktrees.
  */
 export async function executeSwarmRun(options: SwarmRunOptions): Promise<void> {
-  const { projectDir, platformId, reviewMode, workerCount } = options;
+  const { projectDir, platformId, reviewMode, workerCount, dashboard, interval } = options;
 
   // --- Validate ---
   const startBranch = await resolveStartBranch(projectDir);
@@ -64,23 +64,40 @@ export async function executeSwarmRun(options: SwarmRunOptions): Promise<void> {
     await spawnWorkers(workers, platformId, reviewMode, prereqs.workerCount);
 
     // Wait for all workers to finish
-    await Promise.all(
-      workers.map(
-        (worker) =>
-          new Promise<void>((resolve) => {
-            worker.ralph!.onExit((code) => {
-              worker.status = code === 0 ? "done" : "error";
-              worker.completedAt = new Date();
-              console.log(
-                chalk.yellow(
-                  `Worker ${worker.id} exited (${worker.status}${code !== 0 ? `, code ${code}` : ""})`
-                )
-              );
-              resolve();
-            });
-          })
-      )
-    );
+    if (dashboard) {
+      const { startSwarmDashboard } = await import("./dashboard.js");
+      await startSwarmDashboard({
+        workers,
+        interval,
+        onQuit: (action) => {
+          if (action === "stop") {
+            killWorkers();
+          } else {
+            for (const w of workers) {
+              if (w.ralph?.state === "running") w.ralph.detach();
+            }
+          }
+        },
+      });
+    } else {
+      await Promise.all(
+        workers.map(
+          (worker) =>
+            new Promise<void>((resolve) => {
+              worker.ralph!.onExit((code) => {
+                worker.status = code === 0 ? "done" : "error";
+                worker.completedAt = new Date();
+                console.log(
+                  chalk.yellow(
+                    `Worker ${worker.id} exited (${worker.status}${code !== 0 ? `, code ${code}` : ""})`
+                  )
+                );
+                resolve();
+              });
+            })
+        )
+      );
+    }
 
     // --- Merge only successful workers ---
     console.log(chalk.cyan("\nMerging worker branches..."));

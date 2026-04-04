@@ -50,5 +50,6 @@ export interface SwarmRunOptions {
   platformId: string;
   reviewMode: ReviewMode;
   workerCount: number;
-  // TODO: dashboard and interval fields deferred to swarm dashboard implementation
+  dashboard: boolean;
+  interval: number;
 }
