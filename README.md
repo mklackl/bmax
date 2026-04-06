@@ -285,6 +285,7 @@ BMAD (add Epic 2) → bmalph implement → Ralph sees changes + picks up Epic 2
 | `--review [mode]`     | Quality review: `enhanced` (every 5 loops) or `ultimate` (every story). Claude Code only |
 | `--interval <ms>`     | Dashboard refresh interval in milliseconds (default: 2000)                               |
 | `--no-dashboard`      | Run Ralph without the dashboard overlay                                                  |
+| `--swarm [count]`     | Run N parallel workers in git worktrees (default: 2, max: 6). Requires >= 2 epics        |
 
 ### watch options
 
@@ -426,6 +427,19 @@ Cursor-specific runtime checks:
 - `bmalph run --driver cursor` runs the same bash-scoped preflight before the loop starts
 
 Run `bmalph run` to start the loop with a live dashboard, or `bmalph run --no-dashboard` for headless mode. Press `Ctrl+C` to stop the loop at any time.
+
+### Swarm Mode (Parallel Workers)
+
+`bmalph run --swarm [N]` spawns N Ralph loops in isolated git worktrees, each working on different epics simultaneously. Stories are partitioned by epic using greedy bin-packing for balanced distribution.
+
+- Each worker gets its own `@fix_plan.md` with only its assigned stories
+- Workers run on separate branches (`swarm/worker-1`, `swarm/worker-2`, etc.)
+- Rate limits are divided across workers; starts are staggered by 5s
+- After all workers complete, branches are merged back sequentially
+- `.ralph/` state is excluded from merges; the fix plan is rebuilt from combined completions
+- On source code conflict, the merge stops and branches are preserved for manual resolution
+
+Requirements: clean working tree, at least 2 incomplete epics, full-tier platform, not on detached HEAD.
 
 ## Troubleshooting
 

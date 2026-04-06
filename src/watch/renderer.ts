@@ -263,13 +263,13 @@ export function box(title: string, lines: string[], cols: number): string {
   return [topBorder, ...contentLines, bottomBorder].join("\n");
 }
 
-export function renderHeader(cols: number): string {
+export function renderHeader(cols: number, title = "RALPH MONITOR"): string {
   const innerWidth = Math.max(0, cols - 2);
-  const title = truncateAnsi("RALPH MONITOR", innerWidth);
-  const titleLength = displayWidth(title);
+  const titleStr = truncateAnsi(title, innerWidth);
+  const titleLength = displayWidth(titleStr);
   const padding = Math.max(0, Math.floor((innerWidth - titleLength) / 2));
   const centeredTitle =
-    " ".repeat(padding) + title + " ".repeat(Math.max(0, innerWidth - padding - titleLength));
+    " ".repeat(padding) + titleStr + " ".repeat(Math.max(0, innerWidth - padding - titleLength));
 
   const topBorder =
     BOX_CHARS.headerLeft + BOX_CHARS.headerHoriz.repeat(innerWidth) + BOX_CHARS.headerRight;

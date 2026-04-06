@@ -2,7 +2,7 @@
 
 This reference guide provides essential information for troubleshooting and understanding Ralph's autonomous development loop.
 
-In bmalph-managed projects, start Ralph with `bmalph run`. When you need direct loop flags such as `--reset-circuit` or `--live`, invoke `bash .ralph/ralph_loop.sh ...` from the project root.
+In bmalph-managed projects, start Ralph with `bmalph run`. For parallel execution across multiple epics, use `bmalph run --swarm [N]`. When you need direct loop flags such as `--reset-circuit` or `--live`, invoke `bash .ralph/ralph_loop.sh ...` from the project root.
 
 ## Table of Contents
 
@@ -12,7 +12,8 @@ In bmalph-managed projects, start Ralph with `bmalph run`. When you need direct 
 4. [Circuit Breaker](#circuit-breaker)
 5. [Exit Detection](#exit-detection)
 6. [Live Streaming](#live-streaming)
-7. [Troubleshooting](#troubleshooting)
+7. [Swarm Mode](#swarm-mode)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -291,6 +292,34 @@ When using `--monitor` with `--live`, tmux creates a 3-pane layout:
 - **Left pane:** Ralph loop with live streaming
 - **Right-top pane:** `tail -f .ralph/live.log` (live driver output)
 - **Right-bottom pane:** status dashboard (`bmalph watch` when available)
+
+---
+
+## Swarm Mode
+
+`bmalph run --swarm [N]` runs N parallel Ralph loops in isolated git worktrees, each working on different epics. This is orchestrated by the TypeScript layer (`src/swarm/`); `ralph_loop.sh` runs unmodified in each worktree.
+
+### How it works
+
+1. **Partitioning** — The fix plan is parsed for epic groupings. Epics are assigned to workers using greedy bin-packing (largest epic first, assigned to least-loaded worker). Stories within the same epic always go to the same worker.
+2. **Worktrees** — Each worker gets a git worktree at `.swarm/worker-{id}/` on branch `swarm/worker-{id}`, with a per-worker `@fix_plan.md` containing only its stories.
+3. **Execution** — Workers start with 5-second stagger. Each gets `MAX_CALLS_PER_HOUR / N` (default base: 100 if not configured) and has `gc.auto=0` to prevent git lock contention on the shared `.git` directory.
+4. **Merging** — After all workers exit, successful workers (exit code 0) are merged sequentially to the starting branch. `.ralph/` state is excluded; the fix plan is rebuilt from merged workers' completions only.
+5. **Conflict handling** — If a source conflict occurs, the merge stops. Conflicted and failed branches are preserved in `.swarm/.conflict-branches` for manual resolution.
+
+### Interaction with other features
+
+- **Circuit breaker** — Each worker has an independent circuit breaker in its own `.ralph/` directory.
+- **Session continuity** — Each worker creates its own Claude session; no cross-worker interference.
+- **Code review** — If `--review` is used with `--swarm`, each worker runs its own review sessions (N workers = N review sessions).
+- **Quality gates** — Run in each worktree's working directory; `node_modules/` must be present (not yet automated; planned for Phase 2).
+
+### Requirements
+
+- Clean working tree (no uncommitted changes)
+- At least 2 incomplete epics in the fix plan
+- Full-tier platform (claude-code, codex, opencode, copilot, cursor)
+- Not on detached HEAD
 
 ---
 
