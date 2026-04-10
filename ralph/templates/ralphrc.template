@@ -17,6 +17,10 @@
 # Platform driver for Ralph loop (claude-code, codex, opencode, copilot, or cursor)
 PLATFORM_DRIVER="${PLATFORM_DRIVER:-claude-code}"
 
+# Automatically switch between Claude Code and Codex when the active driver
+# becomes unavailable or hits its subscription / usage limit.
+AUTO_DRIVER_FALLBACK="${AUTO_DRIVER_FALLBACK:-true}"
+
 # =============================================================================
 # PROJECT IDENTIFICATION
 # =============================================================================

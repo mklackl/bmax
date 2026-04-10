@@ -237,6 +237,122 @@ RALPHRC_LOADED=false
 # Platform driver (set from .ralphrc or environment)
 PLATFORM_DRIVER="${PLATFORM_DRIVER:-claude-code}"
 RUNTIME_CONTEXT_LOADED=false
+AUTO_DRIVER_FALLBACK="${AUTO_DRIVER_FALLBACK:-true}"
+
+driver_is_available() {
+    if declare -F driver_check_available >/dev/null; then
+        driver_check_available
+        return $?
+    fi
+
+    command -v "$CLAUDE_CODE_CMD" &>/dev/null
+}
+
+get_fallback_driver() {
+    local driver=${1:-$PLATFORM_DRIVER}
+
+    case "$driver" in
+        claude-code) echo "codex" ;;
+        codex) echo "claude-code" ;;
+        *) echo "" ;;
+    esac
+}
+
+switch_platform_driver() {
+    local next_driver=$1
+    local reason=${2:-"driver_switch"}
+    local previous_driver=${3:-$PLATFORM_DRIVER}
+
+    if [[ -z "$next_driver" || "$next_driver" == "$previous_driver" ]]; then
+        return 1
+    fi
+
+    PLATFORM_DRIVER="$next_driver"
+    load_platform_driver
+    reset_session "$reason"
+    log_status "WARN" "Driver fallback: switched from $previous_driver to $next_driver ($reason)"
+    return 0
+}
+
+handle_driver_limit_fallback() {
+    local loop_count=$1
+    local exhausted_driver=${2:-$PLATFORM_DRIVER}
+    local fallback_driver=""
+
+    if [[ "$AUTO_DRIVER_FALLBACK" != "true" ]]; then
+        return 1
+    fi
+
+    fallback_driver=$(get_fallback_driver "$exhausted_driver")
+    if [[ -z "$fallback_driver" ]]; then
+        return 1
+    fi
+
+    log_status "WARN" "$exhausted_driver hit its usage limit. Checking fallback driver: $fallback_driver"
+
+    if ! switch_platform_driver "$fallback_driver" "usage_limit_fallback" "$exhausted_driver"; then
+        return 1
+    fi
+
+    update_status "$loop_count" "$(cat "$CALL_COUNT_FILE" 2>/dev/null || echo "0")" "driver_fallback" "running" "usage_limit:$exhausted_driver->${fallback_driver}"
+    return 0
+}
+
+ensure_available_platform_driver() {
+    if driver_is_available; then
+        return 0
+    fi
+
+    local missing_driver=$PLATFORM_DRIVER
+    local fallback_driver=""
+
+    if [[ "$AUTO_DRIVER_FALLBACK" == "true" ]]; then
+        fallback_driver=$(get_fallback_driver "$missing_driver")
+    fi
+
+    if [[ -n "$fallback_driver" ]]; then
+        local previous_driver=$PLATFORM_DRIVER
+        PLATFORM_DRIVER="$fallback_driver"
+        load_platform_driver
+        if driver_is_available; then
+            reset_session "driver_unavailable_fallback"
+            log_status "WARN" "Primary driver unavailable ($missing_driver). Auto-switched to $fallback_driver."
+            return 0
+        fi
+
+        PLATFORM_DRIVER="$previous_driver"
+        load_platform_driver
+    fi
+
+    log_status "ERROR" "$DRIVER_DISPLAY_NAME CLI not available: $(driver_cli_binary)"
+    if [[ -n "$fallback_driver" ]]; then
+        log_status "ERROR" "Fallback driver also unavailable: $fallback_driver"
+    fi
+    return 1
+}
+
+driver_hit_usage_limit() {
+    local output_file=$1
+    local stderr_file=${2:-}
+    local haystack=""
+
+    [[ -f "$output_file" ]] && haystack+=$(cat "$output_file" 2>/dev/null)
+    [[ -f "$stderr_file" ]] && haystack+=$'\n'$(cat "$stderr_file" 2>/dev/null)
+
+    [[ -z "$haystack" ]] && return 1
+
+    if [[ "$(driver_name)" == "claude-code" ]]; then
+        echo "$haystack" | grep -qiE "you'?ve hit your limit|hit your limit|5.*hour.*limit|limit.*reached.*try.*back|usage.*limit.*reached|subscription.*limit|rate limit"
+        return $?
+    fi
+
+    if [[ "$(driver_name)" == "codex" ]]; then
+        echo "$haystack" | grep -qiE "you'?ve hit your limit|hit your limit|usage.*limit.*reached|limit.*reached|quota.*exceeded|rate limit|too many requests|subscription.*limit"
+        return $?
+    fi
+
+    echo "$haystack" | grep -qiE "you'?ve hit your limit|hit your limit|usage.*limit.*reached|limit.*reached|quota.*exceeded|rate limit"
+}
 
 # resolve_ralphrc_file - Resolve the Ralph config path
 resolve_ralphrc_file() {
@@ -411,6 +527,9 @@ initialize_runtime_context() {
 
     # Load platform driver after config so PLATFORM_DRIVER can be overridden.
     load_platform_driver
+    if ! ensure_available_platform_driver; then
+        exit 1
+    fi
     RUNTIME_CONTEXT_LOADED=true
 }
 
@@ -2375,11 +2494,13 @@ execute_claude_code() {
         # stdin must be redirected from /dev/null because newer Claude CLI versions
         # read from stdin even in -p (print) mode, causing the process to hang
         set -o pipefail
+        set +e
         portable_timeout ${timeout_seconds}s stdbuf -oL "${LIVE_CMD_ARGS[@]}" \
             < /dev/null 2>"$stderr_file" | stdbuf -oL tee "$output_file" | stdbuf -oL jq --unbuffered -j "$jq_filter" 2>/dev/null | tee "$LIVE_LOG_FILE"
 
         # Capture exit codes from pipeline
         local -a pipe_status=("${PIPESTATUS[@]}")
+        set -e
         set +o pipefail
 
         # Primary exit code is from Claude/timeout (first command in pipeline)
@@ -2673,8 +2794,8 @@ EOF
         echo '{"status": "failed", "timestamp": "'$(date '+%Y-%m-%d %H:%M:%S')'"}' > "$PROGRESS_FILE"
 
         # Check if the failure is due to API 5-hour limit
-        if grep -qi "5.*hour.*limit\|limit.*reached.*try.*back\|usage.*limit.*reached" "$output_file"; then
-            log_status "ERROR" "🚫 Claude API 5-hour usage limit reached"
+        if driver_hit_usage_limit "$output_file" "$stderr_file"; then
+            log_status "ERROR" "🚫 $DRIVER_DISPLAY_NAME usage limit reached"
             return 2  # Special return code for API limit
         else
             local exit_desc
@@ -2884,9 +3005,14 @@ main() {
         local calls_made=$(cat "$CALL_COUNT_FILE" 2>/dev/null || echo "0")
         update_status "$loop_count" "$calls_made" "executing" "running"
         
-        # Execute Claude Code
-        execute_claude_code "$loop_count"
-        local exec_result=$?
+        # Execute driver loop body inside an if-condition so non-zero control
+        # flow return codes do not trigger bash errexit for the whole loop.
+        local exec_result=0
+        if execute_claude_code "$loop_count"; then
+            exec_result=0
+        else
+            exec_result=$?
+        fi
         
         if [ $exec_result -eq 0 ]; then
             if consume_current_loop_permission_denial "$loop_count"; then
@@ -2942,43 +3068,20 @@ main() {
             log_status "INFO" "Run 'bash .ralph/ralph_loop.sh --reset-circuit' to reset the circuit breaker after addressing issues"
             break
         elif [ $exec_result -eq 2 ]; then
-            # API 5-hour limit reached - handle specially
+            local exhausted_driver="$PLATFORM_DRIVER"
             append_loop_metrics "$loop_count" 0 false false "api_limit"
-            update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "api_limit" "paused"
-            log_status "WARN" "🛑 Claude API 5-hour limit reached!"
-            
-            # Ask user whether to wait or exit
-            echo -e "\n${YELLOW}The Claude API 5-hour usage limit has been reached.${NC}"
-            echo -e "${YELLOW}You can either:${NC}"
-            echo -e "  ${GREEN}1)${NC} Wait for the limit to reset (usually within an hour)"
-            echo -e "  ${GREEN}2)${NC} Exit the loop and try again later"
-            echo -e "\n${BLUE}Choose an option (1 or 2):${NC} "
-            
-            # Read user input with timeout
-            read -t 30 -n 1 user_choice
-            echo  # New line after input
-            
-            if [[ "$user_choice" == "2" ]] || [[ -z "$user_choice" ]]; then
-                log_status "INFO" "User chose to exit (or timed out). Exiting loop..."
-                update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "api_limit_exit" "stopped" "api_5hour_limit"
-                break
-            else
-                log_status "INFO" "User chose to wait. Waiting for API limit reset..."
-                # Wait for longer period when API limit is hit
-                local wait_minutes=60
-                log_status "INFO" "Waiting $wait_minutes minutes before retrying..."
-                
-                # Countdown display
-                local wait_seconds=$((wait_minutes * 60))
-                while [[ $wait_seconds -gt 0 ]]; do
-                    local minutes=$((wait_seconds / 60))
-                    local seconds=$((wait_seconds % 60))
-                    printf "\r${YELLOW}Time until retry: %02d:%02d${NC}" $minutes $seconds
-                    sleep 1
-                    ((wait_seconds--))
-                done
-                printf "\n"
+            update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "api_limit" "paused" "usage_limit:$exhausted_driver"
+            log_status "WARN" "🛑 $DRIVER_DISPLAY_NAME usage limit reached"
+
+            if handle_driver_limit_fallback "$loop_count" "$exhausted_driver"; then
+                log_status "INFO" "Continuing loop with fallback driver after usage-limit switch"
+                sleep 2
+                continue
             fi
+
+            log_status "ERROR" "No automatic fallback driver available after usage limit on $exhausted_driver"
+            update_status "$loop_count" "$(cat "$CALL_COUNT_FILE")" "api_limit_exit" "stopped" "usage_limit_no_fallback:$exhausted_driver"
+            break
         elif [ $exec_result -eq 4 ]; then
             # Write heartbeat timeout (#146) — count the invocation
             local calls_made=$(cat "$CALL_COUNT_FILE" 2>/dev/null || echo "0")
