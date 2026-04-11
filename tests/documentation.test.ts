@@ -12,10 +12,10 @@ describe("documentation", () => {
   it("documents the supported platforms in README", () => {
     const readme = readDoc("README.md");
 
-    expect(readme).toContain("claude-code");
-    expect(readme).toContain("codex");
-    expect(readme).toContain("cursor");
-    expect(readme).toContain("copilot");
+    expect(readme).toContain("Claude Code");
+    expect(readme).toContain("Codex");
+    expect(readme).toContain("Cursor");
+    expect(readme).toContain("Copilot");
   });
 
   it("documents Cursor preflight and live-output behavior in the Ralph reference", () => {
