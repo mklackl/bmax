@@ -6,9 +6,7 @@
 
 5 AI agents. 5 phases. From idea to revenue.
 
-[![npm](https://img.shields.io/npm/v/bmax?style=flat-square&color=cb3837)](https://www.npmjs.com/package/bmax)
-[![license](https://img.shields.io/npm/l/bmax?style=flat-square)](LICENSE)
-[![node](https://img.shields.io/node/v/bmax?style=flat-square&color=417e38)](https://nodejs.org)
+Node 20+ &bull; MIT License
 
 </div>
 
