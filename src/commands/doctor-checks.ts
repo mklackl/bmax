@@ -108,14 +108,14 @@ export async function checkGitRepo(projectDir: string): Promise<CheckResult> {
 }
 
 export async function checkBmadDir(projectDir: string): Promise<CheckResult> {
-  return checkDir(join(projectDir, "_bmad"), "_bmad/ directory present", "Run: bmalph init");
+  return checkDir(join(projectDir, "_bmad"), "_bmad/ directory present", "Run: bmax init");
 }
 
 export async function checkRalphLoop(projectDir: string): Promise<CheckResult> {
   return checkFileHasContent(
     join(projectDir, ".ralph/ralph_loop.sh"),
     "ralph_loop.sh present and has content",
-    "Run: bmalph upgrade"
+    "Run: bmax upgrade"
   );
 }
 
@@ -123,13 +123,13 @@ export async function checkRalphLib(projectDir: string): Promise<CheckResult> {
   return checkDir(
     join(projectDir, ".ralph/lib"),
     ".ralph/lib/ directory present",
-    "Run: bmalph upgrade"
+    "Run: bmax upgrade"
   );
 }
 
 export async function checkConfig(projectDir: string): Promise<CheckResult> {
-  const label = "bmalph/config.json exists and valid";
-  const hint = "Run: bmalph init";
+  const label = "bmax/config.json exists and valid";
+  const hint = "Run: bmax init";
   const path = join(projectDir, CONFIG_FILE);
   try {
     const data = await readJsonFile<unknown>(path);

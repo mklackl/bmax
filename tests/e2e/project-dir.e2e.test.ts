@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { runCli, runInit } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 
-describe("bmalph -C / --project-dir flag e2e", { timeout: 60000 }, () => {
+describe("bmax -C / --project-dir flag e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -51,7 +51,7 @@ describe("bmalph -C / --project-dir flag e2e", { timeout: 60000 }, () => {
   });
 
   it("-C flag errors on non-existent directory", async () => {
-    const nonexistent = join(tmpdir(), `bmalph-nonexistent-${Date.now()}`);
+    const nonexistent = join(tmpdir(), `bmax-nonexistent-${Date.now()}`);
     const result = await runCli(["-C", nonexistent, "status"], {
       cwd: process.cwd(),
     });

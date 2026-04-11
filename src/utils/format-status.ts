@@ -17,7 +17,7 @@ export function formatExitReason(code: number | null): string {
 /**
  * Shared status formatting with chalk colors.
  *
- * Handles all known status values from both bmalph phase tracking
+ * Handles all known status values from both bmax phase tracking
  * and Ralph loop status. Used by both the status command and the
  * watch dashboard renderer.
  */

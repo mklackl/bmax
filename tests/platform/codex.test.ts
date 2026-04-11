@@ -23,9 +23,9 @@ describe("codexPlatform", () => {
     });
   });
 
-  it("generateInstructionsSnippet contains BMAD-METHOD Integration", () => {
+  it("generateInstructionsSnippet contains bmax", () => {
     const snippet = codexPlatform.generateInstructionsSnippet();
-    expect(snippet).toContain("BMAD-METHOD Integration");
+    expect(snippet).toContain("bmax");
   });
 
   it("generateInstructionsSnippet references $command-name syntax", () => {
@@ -36,8 +36,8 @@ describe("codexPlatform", () => {
 
   it("generateInstructionsSnippet does not contain slash command syntax", () => {
     const snippet = codexPlatform.generateInstructionsSnippet();
-    expect(snippet).not.toMatch(/\/bmalph\b/);
-    expect(snippet).not.toMatch(/\/analyst\b/);
+    expect(snippet).not.toMatch(/\/bmax\b/);
+    expect(snippet).not.toMatch(/\/researcher\b/);
     expect(snippet).not.toMatch(/\/architect\b/);
   });
 
@@ -56,7 +56,7 @@ describe("codexPlatform", () => {
     let testDir: string;
 
     beforeEach(async () => {
-      testDir = join(tmpdir(), `bmalph-codex-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      testDir = join(tmpdir(), `bmax-codex-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await mkdir(testDir, { recursive: true });
     });
 
@@ -69,7 +69,7 @@ describe("codexPlatform", () => {
     });
 
     it("instructions-file check passes when AGENTS.md has marker", async () => {
-      await writeFile(join(testDir, "AGENTS.md"), "## BMAD-METHOD Integration\nContent here");
+      await writeFile(join(testDir, "AGENTS.md"), "## bmax\nContent here");
       const checks = codexPlatform.getDoctorChecks();
       const instrCheck = checks.find((c) => c.id === "instructions-file")!;
       const result = await instrCheck.check(testDir);

@@ -13,7 +13,7 @@ export const codexPlatform: Platform = {
     dir: CODEX_SKILLS_DIR,
     frontmatterName: "command",
   },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => generateSkillsTierSnippet(),
   getDoctorChecks() {
     return buildPlatformDoctorChecks(this);

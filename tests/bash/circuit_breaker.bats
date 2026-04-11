@@ -505,7 +505,7 @@ teardown() {
     assert_success
 }
 
-@test "should_halt_execution shows bmalph-compatible recovery guidance" {
+@test "should_halt_execution shows bmax-compatible recovery guidance" {
     init_circuit_breaker
     jq '.state = "OPEN" | .reason = "no_progress_threshold"' "$CB_STATE_FILE" > "$CB_STATE_FILE.tmp"
     mv "$CB_STATE_FILE.tmp" "$CB_STATE_FILE"

@@ -44,8 +44,8 @@ rm -rf bmad/bmm bmad/core
 cp -r .refs/bmad/src/bmm bmad/
 cp -r .refs/bmad/src/core bmad/
 
-# NOTE: slash-commands/ is custom bmalph content, not from upstream
-# NOTE: ralph/ is fully owned by bmalph, no upstream tracking
+# NOTE: slash-commands/ is custom bmax content, not from upstream
+# NOTE: ralph/ is fully owned by bmax, no upstream tracking
 
 # 3. Update bundled-versions.json
 BMAD_SHA=$(git -C .refs/bmad rev-parse --short=8 HEAD)
@@ -69,5 +69,5 @@ echo "  1. npm run build"
 echo "  2. npm test"
 echo "  3. Review changes: git diff --stat"
 echo "  4. Check BMAD changelog for breaking changes"
-echo "  5. Test locally: bmalph init in a test project"
+echo "  5. Test locally: bmax init in a test project"
 echo "  6. Commit and bump version (MAJOR if breaking)"

@@ -104,7 +104,7 @@ export function suggestNext(
   }
 
   if (detectedPhase <= 1 && phases[1].length === 0) {
-    return platform ? getPlatformAnalysisHint(platform) : "Run /analyst to start analysis";
+    return platform ? getPlatformAnalysisHint(platform) : "Run /researcher to start research";
   }
 
   if (!foundNames.has("PRD")) {
@@ -129,7 +129,7 @@ export function suggestNext(
       : "Run /implementation-readiness to generate readiness report";
   }
 
-  return "Run: bmalph implement";
+  return "Run: bmax implement";
 }
 
 export async function scanProjectArtifacts(

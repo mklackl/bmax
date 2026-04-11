@@ -15,7 +15,7 @@ import {
 } from "../../src/watch/state-reader.js";
 
 function makeTmpDir(): string {
-  return join(tmpdir(), `bmalph-watch-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  return join(tmpdir(), `bmax-watch-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 }
 
 async function writeJson(path: string, data: unknown): Promise<void> {

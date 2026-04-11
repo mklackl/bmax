@@ -7,46 +7,46 @@ export const claudeCodePlatform: Platform = {
   tier: "full",
   instructionsFile: "CLAUDE.md",
   commandDelivery: { kind: "directory", dir: ".claude/commands" },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => `
-## BMAD-METHOD Integration
+## bmax — Solo SaaS Builder
 
-Use \`/bmalph\` to navigate phases. Use \`/bmad-help\` to discover all commands. Use \`/bmalph-status\` for a quick overview. See \`_bmad/COMMANDS.md\` for a full command reference.
+Use \`/bmax\` to navigate phases. Use \`/bmad-help\` to discover all commands. Use \`/bmax-status\` for a quick overview.
 
 ### Phases
 
 | Phase | Focus | Key Commands |
 |-------|-------|-------------|
-| 1. Analysis | Understand the problem | \`/create-brief\`, \`/brainstorm-project\`, \`/market-research\` |
-| 2. Planning | Define the solution | \`/create-prd\`, \`/create-ux\` |
-| 3. Solutioning | Design the architecture | \`/create-architecture\`, \`/create-epics-stories\`, \`/implementation-readiness\` |
-| 4. Implementation | Build it | \`/sprint-planning\`, \`/create-story\`, then \`/bmalph-implement\` for Ralph |
+| 1. Research | Validate the idea | \`/researcher\`, \`/create-brief\`, \`/market-research\` |
+| 2. Design | PRD + UX + Pricing | \`/product-designer\`, \`/create-prd\`, \`/create-ux\` |
+| 3. Architect | Tech architecture | \`/architect\`, \`/create-architecture\`, \`/implementation-readiness\` |
+| 4. Build | Implementation | \`/builder\`, then \`/bmax-implement\` for Ralph |
+| 5. Launch | Ship & grow | \`/launcher\` — SEO, legal, analytics, Stripe, growth |
 
 ### Workflow
 
-1. Work through Phases 1-3 using BMAD agents and workflows (interactive, command-driven)
-2. Run \`/bmalph-implement\` to transition planning artifacts into Ralph format, then start Ralph
+1. Work through Phases 1-3 using agents and workflows
+2. Run \`/bmax-implement\` to transition to Ralph format, then start building
+3. Use \`/launcher\` for Phase 5 — SEO, legal, analytics, go-to-market
 
 ### Management Commands
 
 | Command | Description |
 |---------|-------------|
-| \`/bmalph-status\` | Show current phase, Ralph progress, version info |
-| \`/bmalph-implement\` | Transition planning artifacts → prepare Ralph loop |
-| \`/bmalph-upgrade\` | Update bundled assets to match current bmalph version |
-| \`/bmalph-doctor\` | Check project health and report issues |
+| \`/bmax-status\` | Show current phase, Ralph progress, version info |
+| \`/bmax-implement\` | Transition planning artifacts → prepare Ralph loop |
+| \`/bmax-upgrade\` | Update bundled assets to match current bmax version |
+| \`/bmax-doctor\` | Check project health and report issues |
 
 ### Available Agents
 
 | Command | Agent | Role |
 |---------|-------|------|
-| \`/analyst\` | Analyst | Research, briefs, discovery |
-| \`/architect\` | Architect | Technical design, architecture |
-| \`/pm\` | Product Manager | PRDs, epics, stories |
-| \`/sm\` | Scrum Master | Sprint planning, status, coordination |
-| \`/dev\` | Developer | Implementation, coding |
-| \`/ux-designer\` | UX Designer | User experience, wireframes |
-| \`/qa\` | QA Engineer | Test automation, quality assurance |
+| \`/researcher\` | Scout | Market research, competitor analysis, idea validation |
+| \`/product-designer\` | Ada | PRDs, UX design, pricing strategy |
+| \`/architect\` | Kit | SaaS architecture, tech stack, billing integration |
+| \`/builder\` | Max | Implementation, testing, quick flow, code review |
+| \`/launcher\` | Pip | Launch checklists, SEO, analytics, legal, growth |
 `,
   getDoctorChecks() {
     return buildPlatformDoctorChecks(this);

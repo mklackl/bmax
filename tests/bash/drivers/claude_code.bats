@@ -78,7 +78,7 @@ teardown() {
     assert_output --partial "ALLOWED_TOOLS"
     assert_output --partial "will not fix it"
     assert_output --partial "--reset-session"
-    assert_output --partial "bmalph run"
+    assert_output --partial "bmax run"
 }
 
 # ===========================================================================

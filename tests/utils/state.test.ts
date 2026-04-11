@@ -5,7 +5,7 @@ import {
   getPhaseLabel,
   getPhaseInfo,
   readRalphStatus,
-  type BmalphState,
+  type BmaxState,
 } from "../../src/utils/state.js";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -15,8 +15,8 @@ describe("state", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-state-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-    await mkdir(join(testDir, "bmalph/state"), { recursive: true });
+    testDir = join(tmpdir(), `bmax-state-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    await mkdir(join(testDir, "bmax/state"), { recursive: true });
   });
 
   afterEach(async () => {
@@ -34,7 +34,7 @@ describe("state", () => {
     });
 
     it("reads written state", async () => {
-      const state: BmalphState = {
+      const state: BmaxState = {
         currentPhase: 2,
         status: "planning",
         startedAt: "2025-01-01T00:00:00.000Z",
@@ -48,13 +48,13 @@ describe("state", () => {
     });
 
     it("throws on corrupt state file", async () => {
-      await writeFile(join(testDir, "bmalph/state/current-phase.json"), "not json{{{");
+      await writeFile(join(testDir, "bmax/state/current-phase.json"), "not json{{{");
       await expect(readState(testDir)).rejects.toThrow("Invalid JSON");
     });
 
     it("returns null and warns when state file has invalid structure", async () => {
       await writeFile(
-        join(testDir, "bmalph/state/current-phase.json"),
+        join(testDir, "bmax/state/current-phase.json"),
         JSON.stringify({ garbage: true })
       );
 
@@ -70,9 +70,9 @@ describe("state", () => {
 
   describe("writeState", () => {
     it("creates state directory if it does not exist", async () => {
-      await rm(join(testDir, "bmalph/state"), { recursive: true, force: true });
+      await rm(join(testDir, "bmax/state"), { recursive: true, force: true });
 
-      const state: BmalphState = {
+      const state: BmaxState = {
         currentPhase: 1,
         status: "planning",
         startedAt: "2025-01-01T00:00:00.000Z",
@@ -85,7 +85,7 @@ describe("state", () => {
     });
 
     it("overwrites existing state atomically", async () => {
-      const state1: BmalphState = {
+      const state1: BmaxState = {
         currentPhase: 1,
         status: "planning",
         startedAt: "2025-01-01T00:00:00.000Z",
@@ -93,7 +93,7 @@ describe("state", () => {
       };
       await writeState(testDir, state1);
 
-      const state2: BmalphState = {
+      const state2: BmaxState = {
         currentPhase: 3,
         status: "implementing",
         startedAt: "2025-01-01T00:00:00.000Z",
@@ -107,7 +107,7 @@ describe("state", () => {
 
     it("uses unique temp file names (UUID pattern)", async () => {
       // Write multiple times in parallel - should not conflict at temp file level
-      const states: BmalphState[] = [
+      const states: BmaxState[] = [
         { currentPhase: 1, status: "planning", startedAt: "2025-01-01", lastUpdated: "2025-01-01" },
         { currentPhase: 2, status: "planning", startedAt: "2025-01-01", lastUpdated: "2025-01-02" },
         {
@@ -134,7 +134,7 @@ describe("state", () => {
 
     it("does not leave temp files after successful write", async () => {
       const { readdir } = await import("fs/promises");
-      const state: BmalphState = {
+      const state: BmaxState = {
         currentPhase: 1,
         status: "planning",
         startedAt: "2025-01-01",
@@ -143,7 +143,7 @@ describe("state", () => {
 
       await writeState(testDir, state);
 
-      const files = await readdir(join(testDir, "bmalph/state"));
+      const files = await readdir(join(testDir, "bmax/state"));
       const tempFiles = files.filter((f) => f.endsWith(".tmp"));
       expect(tempFiles).toHaveLength(0);
     });
@@ -151,47 +151,57 @@ describe("state", () => {
 
   describe("getPhaseLabel", () => {
     it("returns correct labels", () => {
-      expect(getPhaseLabel(1)).toBe("Analysis");
-      expect(getPhaseLabel(2)).toBe("Planning");
-      expect(getPhaseLabel(3)).toBe("Solutioning");
-      expect(getPhaseLabel(4)).toBe("Implementation");
+      expect(getPhaseLabel(1)).toBe("Research");
+      expect(getPhaseLabel(2)).toBe("Design");
+      expect(getPhaseLabel(3)).toBe("Architect");
+      expect(getPhaseLabel(4)).toBe("Build");
+      expect(getPhaseLabel(5)).toBe("Launch");
     });
 
     it("returns Unknown for invalid phase", () => {
-      expect(getPhaseLabel(5)).toBe("Unknown");
+      expect(getPhaseLabel(6)).toBe("Unknown");
     });
   });
 
   describe("getPhaseInfo", () => {
-    it("returns correct info for phase 1 (Analysis)", () => {
+    it("returns correct info for phase 1 (Research)", () => {
       const info = getPhaseInfo(1);
-      expect(info.name).toBe("Analysis");
-      expect(info.agent).toBe("Analyst");
+      expect(info.name).toBe("Research");
+      expect(info.agent).toBe("Scout");
       expect(info.commands).toHaveLength(6);
-      expect(info.commands[0].code).toBe("BP");
+      expect(info.commands[0].code).toBe("CR");
     });
 
-    it("returns correct info for phase 2 (Planning)", () => {
+    it("returns correct info for phase 2 (Design)", () => {
       const info = getPhaseInfo(2);
-      expect(info.name).toBe("Planning");
-      expect(info.agent).toBe("PM (John)");
+      expect(info.name).toBe("Design");
+      expect(info.agent).toBe("Ada");
       expect(info.commands.find((c) => c.code === "CP")?.required).toBe(true);
     });
 
-    it("returns correct info for phase 3 (Solutioning)", () => {
+    it("returns correct info for phase 3 (Architect)", () => {
       const info = getPhaseInfo(3);
-      expect(info.name).toBe("Solutioning");
-      expect(info.agent).toBe("Architect");
+      expect(info.name).toBe("Architect");
+      expect(info.agent).toBe("Kit");
       expect(info.commands.find((c) => c.code === "CA")?.required).toBe(true);
       expect(info.commands.find((c) => c.code === "CE")?.required).toBe(true);
       expect(info.commands.find((c) => c.code === "IR")?.required).toBe(true);
     });
 
-    it("returns correct info for phase 4 (Implementation)", () => {
+    it("returns correct info for phase 4 (Build)", () => {
       const info = getPhaseInfo(4);
-      expect(info.name).toBe("Implementation");
-      expect(info.agent).toBe("Developer (Amelia)");
+      expect(info.name).toBe("Build");
+      expect(info.agent).toBe("Max");
       expect(info.commands).toHaveLength(0);
+    });
+
+    it("returns correct info for phase 5 (Launch)", () => {
+      const info = getPhaseInfo(5);
+      expect(info.name).toBe("Launch");
+      expect(info.agent).toBe("Pip");
+      expect(info.commands.find((c) => c.code === "WR")?.required).toBe(true);
+      expect(info.commands.find((c) => c.code === "DR")?.required).toBe(false);
+      expect(info.commands.find((c) => c.code === "LC")?.required).toBe(true);
     });
 
     it("returns unknown info for invalid phase", () => {

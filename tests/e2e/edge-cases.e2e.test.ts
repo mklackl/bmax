@@ -4,9 +4,9 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runInit, runDoctor } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
-import { expectBmalphInitialized } from "./helpers/assertions.js";
+import { expectBmaxInitialized } from "./helpers/assertions.js";
 
-describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
+describe("bmax edge cases e2e", { timeout: 60000 }, () => {
   const projects: TestProject[] = [];
 
   afterEach(async () => {
@@ -18,7 +18,7 @@ describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
 
   it("handles paths with spaces (Windows)", async () => {
     // Create a directory with spaces in the name
-    const pathWithSpaces = join(tmpdir(), `bmalph test with spaces-${Date.now()}`);
+    const pathWithSpaces = join(tmpdir(), `bmax test with spaces-${Date.now()}`);
     await mkdir(pathWithSpaces, { recursive: true });
 
     const project: TestProject = {
@@ -33,13 +33,13 @@ describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
     const result = await runInit(project.path, "space-project", "Project with spaces");
 
     expect(result.exitCode).toBe(0);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("handles concurrent init in different directories", async () => {
-    const project1 = await createTestProject("bmalph-concurrent-1");
-    const project2 = await createTestProject("bmalph-concurrent-2");
-    const project3 = await createTestProject("bmalph-concurrent-3");
+    const project1 = await createTestProject("bmax-concurrent-1");
+    const project2 = await createTestProject("bmax-concurrent-2");
+    const project3 = await createTestProject("bmax-concurrent-3");
 
     projects.push(project1, project2, project3);
 
@@ -56,9 +56,9 @@ describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
     }
 
     // All should be properly initialized
-    await expectBmalphInitialized(project1.path);
-    await expectBmalphInitialized(project2.path);
-    await expectBmalphInitialized(project3.path);
+    await expectBmaxInitialized(project1.path);
+    await expectBmaxInitialized(project2.path);
+    await expectBmaxInitialized(project3.path);
   });
 
   it("handles special characters in project name", async () => {
@@ -72,7 +72,7 @@ describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
     );
 
     expect(result.exitCode).toBe(0);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("handles project name with dashes and underscores", async () => {
@@ -86,7 +86,7 @@ describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
     );
 
     expect(result.exitCode).toBe(0);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("handles unicode characters in description", async () => {
@@ -100,7 +100,7 @@ describe("bmalph edge cases e2e", { timeout: 60000 }, () => {
     );
 
     expect(result.exitCode).toBe(0);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("doctor works on freshly initialized project", async () => {

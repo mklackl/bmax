@@ -267,7 +267,7 @@ describe("artifact-scan", () => {
   describe("suggestNext", () => {
     it("suggests analyst for phase 1 with no artifacts", () => {
       const phases = { 1: [], 2: [], 3: [] };
-      expect(suggestNext(phases, 1)).toContain("/analyst");
+      expect(suggestNext(phases, 1)).toContain("/researcher");
     });
 
     it("suggests PM for phase 2", () => {
@@ -352,7 +352,7 @@ describe("artifact-scan", () => {
       expect(suggestion).not.toContain("$architect");
     });
 
-    it("suggests bmalph implement when all phase 3 artifacts exist", () => {
+    it("suggests bmax implement when all phase 3 artifacts exist", () => {
       const phases = {
         1: [],
         2: [{ phase: 2, name: "PRD", required: true, filename: "prd.md" }],
@@ -362,7 +362,7 @@ describe("artifact-scan", () => {
           { phase: 3, name: "Readiness Report", required: true, filename: "readiness.md" },
         ],
       };
-      expect(suggestNext(phases, 3)).toContain("bmalph implement");
+      expect(suggestNext(phases, 3)).toContain("bmax implement");
     });
   });
 
@@ -372,7 +372,7 @@ describe("artifact-scan", () => {
     beforeEach(async () => {
       testDir = join(
         tmpdir(),
-        `bmalph-artifact-scan-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        `bmax-artifact-scan-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
       await mkdir(testDir, { recursive: true });
     });

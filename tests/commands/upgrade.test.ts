@@ -45,8 +45,8 @@ vi.mock("../../src/platform/registry.js", () => ({
           : id === "opencode"
             ? { kind: "skills", dir: ".opencode/skills", frontmatterName: "directory" }
             : { kind: "index" },
-    instructionsSectionMarker: "## BMAD-METHOD Integration",
-    generateInstructionsSnippet: () => "## BMAD-METHOD Integration\n\nSnippet content",
+    instructionsSectionMarker: "## bmax",
+    generateInstructionsSnippet: () => "## bmax\n\nSnippet content",
     getDoctorChecks: () => [],
   })),
   isPlatformId: vi.fn((value: string) =>
@@ -91,7 +91,7 @@ describe("upgrade command", () => {
       const { upgradeCommand } = await import("../../src/commands/upgrade.js");
       await upgradeCommand({ projectDir: process.cwd() });
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("bmalph init"));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("bmax init"));
     });
 
     it("does not call copyBundledAssets", async () => {
@@ -183,8 +183,8 @@ describe("upgrade command", () => {
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
       expect(output).toContain("Preserved");
-      expect(output).toContain("bmalph/config.json");
-      expect(output).toContain("bmalph/state/");
+      expect(output).toContain("bmax/config.json");
+      expect(output).toContain("bmax/state/");
       expect(output).toContain(".ralph/logs/");
       expect(output).toContain(".ralph/@fix_plan.md");
       expect(output).toContain(".ralph/docs/");

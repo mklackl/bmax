@@ -165,7 +165,7 @@ export async function detectBashVersion(): Promise<string | undefined> {
 export async function validateRalphLoop(projectDir: string): Promise<void> {
   const loopPath = join(projectDir, RALPH_LOOP_PATH);
   if (!(await exists(loopPath))) {
-    throw new Error(`${RALPH_LOOP_PATH} not found. Run: bmalph init`);
+    throw new Error(`${RALPH_LOOP_PATH} not found. Run: bmax init`);
   }
 }
 

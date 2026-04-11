@@ -9,7 +9,7 @@ describe("readJsonFile", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-json-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-json-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
   });
 

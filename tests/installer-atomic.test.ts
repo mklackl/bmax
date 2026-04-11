@@ -60,7 +60,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("restores original _bmad when final rename fails", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     // Create an existing _bmad with a marker file
@@ -82,7 +82,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("cleans up _bmad.old on success", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     // Create existing _bmad
@@ -100,7 +100,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("cleans up leftover _bmad.old from previous failed attempt", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     // Create stale _bmad.old from a previous failed run
@@ -116,7 +116,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("reuses _bmad.old as backup when retrying after a failed rollback", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     await mkdir(join(testDir, "_bmad.old", "core"), { recursive: true });
@@ -136,7 +136,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("treats ENOENT during rename-aside as a first-install race", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     await mkdir(join(testDir, "_bmad", "core"), { recursive: true });
@@ -163,7 +163,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("handles first install when no _bmad exists", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     // No _bmad directory exists — first install
@@ -179,7 +179,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("restores original _bmad when post-swap finalization fails", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     const bmadDir = join(testDir, "_bmad");
@@ -201,7 +201,7 @@ describe("installer atomic copy", { timeout: 30000 }, () => {
   });
 
   it("cleans up incomplete _bmad when post-swap finalization fails on first install", async () => {
-    testDir = join(tmpdir(), `bmalph-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-atomic-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
 
     await installFsMocks({

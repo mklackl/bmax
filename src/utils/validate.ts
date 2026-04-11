@@ -1,5 +1,5 @@
-import type { BmalphConfig, BmadConfig, UpstreamVersions } from "./config.js";
-import type { BmalphState } from "./state.js";
+import type { BmaxConfig, BmadConfig, UpstreamVersions } from "./config.js";
+import type { BmaxState } from "./state.js";
 import { PLATFORM_IDS, type PlatformId } from "../platform/types.js";
 import {
   DEFAULT_INTERVAL_MS,
@@ -8,7 +8,16 @@ import {
   RALPH_STATUS_MAP,
 } from "./constants.js";
 
-const VALID_STATUSES = ["planning", "implementing", "completed"] as const;
+const VALID_STATUSES = [
+  "researching",
+  "designing",
+  "architecting",
+  "building",
+  "launching",
+  "completed",
+  "planning",
+  "implementing",
+] as const;
 
 // Invalid filesystem characters (Windows + POSIX)
 const INVALID_FS_CHARS = /[<>:"/\\|?*]/;
@@ -57,7 +66,7 @@ function validateUpstreamVersions(data: unknown): UpstreamVersions {
   };
 }
 
-export function validateConfig(data: unknown): BmalphConfig {
+export function validateConfig(data: unknown): BmaxConfig {
   assertObject(data, "config");
 
   if (typeof data.name !== "string") {
@@ -204,7 +213,7 @@ export function validateBmadConfig(data: unknown): BmadConfig {
   };
 }
 
-export function validateState(data: unknown): BmalphState {
+export function validateState(data: unknown): BmaxState {
   assertObject(data, "state");
 
   if (typeof data.currentPhase !== "number") {
@@ -228,7 +237,7 @@ export function validateState(data: unknown): BmalphState {
 
   return {
     currentPhase: data.currentPhase,
-    status: data.status as BmalphState["status"],
+    status: data.status as BmaxState["status"],
     startedAt: data.startedAt,
     lastUpdated: data.lastUpdated,
   };

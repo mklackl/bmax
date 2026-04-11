@@ -751,12 +751,12 @@ As a user, I want to log in.
     beforeEach(async () => {
       testDir = join(
         tmpdir(),
-        `bmalph-transition-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        `bmax-transition-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, ".ralph/specs"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({ name: "test-project", createdAt: "2025-01-01T00:00:00.000Z" })
       );
     });
@@ -1345,11 +1345,11 @@ cargo run
     let testDir: string;
 
     beforeEach(async () => {
-      testDir = join(tmpdir(), `bmalph-agent-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      testDir = join(tmpdir(), `bmax-agent-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, ".ralph/specs"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({ name: "test-project", createdAt: "2025-01-01T00:00:00.000Z" })
       );
     });
@@ -1727,7 +1727,7 @@ cargo run
     beforeEach(async () => {
       testDir = join(
         tmpdir(),
-        `bmalph-changelog-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        `bmax-changelog-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
       await mkdir(testDir, { recursive: true });
     });
@@ -1853,11 +1853,11 @@ cargo run
     let testDir: string;
 
     beforeEach(async () => {
-      testDir = join(tmpdir(), `bmalph-merge-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      testDir = join(tmpdir(), `bmax-merge-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, ".ralph/specs"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({ name: "test-project", createdAt: "2025-01-01T00:00:00.000Z" })
       );
     });

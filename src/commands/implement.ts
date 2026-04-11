@@ -23,7 +23,7 @@ async function runImplement(options: ImplementOptions): Promise<void> {
   // Re-run protection: warn if implement was already run
   const alreadyRun = await exists(join(projectDir, ".ralph/@fix_plan.md"));
   if (alreadyRun && !force) {
-    console.log(chalk.yellow("Warning: bmalph implement has already been run."));
+    console.log(chalk.yellow("Warning: bmax implement has already been run."));
     console.log(
       "Re-running will overwrite PROMPT.md, PROJECT_CONTEXT.md, @AGENT.md, and SPECS_INDEX.md."
     );
@@ -81,7 +81,7 @@ async function runImplement(options: ImplementOptions): Promise<void> {
   console.log("");
   if (platform.tier === "full") {
     console.log(`Start the Ralph loop:\n`);
-    console.log(`    bmalph run`);
+    console.log(`    bmax run`);
   } else {
     console.log(
       `Ralph requires a full-tier platform (${getFullTierPlatformNames()}). ` +

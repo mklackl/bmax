@@ -22,7 +22,7 @@ describe("cursor runtime e2e helper", () => {
   let projectPath: string;
 
   beforeEach(async () => {
-    projectPath = await mkdtemp(join(tmpdir(), "bmalph-cursor-helper-"));
+    projectPath = await mkdtemp(join(tmpdir(), "bmax-cursor-helper-"));
     mockResolveBashCommand.mockResolvedValue("/usr/bin/bash");
     mockSpawnSync.mockReturnValue({
       status: 0,

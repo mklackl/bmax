@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { runCli, runInit } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 
-describe("bmalph status e2e", { timeout: 60000 }, () => {
+describe("bmax status e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {

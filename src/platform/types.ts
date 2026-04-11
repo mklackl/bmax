@@ -1,7 +1,7 @@
 /**
- * Platform abstraction layer for bmalph.
+ * Platform abstraction layer for bmax.
  *
- * Controls how `bmalph init/upgrade/doctor` install instruction files,
+ * Controls how `bmax init/upgrade/doctor` install instruction files,
  * deliver slash commands, and run health checks per platform.
  */
 

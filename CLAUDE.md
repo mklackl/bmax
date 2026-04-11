@@ -1,61 +1,131 @@
-# bmalph
+# bmax
 
-Integration layer between [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD) and [Ralph](https://github.com/snarktank/ralph).
+Solo SaaS Builder Framework — AI-powered planning, building, and launching for indie hackers.
 
-## What is bmalph?
+Fork of [bmalph](https://github.com/LarsCowe/bmalph), radically stripped down for solo SaaS founders.
 
-bmalph bundles and installs two AI development systems:
+## What is bmax?
 
-- **[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)** — Planning agents and workflows (Phases 1-3)
-- **[Ralph](https://github.com/snarktank/ralph)** — Autonomous implementation loop (Phase 4)
+bmax gives you 5 AI agents that cover the entire solo SaaS lifecycle:
+
+| Agent | Name | Role |
+|-------|------|------|
+| Researcher | Scout | Market research, competitor analysis, idea validation |
+| Product Designer | Ada | PRD + UX + pricing strategy in one pass |
+| Architect | Kit | SaaS architecture, tech stack, billing integration |
+| Builder | Max | Implementation, testing, code review (Quick Flow default) |
+| Launcher | Pip | Wire services, deploy, SEO, legal, analytics, growth |
+
+## 5-Phase Workflow
+
+```
+Phase 1: Research    → Validate the idea (Scout)
+Phase 2: Design      → PRD + UX + Pricing (Ada)
+Phase 3: Architect   → Tech architecture (Kit)
+Phase 4: Build       → Implementation via Ralph loop (Max)
+Phase 5: Launch      → Wire, verify, ship, grow (Pip)
+```
+
+Quick Flow (`bmax quick`) skips the ceremony and goes straight to Builder.
+
+## CLI Commands
+
+| Command              | Action                                                       |
+| -------------------- | ------------------------------------------------------------ |
+| `bmax init`          | Install agents + Ralph, configure project                    |
+| `bmax quick`         | Skip to Quick Flow — straight to Builder agent               |
+| `bmax implement`     | Transition planning artifacts to Ralph format                |
+| `bmax run`           | Start Ralph loop with live dashboard                         |
+| `bmax launch`        | Transition to Phase 5 — wire, verify, ship                   |
+| `bmax status`        | Show current phase and progress                              |
+| `bmax doctor`        | Check installation health                                    |
+| `bmax upgrade`       | Update bundled assets to current version                     |
+| `bmax run --swarm N` | Run N parallel workers in git worktrees (default: 2, max: 6) |
+| `bmax reset`         | Remove all bmax files from the project                       |
+
+## Key Slash Commands
+
+### Research (Phase 1)
+- `/validate-idea` — 30-min idea validation (go/no-go)
+- `/competitor-research` — Structured competitor analysis
+- `/market-research` — Market size, trends, demand signals
+- `/seo-keyword-research` — Keyword discovery + content strategy
+- `/market-positioning` — Positioning statement + value prop
+
+### Design (Phase 2)
+- `/create-prd` — Product requirements with pricing baked in
+- `/pricing-strategy` — Pricing model selection + tier design
+- `/subscription-model` — Subscription lifecycle design
+- `/create-ux` — User flows + interaction design
+
+### Architect (Phase 3)
+- `/create-architecture` — SaaS architecture (auth, billing, multi-tenancy)
+- `/create-epics-stories` — Break down PRD into implementable stories
+- `/implementation-readiness` — Pre-build alignment check
+
+### Build (Phase 4)
+- `/builder` — Builder agent with full menu
+- `/quick-dev-new` — Unified: intent → plan → implement → review
+- `/quick-dev` — Quick implementation of a story
+
+### Launch (Phase 5)
+- `/wire` — Connect services (Stripe, DB, hosting), deploy, smoke test
+- `/design-review` — Evaluate UI/UX quality, compare with competitors
+- `/launch-checklist` — Pre-launch audit
+- `/stripe-setup` — Stripe integration checklist
+- `/legal-compliance` — DSGVO, Impressum, AGB
+- `/seo-audit` — Technical SEO checklist
+- `/analytics-setup` — Tracking implementation guide
+- `/landing-page` — Landing page structure + copy
+- `/beta-launch` — Beta launch strategy
+
+### Growth (anytime post-launch)
+- `/growth-metrics` — SaaS metrics (MRR, churn, LTV, CAC)
+- `/user-feedback` — Collect and prioritize feedback
+- `/feature-prioritize` — Prioritize by revenue impact
+- `/churn-analysis` — Churn patterns + retention strategies
+
+## Provider Fallback
+
+Configure `PROVIDER_CHAIN` in `.ralphrc` to auto-fallback between LLM providers:
+
+```
+PROVIDER_CHAIN="claude-code,codex,generic-api"
+```
+
+The `generic-api` driver calls LLM APIs via curl (needs `OPENAI_API_KEY` or `MINIMAX_API_KEY`).
 
 ## Architecture
 
 ```
-Phases 1-3 (Planning): BMAD agents + workflows (interactive, command-driven)
-Phase 4 (Implementation): Ralph loop (autonomous, bash-driven)
-bmalph: CLI + transition logic
+Phases 1-3 (Planning): Solo SaaS agents + workflows (interactive)
+Phase 4 (Build):       Ralph loop (autonomous, bash-driven)
+Phase 5 (Launch):      Wire, verify, ship, grow (interactive)
+bmax:                  CLI + transition logic + provider fallback
 ```
 
-### Directory structure after `bmalph init`
+### Directory structure after `bmax init`
 
 ```
 project-root/
-├── _bmad/              # BMAD agents, workflows, core, lite workflows
+├── _bmad/              # Agents, workflows, core skills
 ├── .ralph/             # Ralph runtime (loop, libs, specs, logs, drivers)
-│   ├── drivers/        # Platform driver scripts (claude-code, codex, opencode, copilot, cursor)
+│   ├── drivers/        # Platform drivers (claude-code, codex, opencode, copilot, cursor, generic-api)
 │   ├── lib/            # Shell libraries (circuit breaker, response analysis, etc.)
-│   └── templates/      # Prompt, agent, fix plan, review, and ralphrc templates
-├── bmalph/             # bmalph state (config.json with platform, state/)
-└── <instructions file> # Varies by platform (CLAUDE.md, AGENTS.md, etc.)
+│   └── templates/      # Prompt, agent, fix plan, review templates
+├── bmax/               # bmax state (config.json, state/)
+└── <instructions file> # CLAUDE.md, AGENTS.md, etc. (varies by platform)
 ```
-
-The instructions file depends on the configured platform — see `src/platform/` for the mapping.
-
-## CLI Commands
-
-| Command                | Action                                                       |
-| ---------------------- | ------------------------------------------------------------ |
-| `bmalph init`          | Install BMAD + Ralph, configure project                      |
-| `bmalph upgrade`       | Update bundled assets to current version                     |
-| `bmalph doctor`        | Check installation health                                    |
-| `bmalph check-updates` | Check for upstream updates                                   |
-| `bmalph status`        | Show project installation status                             |
-| `bmalph implement`     | Transition BMAD artifacts to Ralph format                    |
-| `bmalph run`           | Start Ralph loop with live dashboard                         |
-| `bmalph run --swarm N` | Run N parallel workers in git worktrees (default: 2, max: 6) |
-| `bmalph reset`         | Remove all bmalph files from the project                     |
-| `bmalph watch`         | _(deprecated)_ Use `bmalph run` instead                      |
 
 ## Dev Workflow
 
 - TDD: write tests first, then implement
-- When a test fails, analyse the root cause before changing anything. Do not take the easy route of just making the test pass — understand why it fails and fix the actual problem. A failing test is a signal, not an obstacle.
+- When a test fails, analyse the root cause before changing anything
 - Tests live in `tests/<module>/` (mirrors `src/` structure), not colocated
 - Conventional Commits with SemVer
 - Application language: English
 - Node 20+ LTS
-- Always run `npm run ci` locally before committing to catch formatting, lint, type, and test failures early
+- Always run `npm run ci` locally before committing
 
 `npm run ci` runs (in order):
 
@@ -75,12 +145,6 @@ Ralph's shell scripts and platform drivers are tested with [BATS](https://github
 - Runner: `npm run test:bash` (via `scripts/run-bash-tests.mjs`)
 - First-time setup: `scripts/setup-bats.sh` (installs BATS dependencies)
 
-### Updating bundled BMAD assets
-
-`npm run update-bundled` syncs `bmad/` from the upstream BMAD-METHOD repo (tracked as a git checkout in `.refs/bmad/`). It pulls latest from main (or a specific ref with `-- --bmad-ref <ref>`), copies `bmm/` and `core/` into `bmad/`, and updates `bundled-versions.json` with the commit SHA. After running, build + test + review diffs before committing.
-
-Note: `bmad/lite/` is bmalph-owned content (not synced from upstream).
-
 ## CI Pipeline
 
 - **Triggers:** push to `main`, PRs targeting `main`
@@ -95,13 +159,3 @@ Note: `bmad/lite/` is bmalph-owned content (not synced from upstream).
 - [release-please](https://github.com/googleapis/release-please) manages changelogs, version bumps, and release PRs
 - On release creation: publish job runs build + test + `npm publish` to npm
 - Version bumps follow Conventional Commits: `feat` = MINOR, `fix` = PATCH, `BREAKING CHANGE` = MAJOR
-- Visible changelog sections: Features, Bug Fixes, Performance, Code Quality
-- Hidden changelog sections: docs, tests, chores, CI, build, style
-
-## Dependency Management
-
-- Dependabot opens weekly grouped PRs for minor/patch updates
-- Two groups: npm (production + development) and GitHub Actions
-- Minor/patch PRs are auto-approved and auto-merged (squash)
-- Major updates require manual review
-- PR limits: 10 npm, 5 GitHub Actions

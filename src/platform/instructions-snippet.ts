@@ -1,17 +1,18 @@
 const FULL_TIER_PHASES = `### Phases
 
-| Phase | Focus | Key Agents |
-|-------|-------|-----------|
-| 1. Analysis | Understand the problem | Analyst agent |
-| 2. Planning | Define the solution | Product Manager agent |
-| 3. Solutioning | Design the architecture | Architect agent |
-| 4. Implementation | Build it | Developer agent, then Ralph autonomous loop |
+| Phase | Focus | Agent |
+|-------|-------|-------|
+| 1. Research | Validate the idea | Scout (Researcher) |
+| 2. Design | PRD + UX + Pricing | Ada (Product Designer) |
+| 3. Architect | Tech architecture | Kit (Architect) |
+| 4. Build | Implementation | Max (Builder) + Ralph autonomous loop |
+| 5. Launch | Ship & grow | Pip (Launcher) |
 
 ### Workflow
 
-1. Work through Phases 1-3 using BMAD agents and workflows
-2. For PRD creation, use \`_bmad/lite/create-prd.md\` for single-turn generation
-3. Use the bmalph-implement transition to prepare Ralph format, then start Ralph`;
+1. Work through Phases 1-3 using agents and workflows
+2. Use bmax-implement to transition to Ralph format, then start building
+3. Use Phase 5 (Launch) for SEO, legal, analytics, and go-to-market`;
 
 const COMMAND_REFERENCE = `### Command Reference
 
@@ -23,7 +24,7 @@ When the user asks for a BMAD command, look it up in \`_bmad/COMMANDS.md\` and f
  */
 export function generateFullTierSnippet(verb: string): string {
   return `
-## BMAD-METHOD Integration
+## bmax
 
 ${verb} the BMAD master agent to navigate phases. Read \`_bmad/COMMANDS.md\` for all available agents, workflows, and commands.
 
@@ -42,7 +43,7 @@ description: BMAD-METHOD integration for this repository
 alwaysApply: true
 ---
 
-## BMAD-METHOD Integration
+## bmax
 
 Ask Cursor to run the BMAD master agent to navigate phases. Read \`_bmad/COMMANDS.md\` for all available agents, workflows, and command instructions.
 
@@ -58,10 +59,10 @@ ${COMMAND_REFERENCE}
  */
 export function generateSkillsTierSnippet(): string {
   return `
-## BMAD-METHOD Integration
+## bmax
 
 BMAD commands are available as Codex Skills. Use \`$command-name\` to invoke them
-(e.g., \`$create-prd\`, \`$analyst\`). See \`_bmad/COMMANDS.md\` for a full reference.
+(e.g., \`$create-prd\`, \`$researcher\`). See \`_bmad/COMMANDS.md\` for a full reference.
 
 ${FULL_TIER_PHASES}
 `;
@@ -72,10 +73,10 @@ ${FULL_TIER_PHASES}
  */
 export function generateOpencodeSkillsTierSnippet(): string {
   return `
-## BMAD-METHOD Integration
+## bmax
 
 BMAD commands are available as native OpenCode skills in \`.opencode/skills/\`.
-Load the matching skill name (for example \`bmad-analyst\` or \`bmad-create-prd\`)
+Load the matching skill name (for example \`bmad-researcher\` or \`bmad-create-prd\`)
 when the user asks for a BMAD workflow or agent. Use the OpenCode question tool (\`question\`)
 when a BMAD workflow needs interactive answers. See \`_bmad/COMMANDS.md\` for a full reference.
 
@@ -89,7 +90,7 @@ ${FULL_TIER_PHASES}
  */
 export function generateInstructionsOnlySnippet(): string {
   return `
-## BMAD-METHOD Integration
+## bmax
 
 Ask the BMAD master agent to navigate phases. Read \`_bmad/COMMANDS.md\` for all available agents, workflows, and commands.
 
@@ -97,15 +98,15 @@ Ask the BMAD master agent to navigate phases. Read \`_bmad/COMMANDS.md\` for all
 
 | Phase | Focus | Key Agents |
 |-------|-------|-----------|
-| 1. Analysis | Understand the problem | Analyst agent |
-| 2. Planning | Define the solution | Product Manager agent |
-| 3. Solutioning | Design the architecture | Architect agent |
+| 1. Research | Validate the idea | Scout (Researcher) |
+| 2. Design | PRD + UX + Pricing | Ada (Product Designer) |
+| 3. Architect | Tech architecture | Kit (Architect) |
 
 ### Workflow
 
-Work through Phases 1-3 using BMAD agents and workflows interactively. For PRD creation, use \`_bmad/lite/create-prd.md\` for single-turn generation.
+Work through Phases 1-3 using agents and workflows interactively. For PRD creation, use \`_bmad/lite/create-prd.md\` for single-turn generation.
 
-> **Note:** Ralph (Phase 4 — autonomous implementation) is not supported on this platform.
+> **Note:** Ralph (Phases 4-5 — Build & Launch) is not supported on this platform.
 
 ${COMMAND_REFERENCE}
 `;

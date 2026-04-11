@@ -9,14 +9,13 @@ function readDoc(path: string): string {
 }
 
 describe("documentation", () => {
-  it("documents the current Cursor runtime contract in README", () => {
+  it("documents the supported platforms in README", () => {
     const readme = readDoc("README.md");
 
-    expect(readme).toContain("`cursor-agent -p --force --output-format json`");
-    expect(readme).toContain("switches to `stream-json` only for live output");
-    expect(readme).toContain(
-      "Read `_bmad/COMMANDS.md` and ask Cursor to run the BMAD master agent"
-    );
+    expect(readme).toContain("claude-code");
+    expect(readme).toContain("codex");
+    expect(readme).toContain("cursor");
+    expect(readme).toContain("copilot");
   });
 
   it("documents Cursor preflight and live-output behavior in the Ralph reference", () => {

@@ -3,9 +3,9 @@ import { writeFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runInit, runUpgrade, runDoctor } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
-import { expectBmalphInitialized, expectDoctorCheckPassed } from "./helpers/assertions.js";
+import { expectBmaxInitialized, expectDoctorCheckPassed } from "./helpers/assertions.js";
 
-describe("bmalph workflows e2e", { timeout: 60000 }, () => {
+describe("bmax workflows e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -27,7 +27,7 @@ describe("bmalph workflows e2e", { timeout: 60000 }, () => {
     expect(doctorResult.exitCode).toBe(0);
 
     // All core checks should pass
-    expectDoctorCheckPassed(doctorResult.stdout, "bmalph/config.json exists and valid");
+    expectDoctorCheckPassed(doctorResult.stdout, "bmax/config.json exists and valid");
     expectDoctorCheckPassed(doctorResult.stdout, "_bmad/ directory present");
     expectDoctorCheckPassed(doctorResult.stdout, "ralph_loop.sh present and has content");
     expect(doctorResult.stdout).toContain("all checks OK");
@@ -68,7 +68,7 @@ describe("bmalph workflows e2e", { timeout: 60000 }, () => {
     expect(fixPlanAfter).toBe(fixPlanContent);
 
     // Project should still be valid
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("multiple upgrades are idempotent", async () => {

@@ -7,7 +7,7 @@ import { runCli, runInit, type CliResult } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CLI_PATH = join(__dirname, "..", "..", "bin", "bmalph.js");
+const CLI_PATH = join(__dirname, "..", "..", "bin", "bmax.js");
 
 /**
  * Runs CLI, kills it after durationMs, and resolves with captured output.
@@ -60,12 +60,12 @@ function gitInRepo(cwd: string, ...args: string[]): string {
 }
 
 /**
- * Sets up a fully initialized bmalph project with a fix plan, all committed.
+ * Sets up a fully initialized bmax project with a fix plan, all committed.
  */
 async function setupSwarmProject(project: TestProject, epicCount: number): Promise<void> {
   await runInit(project.path, "swarm-test", "E2E swarm test");
   // Commit init output first so tree is clean
-  gitCommit(project.path, "bmalph init");
+  gitCommit(project.path, "bmax init");
 
   const fixPlanLines = ["# Ralph Fix Plan", "", "## Stories to Implement", ""];
   for (let i = 1; i <= epicCount; i++) {
@@ -87,7 +87,7 @@ async function setupSwarmProject(project: TestProject, epicCount: number): Promi
   gitCommit(project.path, "add fix plan with epics");
 }
 
-describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
+describe("bmax run --swarm e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -121,7 +121,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   // ─── Validation error paths ───────────────────────────────────────────
 
   it("exits with error when project is not initialized", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
 
     const result = await runCli(["run", "--swarm"], { cwd: project.path });
 
@@ -130,9 +130,9 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("exits with error when no fix plan exists", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await runInit(project.path, "swarm-test", "test");
-    gitCommit(project.path, "bmalph init");
+    gitCommit(project.path, "bmax init");
 
     const result = await runCli(["run", "--swarm", "--no-dashboard", "--no-review"], {
       cwd: project.path,
@@ -143,7 +143,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("exits with error when only one epic", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 1);
 
     const result = await runCli(["run", "--swarm", "--no-dashboard", "--no-review"], {
@@ -155,7 +155,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("exits with error when working tree is dirty", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 2);
     await writeFile(join(project.path, "uncommitted.txt"), "dirty");
 
@@ -168,7 +168,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("exits with error for invalid swarm count", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 2);
 
     const result = await runCli(["run", "--swarm", "abc", "--no-dashboard", "--no-review"], {
@@ -180,7 +180,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("exits with error for zero swarm count", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 2);
 
     const result = await runCli(["run", "--swarm", "0", "--no-dashboard", "--no-review"], {
@@ -192,9 +192,9 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("exits with error for instructions-only platform with --swarm", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await runInit(project.path, "swarm-test", "test", "windsurf");
-    gitCommit(project.path, "bmalph init");
+    gitCommit(project.path, "bmax init");
 
     const result = await runCli(["run", "--swarm", "--no-dashboard", "--no-review"], {
       cwd: project.path,
@@ -207,7 +207,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   // ─── CLI parsing ──────────────────────────────────────────────────────
 
   it("accepts --swarm without a count and gets past validation", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 2);
 
     // Swarm passes validation and tries to spawn workers.
@@ -228,7 +228,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   });
 
   it("accepts --swarm with explicit count", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 3);
 
     const result = await runCliWithKill(
@@ -245,7 +245,7 @@ describe("bmalph run --swarm e2e", { timeout: 60000 }, () => {
   // ─── Orphan cleanup ───────────────────────────────────────────────────
 
   it("cleans up orphaned worktrees from previous runs", async () => {
-    project = await createTestProject("bmalph-swarm-e2e");
+    project = await createTestProject("bmax-swarm-e2e");
     await setupSwarmProject(project, 2);
 
     // Simulate a crashed previous run

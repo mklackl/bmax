@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
-const CLI_PATH = join(__dirname, "..", "bin", "bmalph.js");
+const CLI_PATH = join(__dirname, "..", "bin", "bmax.js");
 
 function runCli(args: string[]): { stdout: string; stderr: string; exitCode: number } {
   try {
@@ -31,8 +31,8 @@ describe("CLI entry point", () => {
   it("outputs help with --help", () => {
     const { stdout, exitCode } = runCli(["--help"]);
     expect(exitCode).toBe(0);
-    expect(stdout).toContain("bmalph");
-    expect(stdout).toContain("BMAD-METHOD");
+    expect(stdout).toContain("bmax");
+    expect(stdout).toContain("Solo SaaS Builder");
   });
 
   it("shows error for unknown command", () => {

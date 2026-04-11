@@ -11,7 +11,7 @@ import { isEnoent } from "./utils/errors.js";
 import {
   BMAD_DIR,
   RALPH_DIR,
-  BMALPH_DIR,
+  BMAX_DIR,
   BMAD_OUTPUT_DIR,
   GITIGNORE_ENTRIES,
   SKILLS_PREFIX,
@@ -40,7 +40,7 @@ export async function buildResetPlan(projectDir: string, platform: Platform): Pr
   };
 
   // Check which managed directories exist
-  for (const dir of [BMAD_DIR, RALPH_DIR, BMALPH_DIR]) {
+  for (const dir of [BMAD_DIR, RALPH_DIR, BMAX_DIR]) {
     if (await exists(join(projectDir, dir))) {
       plan.directories.push(dir);
     }
@@ -97,7 +97,7 @@ export async function buildResetPlan(projectDir: string, platform: Platform): Pr
     if (!isEnoent(err)) throw err;
   }
 
-  // Check .gitignore for bmalph entries
+  // Check .gitignore for bmax entries
   try {
     const content = await readFile(join(projectDir, ".gitignore"), "utf-8");
     const existingLines = parseGitignoreLines(content);

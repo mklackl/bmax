@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import select from "@inquirer/select";
 import input from "@inquirer/input";
-import { writeConfig, type BmalphConfig } from "../utils/config.js";
+import { writeConfig, type BmaxConfig } from "../utils/config.js";
 import {
   installProject,
   mergeInstructionsFile,
@@ -79,8 +79,8 @@ async function runInit(options: InitOptions): Promise<void> {
   const projectDir = options.projectDir;
 
   if (await isInitialized(projectDir)) {
-    console.log(chalk.yellow("bmalph is already initialized in this project."));
-    console.log("Use 'bmalph upgrade' to update bundled assets to the latest version.");
+    console.log(chalk.yellow("bmax is already initialized in this project."));
+    console.log("Use 'bmax upgrade' to update bundled assets to the latest version.");
     return;
   }
 
@@ -136,7 +136,7 @@ async function runInit(options: InitOptions): Promise<void> {
   await installProject(projectDir, platform);
 
   const bundledVersions = await getBundledVersions();
-  const config: BmalphConfig = {
+  const config: BmaxConfig = {
     name: validatedName,
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive against future refactors
     description: description ?? "",
@@ -151,12 +151,12 @@ async function runInit(options: InitOptions): Promise<void> {
   } catch (err) {
     throw new Error(
       `Partial installation: files were copied but configuration failed. ` +
-        `Run 'bmalph init' again to retry.`,
+        `Run 'bmax init' again to retry.`,
       { cause: err }
     );
   }
 
-  console.log(chalk.green("\nbmalph initialized successfully!"));
+  console.log(chalk.green("\nbmax initialized successfully!"));
   console.log(`\n  Project: ${chalk.bold(config.name)}`);
   const platformLabel = platform.experimental
     ? `${platform.displayName} (experimental)`
@@ -170,13 +170,13 @@ async function runInit(options: InitOptions): Promise<void> {
   } else if (platform.commandDelivery.kind === "skills") {
     console.log(`  ${platform.commandDelivery.dir}/  BMAD skills`);
   }
-  console.log(`  bmalph/            State management`);
+  console.log(`  bmax/            State management`);
 
   // Platform-specific next step guidance
   console.log(`\nNext step:`);
   if (platform.id === "claude-code") {
     console.log(
-      `  Use ${chalk.cyan("/bmalph")} in Claude Code to see your current phase and commands.`
+      `  Use ${chalk.cyan("/bmax")} in Claude Code to see your current phase and commands.`
     );
   } else if (platform.id === "opencode") {
     console.log(`  ${getPlatformMasterAgentHint(platform)}.`);

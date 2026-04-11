@@ -26,9 +26,9 @@ export interface ClassifiedCommand {
   invocation: string;
   /** Full body content from the slash command file. */
   body: string;
-  kind: "agent" | "workflow" | "bmalph" | "utility";
+  kind: "agent" | "workflow" | "bmax" | "utility";
   /** Phase key for workflow commands (e.g. "1-analysis"). */
   phase?: string;
-  /** For bmalph commands: how to run them. */
+  /** For bmax commands: how to run them. */
   howToRun?: string;
 }

@@ -6,7 +6,7 @@ import { setupCursorRunEnv } from "./helpers/cursor-runtime.js";
 import { setupOpencodeRunEnv } from "./helpers/opencode-runtime.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 
-describe("bmalph run e2e", { timeout: 60000 }, () => {
+describe("bmax run e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {

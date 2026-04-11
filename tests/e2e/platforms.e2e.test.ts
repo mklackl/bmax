@@ -5,7 +5,7 @@ import { runInit, runUpgrade, runDoctor } from "./helpers/cli-runner.js";
 import { setupCursorDoctorEnv } from "./helpers/cursor-runtime.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 import {
-  expectBmalphInitializedForPlatform,
+  expectBmaxInitializedForPlatform,
   expectDoctorCheckPassed,
   expectFileExists,
   expectFileContains,
@@ -86,9 +86,9 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       const result = await runInit(project.path, "test-project", "E2E test", platform.id);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("bmalph initialized successfully");
+      expect(result.stdout).toContain("bmax initialized successfully");
 
-      await expectBmalphInitializedForPlatform(project.path, platform);
+      await expectBmaxInitializedForPlatform(project.path, platform);
 
       // Should not create CLAUDE.md for non-claude-code platforms
       if (platform.id !== "claude-code") {
@@ -107,7 +107,7 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       expect(result.exitCode).toBe(0);
 
       // Core checks
-      expectDoctorCheckPassed(result.stdout, "bmalph/config.json exists and valid");
+      expectDoctorCheckPassed(result.stdout, "bmax/config.json exists and valid");
       expectDoctorCheckPassed(result.stdout, "_bmad/ directory present");
       expectDoctorCheckPassed(result.stdout, "ralph_loop.sh present and has content");
 
@@ -127,7 +127,7 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       expect(result.exitCode).toBe(0);
 
       // Config still has correct platform
-      const configRaw = await readFile(join(project.path, "bmalph/config.json"), "utf-8");
+      const configRaw = await readFile(join(project.path, "bmax/config.json"), "utf-8");
       const config = JSON.parse(configRaw) as Record<string, unknown>;
       expect(config.platform).toBe(platform.id);
 
@@ -172,18 +172,18 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       await runInit(project.path, "test-project", "E2E test", "codex");
 
       // Agent skill exists with correct structure
-      await expectFileExists(join(project.path, ".agents/skills/bmad-analyst/SKILL.md"));
+      await expectFileExists(join(project.path, ".agents/skills/bmad-researcher/SKILL.md"));
       await expectFileContains(
-        join(project.path, ".agents/skills/bmad-analyst/SKILL.md"),
-        "managed-by: bmalph"
+        join(project.path, ".agents/skills/bmad-researcher/SKILL.md"),
+        "managed-by: bmax"
       );
 
       // Workflow skill exists
       await expectFileExists(join(project.path, ".agents/skills/bmad-create-prd/SKILL.md"));
 
       // CLI pointer commands are NOT generated as skills
-      await expectFileNotExists(join(project.path, ".agents/skills/bmad-bmalph-implement"));
-      await expectFileNotExists(join(project.path, ".agents/skills/bmad-bmalph-status"));
+      await expectFileNotExists(join(project.path, ".agents/skills/bmad-bmax-implement"));
+      await expectFileNotExists(join(project.path, ".agents/skills/bmad-bmax-status"));
     });
 
     it("instructions reference $command-name syntax", async () => {
@@ -214,16 +214,16 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
 
       await runInit(project.path, "test-project", "E2E test", "opencode");
 
-      await expectFileExists(join(project.path, ".opencode/skills/bmad-analyst/SKILL.md"));
+      await expectFileExists(join(project.path, ".opencode/skills/bmad-researcher/SKILL.md"));
       await expectFileContains(
-        join(project.path, ".opencode/skills/bmad-analyst/SKILL.md"),
-        "name: bmad-analyst"
+        join(project.path, ".opencode/skills/bmad-researcher/SKILL.md"),
+        "name: bmad-researcher"
       );
 
       await expectFileExists(join(project.path, ".opencode/skills/bmad-create-prd/SKILL.md"));
 
-      await expectFileNotExists(join(project.path, ".opencode/skills/bmad-bmalph-implement"));
-      await expectFileNotExists(join(project.path, ".opencode/skills/bmad-bmalph-status"));
+      await expectFileNotExists(join(project.path, ".opencode/skills/bmad-bmax-implement"));
+      await expectFileNotExists(join(project.path, ".opencode/skills/bmad-bmax-status"));
     });
 
     it("instructions reference OpenCode skills and the question tool", async () => {
@@ -233,7 +233,7 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
 
       await expectFileContains(join(project.path, "AGENTS.md"), ".opencode/skills");
       await expectFileContains(join(project.path, "AGENTS.md"), "question tool");
-      await expectFileContains(join(project.path, "AGENTS.md"), "bmad-analyst");
+      await expectFileContains(join(project.path, "AGENTS.md"), "bmad-researcher");
       await expectFileNotContains(join(project.path, "AGENTS.md"), "$command-name");
     });
 
@@ -257,15 +257,15 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       const result = await runInit(project.path, "test-project", "E2E test", "cursor");
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).not.toContain("/bmalph");
-      expect(result.stdout).not.toContain("/analyst");
+      expect(result.stdout).not.toContain("/bmax");
+      expect(result.stdout).not.toContain("/researcher");
 
       const content = await readFile(join(project.path, ".cursor/rules/bmad.mdc"), "utf-8");
       expect(content).toMatch(/^---\r?\n/);
       expect(content).toContain("alwaysApply: true");
-      expect(content).toContain("## BMAD-METHOD Integration");
-      expect(content).not.toContain("/bmalph");
-      expect(content).not.toContain("/analyst");
+      expect(content).toContain("## bmax");
+      expect(content).not.toContain("/bmax");
+      expect(content).not.toContain("/researcher");
     });
   });
 
@@ -300,12 +300,12 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
         const content = await readFile(join(project.path, platform.instructionsFile), "utf-8");
 
         // Should mention phases 1-3
-        expect(content).toContain("Analysis");
+        expect(content).toContain("Research");
         expect(content).toContain("Planning");
-        expect(content).toContain("Solutioning");
+        expect(content).toContain("Architect");
 
-        // Should not mention Phase 4 / Implementation phase row
-        expect(content).not.toContain("4. Implementation");
+        // Should not mention Phase 4 / Build phase row
+        expect(content).not.toContain("4. Build");
         expect(content).toContain("not supported on this platform");
       }
     );
@@ -323,7 +323,7 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
 
       const content = await readFile(join(project.path, platform.instructionsFile), "utf-8");
 
-      expect(content).toContain("4. Implementation");
+      expect(content).toContain("4. Build");
       expect(content).toContain("Ralph");
       expect(content).not.toContain("not supported on this platform");
     });

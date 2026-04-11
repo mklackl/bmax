@@ -28,15 +28,15 @@ describe("IDE-only platforms", () => {
 
       it("generateInstructionsSnippet does not contain slash command syntax", () => {
         const snippet = platform.generateInstructionsSnippet();
-        expect(snippet).not.toMatch(/\/bmalph\b/);
-        expect(snippet).not.toMatch(/\/analyst\b/);
+        expect(snippet).not.toMatch(/\/bmax\b/);
+        expect(snippet).not.toMatch(/\/researcher\b/);
         expect(snippet).not.toMatch(/\/architect\b/);
-        expect(snippet).not.toMatch(/\/pm\b/);
+        expect(snippet).not.toMatch(/\/product-designer\b/);
       });
 
-      it("generateInstructionsSnippet contains BMAD-METHOD Integration", () => {
+      it("generateInstructionsSnippet contains bmax", () => {
         const snippet = platform.generateInstructionsSnippet();
-        expect(snippet).toContain("BMAD-METHOD Integration");
+        expect(snippet).toContain("bmax");
       });
 
       it("getDoctorChecks returns at least 1 check", () => {
@@ -50,7 +50,7 @@ describe("IDE-only platforms", () => {
     let testDir: string;
 
     beforeEach(async () => {
-      testDir = join(tmpdir(), `bmalph-ide-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      testDir = join(tmpdir(), `bmax-ide-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await mkdir(testDir, { recursive: true });
     });
 
@@ -66,7 +66,7 @@ describe("IDE-only platforms", () => {
       it(`${platform.displayName} check passes when instructions file has marker`, async () => {
         const filePath = join(testDir, expectedFile);
         await mkdir(join(filePath, ".."), { recursive: true });
-        await writeFile(filePath, "## BMAD-METHOD Integration\nContent");
+        await writeFile(filePath, "## bmax\nContent");
         const checks = platform.getDoctorChecks();
         const instrCheck = checks.find((c) => c.id === "instructions-file")!;
         const result = await instrCheck.check(testDir);

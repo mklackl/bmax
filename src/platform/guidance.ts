@@ -14,11 +14,11 @@ function getSkillHint(platform: Platform, skillName: string, skillsDir: string):
 
 export function getPlatformAnalysisHint(platform: Platform): string {
   if (platform.commandDelivery.kind === "directory") {
-    return "Run /analyst to start analysis";
+    return "Run /researcher to start research";
   }
 
   if (platform.commandDelivery.kind === "skills") {
-    return getSkillHint(platform, "analyst", platform.commandDelivery.dir);
+    return getSkillHint(platform, "researcher", platform.commandDelivery.dir);
   }
 
   return getCommandIndexHint(platform);
@@ -26,7 +26,7 @@ export function getPlatformAnalysisHint(platform: Platform): string {
 
 export function getPlatformPrdHint(platform: Platform): string {
   if (platform.commandDelivery.kind === "directory") {
-    return "Run /pm to create PRD";
+    return "Run /product-designer to create PRD";
   }
 
   if (platform.commandDelivery.kind === "skills") {
@@ -74,13 +74,13 @@ export function getPlatformReadinessHint(platform: Platform): string {
 
 export function getPlatformMasterAgentHint(platform: Platform): string {
   if (platform.commandDelivery.kind === "directory") {
-    return "Run /bmalph to navigate phases";
+    return "Run /bmax to navigate phases";
   }
 
   if (platform.commandDelivery.kind === "skills") {
     return platform.id === "codex"
-      ? "Use the `$bmalph` Codex Skill to navigate phases"
-      : `Ask ${platform.displayName} to load the \`bmad-bmalph\` skill from \`${platform.commandDelivery.dir}\``;
+      ? "Use the `$bmax` Codex Skill to navigate phases"
+      : `Ask ${platform.displayName} to load the \`bmad-bmax\` skill from \`${platform.commandDelivery.dir}\``;
   }
 
   return getCommandIndexHint(platform);

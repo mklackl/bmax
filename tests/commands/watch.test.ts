@@ -30,9 +30,9 @@ describe("watchCommand", () => {
     mockGetDashboardTerminalSupport.mockReturnValue({ supported: true });
     testDir = join(
       tmpdir(),
-      `bmalph-watch-cmd-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-watch-cmd-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -47,7 +47,7 @@ describe("watchCommand", () => {
 
   it("prints deprecation warning", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",
@@ -58,7 +58,7 @@ describe("watchCommand", () => {
     await watchCommand({ projectDir: testDir });
 
     expect(chalk.yellow).toHaveBeenCalledWith(
-      'Warning: "bmalph watch" is deprecated. Use "bmalph run" instead.'
+      'Warning: "bmax watch" is deprecated. Use "bmax run" instead.'
     );
     expect(consoleSpy).toHaveBeenCalled();
   });
@@ -66,7 +66,7 @@ describe("watchCommand", () => {
   it("fails when project is not initialized", async () => {
     const emptyDir = join(
       tmpdir(),
-      `bmalph-watch-empty-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-watch-empty-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
     await mkdir(emptyDir, { recursive: true });
 
@@ -84,7 +84,7 @@ describe("watchCommand", () => {
 
   it("starts dashboard with default interval", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",
@@ -102,7 +102,7 @@ describe("watchCommand", () => {
 
   it("starts dashboard with custom interval", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",
@@ -120,7 +120,7 @@ describe("watchCommand", () => {
 
   it("rejects interval below 500ms", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",
@@ -136,7 +136,7 @@ describe("watchCommand", () => {
 
   it("rejects non-numeric interval", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",
@@ -152,7 +152,7 @@ describe("watchCommand", () => {
 
   it("accepts interval at minimum boundary of 500ms", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",
@@ -170,7 +170,7 @@ describe("watchCommand", () => {
 
   it("fails when the terminal does not support in-place dashboard rendering", async () => {
     await writeFile(
-      join(testDir, "bmalph", "config.json"),
+      join(testDir, "bmax", "config.json"),
       JSON.stringify({
         name: "test-project",
         description: "",

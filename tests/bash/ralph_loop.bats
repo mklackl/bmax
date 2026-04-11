@@ -1619,31 +1619,31 @@ TMUX
 # User-facing help and guidance
 # ===========================================================================
 
-@test "show_help uses driver-agnostic bmalph guidance" {
+@test "show_help uses driver-agnostic bmax guidance" {
     run show_help
 
     assert_success
     assert_output --partial "Ralph Loop"
-    assert_output --partial "Use 'bmalph init'"
+    assert_output --partial "Use 'bmax init'"
     assert_output --partial "Show live driver output in real-time"
     assert_output --partial "Set driver execution timeout in minutes"
     assert_output --partial "Ignored by codex, opencode, cursor, and copilot"
-    assert_output --partial "bmalph run"
+    assert_output --partial "bmax run"
     refute_output --partial "Ralph Loop for Claude Code"
     refute_output --partial "Show Claude Code output in real-time"
     refute_output --partial "ralph-setup my-project"
 }
 
-@test "main recommends bmalph commands when the prompt file is missing" {
+@test "main recommends bmax commands when the prompt file is missing" {
     SCRIPT_DIR="$PROJECT_ROOT/ralph"
 
     run main
 
     assert_failure
     assert_output --partial "Prompt file '$RALPH_DIR/PROMPT.md' not found!"
-    assert_output --partial "Initialize bmalph in this project: bmalph init"
-    assert_output --partial "Restore bundled Ralph files in an existing project: bmalph upgrade"
-    assert_output --partial "Generate Ralph task files after planning: bmalph implement"
+    assert_output --partial "Initialize bmax in this project: bmax init"
+    assert_output --partial "Restore bundled Ralph files in an existing project: bmax upgrade"
+    assert_output --partial "Generate Ralph task files after planning: bmax implement"
     refute_output --partial "ralph-enable"
     refute_output --partial "ralph-setup"
     refute_output --partial "ralph-import"

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { runInit, runWatch } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 
-describe("bmalph watch e2e", { timeout: 60000 }, () => {
+describe("bmax watch e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -21,7 +21,7 @@ describe("bmalph watch e2e", { timeout: 60000 }, () => {
     const result = await runWatch(project.path, 500, 3000);
 
     expect(result.stderr).toContain("deprecated");
-    expect(result.stderr).toContain("bmalph run");
+    expect(result.stderr).toContain("bmax run");
     expect(result.stderr).toContain("interactive terminal");
     expect(result.exitCode).toBe(1);
   });

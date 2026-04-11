@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CLI_PATH = join(__dirname, "..", "..", "..", "bin", "bmalph.js");
+const CLI_PATH = join(__dirname, "..", "..", "..", "bin", "bmax.js");
 
 export interface CliResult {
   stdout: string;
@@ -18,7 +18,7 @@ export interface CliOptions {
 }
 
 /**
- * Run the bmalph CLI as a subprocess
+ * Run the bmax CLI as a subprocess
  */
 export async function runCli(args: string[], options: CliOptions = {}): Promise<CliResult> {
   const { cwd = process.cwd(), env = {}, timeout = 30000 } = options;

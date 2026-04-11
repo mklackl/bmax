@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { info } from "../utils/logger.js";
-import { readState, writeState, type BmalphState } from "../utils/state.js";
+import { readState, writeState, type BmaxState } from "../utils/state.js";
 import { loadTransitionInputs } from "./artifact-loading.js";
 import { generateContextOutputs } from "./context-output.js";
 import { syncFixPlan } from "./fix-plan-sync.js";
@@ -52,7 +52,7 @@ export async function runTransition(
 
   const now = new Date().toISOString();
   const currentState = await readState(projectDir);
-  const newState: BmalphState = {
+  const newState: BmaxState = {
     currentPhase: 4,
     status: "implementing",
     startedAt: currentState?.startedAt ?? now,

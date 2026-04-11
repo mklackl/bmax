@@ -8,7 +8,7 @@ paths:
 
 # Command Delivery
 
-bmalph bundles 54 BMAD and bmalph command definitions. Delivery varies by platform:
+bmax bundles slash commands for solo SaaS development. Delivery varies by platform:
 
 - **Claude Code** — `.claude/commands/` slash commands
 - **OpenAI Codex** — `.agents/skills/` Codex Skills
@@ -17,26 +17,29 @@ bmalph bundles 54 BMAD and bmalph command definitions. Delivery varies by platfo
 
 Key commands in Claude Code syntax:
 
-| Command                 | Description                         |
-| ----------------------- | ----------------------------------- |
-| `/bmalph`               | BMAD master agent — navigate phases |
-| `/analyst`              | Analyst agent                       |
-| `/pm`                   | Product Manager agent               |
-| `/architect`            | Architect agent                     |
-| `/create-prd`           | Create PRD workflow                 |
-| `/create-architecture`  | Create architecture workflow        |
-| `/create-epics-stories` | Create epics and stories            |
-| `/dev`                  | Developer agent                     |
-| `/sm`                   | Scrum Master agent                  |
-| `/qa`                   | QA agent                            |
-| `/ux-designer`          | UX Designer agent                   |
-| `/tech-writer`          | Tech Writer agent                   |
-| `/quick-flow-solo-dev`  | Quick Flow solo developer agent     |
-| `/bmalph-watch`         | Launch Ralph live dashboard         |
-| `/bmad-help`            | List all BMAD commands              |
+| Command                 | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `/bmax`                 | Master agent — navigate phases           |
+| `/researcher`           | Scout — market research, idea validation |
+| `/product-designer`     | Ada — PRD, UX, pricing                   |
+| `/architect`            | Kit — SaaS architecture                  |
+| `/builder`              | Max — implementation, quick flow         |
+| `/launcher`             | Pip — wire, deploy, SEO, legal, growth   |
+| `/validate-idea`        | 30-min idea validation                   |
+| `/create-prd`           | Create PRD workflow                      |
+| `/create-architecture`  | Create architecture workflow             |
+| `/wire`                 | Connect services, deploy, smoke test     |
+| `/launch-checklist`     | Pre-launch audit                         |
+| `/bmad-help`            | List all commands                        |
 
-For the full list, run `/bmad-help` in Claude Code or inspect `_bmad/COMMANDS.md` / `.agents/skills/` for the other platforms.
+## CLI Commands
 
-## Transition to Ralph
-
-Use `bmalph implement` (or `/bmalph-implement`) to transition from BMAD planning to Ralph implementation.
+| Command          | Description                              |
+| ---------------- | ---------------------------------------- |
+| `bmax init`      | Install agents + Ralph                   |
+| `bmax quick`     | Skip to Quick Flow (Builder agent)       |
+| `bmax implement` | Transition planning to Ralph format      |
+| `bmax run`       | Start Ralph autonomous loop              |
+| `bmax launch`    | Enter Phase 5 (wire, verify, ship)       |
+| `bmax status`    | Show current phase and progress          |
+| `bmax doctor`    | Check installation health                |

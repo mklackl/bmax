@@ -10,7 +10,7 @@ export const cursorPlatform: Platform = {
   experimental: true,
   instructionsFile: ".cursor/rules/bmad.mdc",
   commandDelivery: { kind: "index" },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => generateCursorRulesSnippet(),
   getDoctorChecks() {
     return [...buildPlatformDoctorChecks(this), ...getCursorDoctorChecks()];

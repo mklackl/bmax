@@ -12,7 +12,7 @@ describe("status command", () => {
   beforeEach(async () => {
     testDir = join(
       tmpdir(),
-      `bmalph-test-status-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-test-status-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
     await mkdir(testDir, { recursive: true });
     consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -27,9 +27,9 @@ describe("status command", () => {
   });
 
   async function setupProject(platform?: string) {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         name: "test",
         createdAt: new Date().toISOString(),
@@ -39,9 +39,9 @@ describe("status command", () => {
   }
 
   async function setupState(state: { currentPhase: number; status: string }) {
-    await mkdir(join(testDir, "bmalph/state"), { recursive: true });
+    await mkdir(join(testDir, "bmax/state"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/state/current-phase.json"),
+      join(testDir, "bmax/state/current-phase.json"),
       JSON.stringify({
         currentPhase: state.currentPhase,
         status: state.status,
@@ -80,29 +80,29 @@ describe("status command", () => {
     });
 
     it("shows corrupted config message when config exists but has wrong schema", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), '{"invalid": true}');
+      await mkdir(join(testDir, "bmax"), { recursive: true });
+      await writeFile(join(testDir, "bmax/config.json"), '{"invalid": true}');
 
       const { runStatus } = await import("../../src/commands/status.js");
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
       expect(output).toContain("corrupted");
-      expect(output).toContain("bmalph doctor");
-      expect(output).not.toContain("bmalph init");
+      expect(output).toContain("bmax doctor");
+      expect(output).not.toContain("bmax init");
     });
 
     it("shows corrupted config message when config contains broken JSON", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), "{corrupt");
+      await mkdir(join(testDir, "bmax"), { recursive: true });
+      await writeFile(join(testDir, "bmax/config.json"), "{corrupt");
 
       const { runStatus } = await import("../../src/commands/status.js");
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
       expect(output).toContain("corrupted");
-      expect(output).toContain("bmalph doctor");
-      expect(output).not.toContain("bmalph init");
+      expect(output).toContain("bmax doctor");
+      expect(output).not.toContain("bmax init");
     });
 
     it("shows phase 1 status when in planning", async () => {
@@ -113,7 +113,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("1 - Analysis");
+      expect(output).toContain("1 - Research");
       expect(output).toContain("planning");
     });
 
@@ -131,7 +131,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("4 - Implementation");
+      expect(output).toContain("4 - Build");
       expect(output).toContain("3/10");
     });
 
@@ -166,7 +166,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("/analyst");
+      expect(output).toContain("/researcher");
     });
 
     it("uses Cursor-specific BMAD guidance instead of slash commands", async () => {
@@ -179,8 +179,8 @@ describe("status command", () => {
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
       expect(output).toContain("_bmad/COMMANDS.md");
       expect(output).toContain("run the BMAD master agent");
-      expect(output).not.toContain("/analyst");
-      expect(output).not.toContain("/pm");
+      expect(output).not.toContain("/researcher");
+      expect(output).not.toContain("/product-designer");
     });
 
     it("uses OpenCode-specific BMAD guidance instead of slash commands", async () => {
@@ -192,12 +192,12 @@ describe("status command", () => {
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
       expect(output).toContain(".opencode/skills");
-      expect(output).toContain("bmad-analyst");
-      expect(output).not.toContain("/analyst");
-      expect(output).not.toContain("/pm");
+      expect(output).toContain("bmad-researcher");
+      expect(output).not.toContain("/researcher");
+      expect(output).not.toContain("/product-designer");
     });
 
-    it("suggests bmalph implement for phase 3", async () => {
+    it("suggests bmax implement for phase 3", async () => {
       await setupProject();
       await setupState({ currentPhase: 3, status: "planning" });
 
@@ -205,10 +205,10 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph implement");
+      expect(output).toContain("bmax implement");
     });
 
-    it("suggests bmalph run for phase 4 not started", async () => {
+    it("suggests bmax run for phase 4 not started", async () => {
       await setupProject();
       await setupState({ currentPhase: 4, status: "implementing" });
 
@@ -216,13 +216,13 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph run");
+      expect(output).toContain("bmax run");
     });
 
     it("shows full-tier requirement for instructions-only platform at phase 4", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({
           name: "test",
           platform: "windsurf",
@@ -248,7 +248,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("1 - Analysis");
+      expect(output).toContain("1 - Research");
       expect(output).not.toContain("not initialized");
     });
   });
@@ -334,7 +334,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("2 - Planning");
+      expect(output).toContain("2 - Design");
       expect(output).toContain("detected from artifacts");
     });
 
@@ -347,7 +347,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("3 - Solutioning");
+      expect(output).toContain("3 - Architect");
       expect(output).toContain("detected from artifacts");
     });
 
@@ -374,9 +374,9 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("Phase 1 - Analysis");
-      expect(output).toContain("Phase 2 - Planning");
-      expect(output).toContain("Phase 3 - Solutioning");
+      expect(output).toContain("Phase 1 - Research");
+      expect(output).toContain("Phase 2 - Design");
+      expect(output).toContain("Phase 3 - Architect");
     });
 
     it("does not scan artifacts when state has phase 4", async () => {
@@ -388,7 +388,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("4 - Implementation");
+      expect(output).toContain("4 - Build");
       expect(output).not.toContain("Artifacts");
       expect(output).not.toContain("detected from artifacts");
     });
@@ -400,7 +400,7 @@ describe("status command", () => {
       await runStatus({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("1 - Analysis");
+      expect(output).toContain("1 - Research");
       expect(output).not.toContain("detected from artifacts");
     });
 
@@ -445,7 +445,7 @@ describe("status command", () => {
   });
 
   describe("completion mismatch detection", () => {
-    it("shows completion message when Ralph completed but bmalph still implementing", async () => {
+    it("shows completion message when Ralph completed but bmax still implementing", async () => {
       await setupProject();
       await setupState({ currentPhase: 4, status: "implementing" });
       await setupRalphStatus({
@@ -479,7 +479,7 @@ describe("status command", () => {
       expect(output).toContain("Review changes");
     });
 
-    it("includes completion mismatch in JSON output when Ralph completed but bmalph implementing", async () => {
+    it("includes completion mismatch in JSON output when Ralph completed but bmax implementing", async () => {
       await setupProject();
       await setupState({ currentPhase: 4, status: "implementing" });
       await setupRalphStatus({
@@ -497,7 +497,7 @@ describe("status command", () => {
       expect(parsed.completionMismatch).toBe(true);
     });
 
-    it("does not flag completion mismatch in JSON when bmalph status is already completed", async () => {
+    it("does not flag completion mismatch in JSON when bmax status is already completed", async () => {
       await setupProject();
       await setupState({ currentPhase: 4, status: "completed" });
       await setupRalphStatus({

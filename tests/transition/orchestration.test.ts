@@ -12,12 +12,12 @@ describe("orchestration", () => {
   beforeEach(async () => {
     testDir = join(
       tmpdir(),
-      `bmalph-orchestration-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-orchestration-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await mkdir(join(testDir, ".ralph/specs"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({ name: "test-project", createdAt: "2025-01-01T00:00:00.000Z" })
     );
   });

@@ -1,12 +1,12 @@
 # <!-- Powered by BMAD-CORE™ -->
 bundle:
-  name: Team Plan and Architect
-  icon: 🚀
-  description: Team capable of project analysis, design, and architecture.
+  name: Solo SaaS Builder
+  icon: "\U0001F680"
+  description: Complete solo SaaS development team — research, design, architect, build, and launch.
 agents:
-  - analyst
+  - researcher
+  - product-designer
   - architect
-  - pm
-  - sm
-  - ux-designer
+  - builder
+  - launcher
 party: "./default-party.csv"

@@ -11,7 +11,7 @@ import {
 function makeTmpDir(): string {
   return join(
     tmpdir(),
-    `bmalph-ralph-runtime-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    `bmax-ralph-runtime-${Date.now()}-${Math.random().toString(36).slice(2)}`
   );
 }
 

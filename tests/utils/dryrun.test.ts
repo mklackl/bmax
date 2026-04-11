@@ -10,13 +10,13 @@ describe("dryrun", () => {
 
     it("groups actions by type", () => {
       const actions: DryRunAction[] = [
-        { type: "create", path: "bmalph/state/" },
+        { type: "create", path: "bmax/state/" },
         { type: "create", path: ".ralph/specs/" },
         { type: "modify", path: ".gitignore" },
       ];
       const summary = formatDryRunSummary(actions);
       expect(summary).toContain("Would create:");
-      expect(summary).toContain("bmalph/state/");
+      expect(summary).toContain("bmax/state/");
       expect(summary).toContain(".ralph/specs/");
       expect(summary).toContain("Would modify:");
       expect(summary).toContain(".gitignore");

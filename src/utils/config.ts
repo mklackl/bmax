@@ -27,7 +27,7 @@ export interface BmadConfig {
   modules?: string[];
 }
 
-export interface BmalphConfig {
+export interface BmaxConfig {
   name: string;
   description: string;
   createdAt: string;
@@ -35,7 +35,7 @@ export interface BmalphConfig {
   upstreamVersions?: UpstreamVersions;
 }
 
-export async function readConfig(projectDir: string): Promise<BmalphConfig | null> {
+export async function readConfig(projectDir: string): Promise<BmaxConfig | null> {
   let data: unknown;
   try {
     data = await readJsonFile<unknown>(join(projectDir, CONFIG_FILE));
@@ -52,8 +52,8 @@ export async function readConfig(projectDir: string): Promise<BmalphConfig | nul
   }
 }
 
-export async function writeConfig(projectDir: string, config: BmalphConfig): Promise<void> {
-  await mkdir(join(projectDir, "bmalph"), { recursive: true });
+export async function writeConfig(projectDir: string, config: BmaxConfig): Promise<void> {
+  await mkdir(join(projectDir, "bmax"), { recursive: true });
   await atomicWriteFile(join(projectDir, CONFIG_FILE), JSON.stringify(config, null, 2) + "\n");
 }
 

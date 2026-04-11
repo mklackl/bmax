@@ -5,277 +5,277 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.11.0](https://github.com/LarsCowe/bmalph/compare/v2.10.0...v2.11.0) (2026-03-24)
+## [2.11.0](https://github.com/LarsCowe/bmax/compare/v2.10.0...v2.11.0) (2026-03-24)
 
 
 ### Features
 
-* **ralph:** capture stderr and log exit reason on driver crash/timeout ([#145](https://github.com/LarsCowe/bmalph/issues/145)) ([75ffebb](https://github.com/LarsCowe/bmalph/commit/75ffebbda345b30207849a2f0fbe2e0179856766))
-* **run:** inject git diff summary into inter-loop context ([#117](https://github.com/LarsCowe/bmalph/issues/117)) ([4c0c4f4](https://github.com/LarsCowe/bmalph/commit/4c0c4f48f8405253db8eb3650ce8ea18bd2cc959))
-* **run:** inject next unchecked task into loop context ([#118](https://github.com/LarsCowe/bmalph/issues/118)) ([fb93dca](https://github.com/LarsCowe/bmalph/commit/fb93dca6ce5dda66640b4205347e84b98664a896))
+* **ralph:** capture stderr and log exit reason on driver crash/timeout ([#145](https://github.com/LarsCowe/bmax/issues/145)) ([75ffebb](https://github.com/LarsCowe/bmax/commit/75ffebbda345b30207849a2f0fbe2e0179856766))
+* **run:** inject git diff summary into inter-loop context ([#117](https://github.com/LarsCowe/bmax/issues/117)) ([4c0c4f4](https://github.com/LarsCowe/bmax/commit/4c0c4f48f8405253db8eb3650ce8ea18bd2cc959))
+* **run:** inject next unchecked task into loop context ([#118](https://github.com/LarsCowe/bmax/issues/118)) ([fb93dca](https://github.com/LarsCowe/bmax/commit/fb93dca6ce5dda66640b4205347e84b98664a896))
 
 
 ### Bug Fixes
 
-* **prompt:** restructure PROMPT.md to code-first, read-on-demand ([#147](https://github.com/LarsCowe/bmalph/issues/147)) ([77bb7f3](https://github.com/LarsCowe/bmalph/commit/77bb7f31ce4322c4b5ba2b23d19d4a39d4ea2502))
-* **ralph:** detect and warn when no git repository is initialized ([#144](https://github.com/LarsCowe/bmalph/issues/144)) ([4674441](https://github.com/LarsCowe/bmalph/commit/4674441133fdfa95ef521633bac3d86cd09e95f4))
-* **run:** separate format confidence from completion confidence ([#124](https://github.com/LarsCowe/bmalph/issues/124)) ([2f8d71a](https://github.com/LarsCowe/bmalph/commit/2f8d71aefa5f259c87fa9ebac29fe5645b315be0))
-* **transition:** match numbered section headers in preflight checks ([b78e1a8](https://github.com/LarsCowe/bmalph/commit/b78e1a85060a37d4c2aaddf707bb2269d6271626))
+* **prompt:** restructure PROMPT.md to code-first, read-on-demand ([#147](https://github.com/LarsCowe/bmax/issues/147)) ([77bb7f3](https://github.com/LarsCowe/bmax/commit/77bb7f31ce4322c4b5ba2b23d19d4a39d4ea2502))
+* **ralph:** detect and warn when no git repository is initialized ([#144](https://github.com/LarsCowe/bmax/issues/144)) ([4674441](https://github.com/LarsCowe/bmax/commit/4674441133fdfa95ef521633bac3d86cd09e95f4))
+* **run:** separate format confidence from completion confidence ([#124](https://github.com/LarsCowe/bmax/issues/124)) ([2f8d71a](https://github.com/LarsCowe/bmax/commit/2f8d71aefa5f259c87fa9ebac29fe5645b315be0))
+* **transition:** match numbered section headers in preflight checks ([b78e1a8](https://github.com/LarsCowe/bmax/commit/b78e1a85060a37d4c2aaddf707bb2269d6271626))
 
 
 ### Performance
 
-* **tests:** add parallel BATS execution with --jobs ([64b306c](https://github.com/LarsCowe/bmalph/commit/64b306c5045513f9d92f393f2896a1d9200869a3))
-* **tests:** optimize BATS with setup_file and parallel execution ([49d041f](https://github.com/LarsCowe/bmalph/commit/49d041f697139a2ddd9d317f3d83d0a94f84bb00))
+* **tests:** add parallel BATS execution with --jobs ([64b306c](https://github.com/LarsCowe/bmax/commit/64b306c5045513f9d92f393f2896a1d9200869a3))
+* **tests:** optimize BATS with setup_file and parallel execution ([49d041f](https://github.com/LarsCowe/bmax/commit/49d041f697139a2ddd9d317f3d83d0a94f84bb00))
 
-## [2.10.0](https://github.com/LarsCowe/bmalph/compare/v2.9.0...v2.10.0) (2026-03-23)
-
-
-### Features
-
-* **run:** add ultimate review mode for per-story code review ([33af4b9](https://github.com/LarsCowe/bmalph/commit/33af4b9e6ee63a3ea03d4dedfafd9022c5e29922))
-* **run:** prioritize HIGH/CRITICAL review findings over new stories ([e0ce427](https://github.com/LarsCowe/bmalph/commit/e0ce42791b2a89f6369ebcf3c3ac69c60fb7722b))
-
-
-### Bug Fixes
-
-* **bash:** Codex driver resume and ralph_loop.sh default path fixes ([#137](https://github.com/LarsCowe/bmalph/issues/137)) ([de8639f](https://github.com/LarsCowe/bmalph/commit/de8639f81b0118f1d0d177f7d9a4cfcd6a052afa))
-* **run:** enforce word boundaries in completion keyword matching ([8887a0f](https://github.com/LarsCowe/bmalph/commit/8887a0f36eded9e9ee19719dc449c10fdef917c5)), closes [#122](https://github.com/LarsCowe/bmalph/issues/122)
-* **run:** restore --no-review CLI flag and harden bash delta parsing ([e20e301](https://github.com/LarsCowe/bmalph/commit/e20e3015efd431c01ef838b71421577993247883))
-* **run:** trust RALPH_STATUS block over heuristic analysis ([#140](https://github.com/LarsCowe/bmalph/issues/140)) ([0838617](https://github.com/LarsCowe/bmalph/commit/0838617bdbde02f35d9f006e6e09a09e05186b62)), closes [#123](https://github.com/LarsCowe/bmalph/issues/123)
-
-## [2.9.0](https://github.com/LarsCowe/bmalph/compare/v2.8.0...v2.9.0) (2026-03-19)
+## [2.10.0](https://github.com/LarsCowe/bmax/compare/v2.9.0...v2.10.0) (2026-03-23)
 
 
 ### Features
 
-* **run:** add periodic code review loop for Ralph ([#102](https://github.com/LarsCowe/bmalph/issues/102)) ([4bab0ef](https://github.com/LarsCowe/bmalph/commit/4bab0ef94436f40f482750e113af155a15fd92d2))
+* **run:** add ultimate review mode for per-story code review ([33af4b9](https://github.com/LarsCowe/bmax/commit/33af4b9e6ee63a3ea03d4dedfafd9022c5e29922))
+* **run:** prioritize HIGH/CRITICAL review findings over new stories ([e0ce427](https://github.com/LarsCowe/bmax/commit/e0ce42791b2a89f6369ebcf3c3ac69c60fb7722b))
 
 
 ### Bug Fixes
 
-* use strict equality in renderer hasAnyData check ([6660539](https://github.com/LarsCowe/bmalph/commit/6660539c2f9c1976b1fa60ace2a5dcc90ffe8af0))
+* **bash:** Codex driver resume and ralph_loop.sh default path fixes ([#137](https://github.com/LarsCowe/bmax/issues/137)) ([de8639f](https://github.com/LarsCowe/bmax/commit/de8639f81b0118f1d0d177f7d9a4cfcd6a052afa))
+* **run:** enforce word boundaries in completion keyword matching ([8887a0f](https://github.com/LarsCowe/bmax/commit/8887a0f36eded9e9ee19719dc449c10fdef917c5)), closes [#122](https://github.com/LarsCowe/bmax/issues/122)
+* **run:** restore --no-review CLI flag and harden bash delta parsing ([e20e301](https://github.com/LarsCowe/bmax/commit/e20e3015efd431c01ef838b71421577993247883))
+* **run:** trust RALPH_STATUS block over heuristic analysis ([#140](https://github.com/LarsCowe/bmax/issues/140)) ([0838617](https://github.com/LarsCowe/bmax/commit/0838617bdbde02f35d9f006e6e09a09e05186b62)), closes [#123](https://github.com/LarsCowe/bmax/issues/123)
+
+## [2.9.0](https://github.com/LarsCowe/bmax/compare/v2.8.0...v2.9.0) (2026-03-19)
+
+
+### Features
+
+* **run:** add periodic code review loop for Ralph ([#102](https://github.com/LarsCowe/bmax/issues/102)) ([4bab0ef](https://github.com/LarsCowe/bmax/commit/4bab0ef94436f40f482750e113af155a15fd92d2))
+
+
+### Bug Fixes
+
+* use strict equality in renderer hasAnyData check ([6660539](https://github.com/LarsCowe/bmax/commit/6660539c2f9c1976b1fa60ace2a5dcc90ffe8af0))
 
 
 ### Code Quality
 
-* strengthen type safety and deduplicate constants ([1f154a0](https://github.com/LarsCowe/bmalph/commit/1f154a09f5f64acd234da5f30fac7f456c4ec629))
+* strengthen type safety and deduplicate constants ([1f154a0](https://github.com/LarsCowe/bmax/commit/1f154a09f5f64acd234da5f30fac7f456c4ec629))
 
-## [2.8.0](https://github.com/LarsCowe/bmalph/compare/v2.7.7...v2.8.0) (2026-03-17)
-
-
-### Features
-
-* add OpenCode platform support and harden quality gates ([738de2b](https://github.com/LarsCowe/bmalph/commit/738de2b6438d66c38587bde6727a562085946e26))
-* upgrade bundled BMAD to v6.1.0 ([53fcd96](https://github.com/LarsCowe/bmalph/commit/53fcd963ab8c62a4a6524f67a097977f4e772218))
-* upgrade bundled BMAD to v6.2.0 ([508250e](https://github.com/LarsCowe/bmalph/commit/508250eb6e6adef6a7c5c4112f2ba602c424063b))
-
-
-### Bug Fixes
-
-* render a single footer in run dashboard ([5cd1aea](https://github.com/LarsCowe/bmalph/commit/5cd1aea6280bd9dd068137979c32e10764a5dfa9))
-* replace Bash 4+ syntax for macOS 3.2 compatibility ([#110](https://github.com/LarsCowe/bmalph/issues/110)) ([1029d48](https://github.com/LarsCowe/bmalph/commit/1029d48758ba0397226b185d019cf0b75c06132f))
-* stabilize doctor sequential test on Windows CI ([204f813](https://github.com/LarsCowe/bmalph/commit/204f81327b1aa1fe84900df2c047c03ad548d18b))
-
-
-### Code Quality
-
-* harden detectBashVersion and add missing test ([e4d49e8](https://github.com/LarsCowe/bmalph/commit/e4d49e8cf92c5441d1c880672757a7e7b3ce6f1f))
-
-## [2.7.7](https://github.com/LarsCowe/bmalph/compare/v2.7.6...v2.7.7) (2026-03-15)
-
-
-### Bug Fixes
-
-* enforce fix-plan progress tracking ([941aabb](https://github.com/LarsCowe/bmalph/commit/941aabb9e046373884f3831174d635b6f688d48a))
-* harden autonomous Claude loop defaults ([5f56e02](https://github.com/LarsCowe/bmalph/commit/5f56e02b3603474060cfcddd184dc74de68f78c8))
-* harden Ralph terminal dashboard ([8204435](https://github.com/LarsCowe/bmalph/commit/8204435e03018cf3bb33d0fd44bf9e8503301174))
-
-## [2.7.6](https://github.com/LarsCowe/bmalph/compare/v2.7.5...v2.7.6) (2026-03-14)
-
-
-### Bug Fixes
-
-* display execution progress in monitor dashboard (closes [#101](https://github.com/LarsCowe/bmalph/issues/101)) ([#103](https://github.com/LarsCowe/bmalph/issues/103)) ([0751b06](https://github.com/LarsCowe/bmalph/commit/0751b06021274b05db2e726a20eb7819fea347b5))
-* handle permission denials in current loop ([8b1d967](https://github.com/LarsCowe/bmalph/commit/8b1d96710a5dfe3350f15123f78aec04a147d443))
-* harden Ralph runtime state parsing ([16f53f4](https://github.com/LarsCowe/bmalph/commit/16f53f4a454bf8c9d21a38288e02c2db729d408f))
-* harden Ralph session state recovery ([5a77d86](https://github.com/LarsCowe/bmalph/commit/5a77d861ea0e6e058853af3fdf507affe338b6ed))
-* stabilize Claude permission mode for unattended loops ([e64d010](https://github.com/LarsCowe/bmalph/commit/e64d01077e2249242a4e39d1c63437485609d6e8))
-
-
-### Code Quality
-
-* split installer into smaller modules ([2f5e3b1](https://github.com/LarsCowe/bmalph/commit/2f5e3b18bef2624e1a921570dbf980e237cbc748))
-* split transition orchestration pipeline ([989dc50](https://github.com/LarsCowe/bmalph/commit/989dc50f613e6ffc5a3307c37611d89f1f1d6fc6))
-
-## [2.7.5](https://github.com/LarsCowe/bmalph/compare/v2.7.4...v2.7.5) (2026-03-09)
-
-
-### Bug Fixes
-
-* harden Cursor runtime contract and docs ([ac1404a](https://github.com/LarsCowe/bmalph/commit/ac1404aa211b435783e799d18008d2a62fa13d8f))
-* **installer:** restore _bmad after post-swap failures ([e3f6354](https://github.com/LarsCowe/bmalph/commit/e3f635461c1d9afdf74184afcb6c648a7dcfa269)), closes [#83](https://github.com/LarsCowe/bmalph/issues/83)
-* kill Ralph process tree on Windows ([c9f2327](https://github.com/LarsCowe/bmalph/commit/c9f2327414f82bc9289090b93c1c2cfc50096bd8))
-* stabilize ci test runners ([28d9195](https://github.com/LarsCowe/bmalph/commit/28d91950f3b79f1c81fe27e7e438edf8d4bc76b3))
-
-## [2.7.4](https://github.com/LarsCowe/bmalph/compare/v2.7.3...v2.7.4) (2026-03-09)
-
-
-### Bug Fixes
-
-* handle malformed story IDs deterministically ([c7beddb](https://github.com/LarsCowe/bmalph/commit/c7beddb6db5ccd96804704eb477d79264663051e))
-* parse Codex JSONL responses in Ralph loop ([#89](https://github.com/LarsCowe/bmalph/issues/89)) ([90677d0](https://github.com/LarsCowe/bmalph/commit/90677d060883f7efefd8f427e7250046f1e8e908))
-* preserve specs on transition swap failure ([208c2eb](https://github.com/LarsCowe/bmalph/commit/208c2eb1b4cd86c0a1d35a3274d2acbbf3120bb5)), closes [#85](https://github.com/LarsCowe/bmalph/issues/85)
-
-## [2.7.3](https://github.com/LarsCowe/bmalph/compare/v2.7.2...v2.7.3) (2026-03-07)
-
-
-### Bug Fixes
-
-* harden BMAD transition artifact handling ([dbf298a](https://github.com/LarsCowe/bmalph/commit/dbf298aa979315001a037ca8e1cc91552a1eaaf0))
-* resolve Windows Cursor driver compatibility ([62d0906](https://github.com/LarsCowe/bmalph/commit/62d0906fb1e0b40ef6a5ee19522a1a15be092548)), closes [#72](https://github.com/LarsCowe/bmalph/issues/72)
-
-## [2.7.2](https://github.com/LarsCowe/bmalph/compare/v2.7.1...v2.7.2) (2026-03-05)
-
-
-### Bug Fixes
-
-* support BMAD-native transition artifacts ([450e7f3](https://github.com/LarsCowe/bmalph/commit/450e7f32a73c09730ca3539dbed394b2693318ea))
-
-## [2.7.1](https://github.com/LarsCowe/bmalph/compare/v2.7.0...v2.7.1) (2026-03-04)
-
-
-### Bug Fixes
-
-* **doctor:** return non-zero exit for failed checks in json mode ([53801bd](https://github.com/LarsCowe/bmalph/commit/53801bd136953ea5c5630b44817640f054673dd1))
-* **run:** propagate Ralph exit code ([176350d](https://github.com/LarsCowe/bmalph/commit/176350d141eda413d1948ab38ff0e7b438282794))
-* **run:** use bash-safe relative ralph loop spawn path ([abc0627](https://github.com/LarsCowe/bmalph/commit/abc0627f80de6738cb34113fd7c813bc76d0cf79))
-
-## [2.7.0](https://github.com/LarsCowe/bmalph/compare/v2.6.0...v2.7.0) (2026-03-04)
+## [2.8.0](https://github.com/LarsCowe/bmax/compare/v2.7.7...v2.8.0) (2026-03-17)
 
 
 ### Features
 
-* add Codex skills delivery, promote Cursor to full tier, and add lite PRD workflow ([36c5c72](https://github.com/LarsCowe/bmalph/commit/36c5c726ae887ff144e6fe464264904c7b1bb578))
-* promote Cursor to full tier with experimental flag ([1b3a9e6](https://github.com/LarsCowe/bmalph/commit/1b3a9e69f6c55c5f06e074bc8eb828c1a6490177))
+* add OpenCode platform support and harden quality gates ([738de2b](https://github.com/LarsCowe/bmax/commit/738de2b6438d66c38587bde6727a562085946e26))
+* upgrade bundled BMAD to v6.1.0 ([53fcd96](https://github.com/LarsCowe/bmax/commit/53fcd963ab8c62a4a6524f67a097977f4e772218))
+* upgrade bundled BMAD to v6.2.0 ([508250e](https://github.com/LarsCowe/bmax/commit/508250eb6e6adef6a7c5c4112f2ba602c424063b))
 
 
 ### Bug Fixes
 
-* harden error handling, eliminate injection surfaces, and reduce duplication ([d5e169b](https://github.com/LarsCowe/bmalph/commit/d5e169bb7bcc24a0a01f5eb82ebcd873d0d3e0bf))
-* harden process lifecycle, tighten artifact matching, and fill test gaps ([ebf75ac](https://github.com/LarsCowe/bmalph/commit/ebf75ac2afe128eca70324b0bcadfaae71435c83))
+* render a single footer in run dashboard ([5cd1aea](https://github.com/LarsCowe/bmax/commit/5cd1aea6280bd9dd068137979c32e10764a5dfa9))
+* replace Bash 4+ syntax for macOS 3.2 compatibility ([#110](https://github.com/LarsCowe/bmax/issues/110)) ([1029d48](https://github.com/LarsCowe/bmax/commit/1029d48758ba0397226b185d019cf0b75c06132f))
+* stabilize doctor sequential test on Windows CI ([204f813](https://github.com/LarsCowe/bmax/commit/204f81327b1aa1fe84900df2c047c03ad548d18b))
 
 
 ### Code Quality
 
-* eliminate duplication, normalize patterns, and expand test coverage ([238a1d8](https://github.com/LarsCowe/bmalph/commit/238a1d8c9f2f97f5dfb8b21e049a345d7aacbf84))
+* harden detectBashVersion and add missing test ([e4d49e8](https://github.com/LarsCowe/bmax/commit/e4d49e8cf92c5441d1c880672757a7e7b3ce6f1f))
 
-## [2.6.0](https://github.com/LarsCowe/bmalph/compare/v2.5.0...v2.6.0) (2026-02-28)
-
-
-### Features
-
-* add bmalph run command to start Ralph loop with dashboard ([70bf737](https://github.com/LarsCowe/bmalph/commit/70bf737c791582cef2d8caebf15ba8abe21b1e3d))
-* deprecate bmalph watch in favor of bmalph run ([4da6764](https://github.com/LarsCowe/bmalph/commit/4da676466b5cac915d649f07dbf8870c99cd5bf7))
-* promote Copilot to full tier with experimental flag ([a776dc3](https://github.com/LarsCowe/bmalph/commit/a776dc38d0fd2e1d3a032aaa9efd60dfc1083665))
-
-
-### Code Quality
-
-* simplify codebase and extract shared platform logic ([233f4be](https://github.com/LarsCowe/bmalph/commit/233f4be6924e47fa79c7225b3e39041c8897bb73))
-
-## [2.5.0](https://github.com/LarsCowe/bmalph/compare/v2.4.0...v2.5.0) (2026-02-27)
-
-
-### Features
-
-* **ralph:** add /bmalph-watch slash command ([902376f](https://github.com/LarsCowe/bmalph/commit/902376ff692b54caa2846984499507fb82a7f022))
-* **watch:** add live dashboard for Ralph loop monitoring ([be9ec34](https://github.com/LarsCowe/bmalph/commit/be9ec344a11a34ed8112b64909f6e42ffd410a1d))
+## [2.7.7](https://github.com/LarsCowe/bmax/compare/v2.7.6...v2.7.7) (2026-03-15)
 
 
 ### Bug Fixes
 
-* **ralph:** deduplicate PRD task extraction in task_sources ([add09fc](https://github.com/LarsCowe/bmalph/commit/add09fcfcbc7fe3e94ad48e4c244329a7f715c23))
-* **ralph:** detect completion mismatch and deprecate legacy scripts ([1711aab](https://github.com/LarsCowe/bmalph/commit/1711aabd2daab4616dfcc28b9694435b49fb2b6b))
-* **ralph:** prevent set -e leak and CWD pollution in ralph_loop tests ([2d0b98d](https://github.com/LarsCowe/bmalph/commit/2d0b98d166fc6684f8f02a2dfd4d3504a41434cb))
-* **ralph:** resolve 3 known bugs in wizard_utils, enable_core, task_sources ([a311aaa](https://github.com/LarsCowe/bmalph/commit/a311aaa461f9dc365bec10d4e6e9a0ce355dc739))
-* **ralph:** use jq for JSON generation to prevent injection from special characters ([1270f14](https://github.com/LarsCowe/bmalph/commit/1270f1415fe4079ff297a66d07c3d1f3fd3aa63b))
-* **tests:** increase previewUpgrade timeout for Windows CI ([cdcd647](https://github.com/LarsCowe/bmalph/commit/cdcd6471a2512e0b5fb72fe1e4998a0604b5642b))
-* **watch:** rename completionMismatch to ralphCompleted, fix status tests ([e679c9f](https://github.com/LarsCowe/bmalph/commit/e679c9f3b7d2d7c9223c6c4593f01fef851ae040))
+* enforce fix-plan progress tracking ([941aabb](https://github.com/LarsCowe/bmax/commit/941aabb9e046373884f3831174d635b6f688d48a))
+* harden autonomous Claude loop defaults ([5f56e02](https://github.com/LarsCowe/bmax/commit/5f56e02b3603474060cfcddd184dc74de68f78c8))
+* harden Ralph terminal dashboard ([8204435](https://github.com/LarsCowe/bmax/commit/8204435e03018cf3bb33d0fd44bf9e8503301174))
 
-
-### Code Quality
-
-* remove deprecated exports and update docs ([ee817d4](https://github.com/LarsCowe/bmalph/commit/ee817d4c71bfc50ec7f2190e39423c6153581c8e))
-
-## [2.4.0](https://github.com/LarsCowe/bmalph/compare/v2.3.0...v2.4.0) (2026-02-23)
-
-
-### Features
-
-* add bmalph implement CLI command with pre-flight validation ([9932717](https://github.com/LarsCowe/bmalph/commit/99327171e53afd2d0394611835e1d9c19ee1dfb6))
-* add slash commands and remove /bmalph-reset reference ([a30d484](https://github.com/LarsCowe/bmalph/commit/a30d484a26f8c29335ac6af97d7a01dc71fe8d4c))
-* **doctor:** add jq availability check ([19824dc](https://github.com/LarsCowe/bmalph/commit/19824dc8d80577bc315b75982ee6943b23e8aa39))
-* **implement:** add re-run protection and file generation summary ([e53d0d4](https://github.com/LarsCowe/bmalph/commit/e53d0d4597b910014da5631a81f106f2c557f66a))
-* **reset:** add bmalph reset command ([3231b6a](https://github.com/LarsCowe/bmalph/commit/3231b6add12135ebde5226cd172c19e2020e85a7))
-* **status:** detect phase from BMAD artifacts during phases 1-3 ([67593c4](https://github.com/LarsCowe/bmalph/commit/67593c4dadfcece0b8606fce89c6f5e011e52971))
-* **transition:** improve artifact detection and progress preservation ([02709cc](https://github.com/LarsCowe/bmalph/commit/02709ccf37c502fd1af5bf431a2582e563a24696))
-* **validate:** read task counts from Ralph status data ([329e8b5](https://github.com/LarsCowe/bmalph/commit/329e8b5f0e86c5b1d404b909cc9c899ac9e32c7a))
-
-## [2.3.0](https://github.com/LarsCowe/bmalph/compare/v2.2.1...v2.3.0) (2026-02-21)
-
-
-### Features
-
-* add multi-platform support for six AI coding assistants ([#54](https://github.com/LarsCowe/bmalph/issues/54)) ([864316e](https://github.com/LarsCowe/bmalph/commit/864316ed91aa329110bc0859e886b1cbd25f99e1))
-* **init:** detect existing BMAD installation during init ([42d0047](https://github.com/LarsCowe/bmalph/commit/42d0047573f69484c84eff09fd0098a53332cec6)), closes [#52](https://github.com/LarsCowe/bmalph/issues/52)
+## [2.7.6](https://github.com/LarsCowe/bmax/compare/v2.7.5...v2.7.6) (2026-03-14)
 
 
 ### Bug Fixes
 
-* prevent data loss in atomic _bmad copy with rename-aside pattern ([b728a58](https://github.com/LarsCowe/bmalph/commit/b728a58c96bd9707a04a7d4009fffe0da2b41bf4))
-* **transition:** handle unreadable new spec file in changelog generation ([2d3cb9e](https://github.com/LarsCowe/bmalph/commit/2d3cb9e36d3bb04848078c416a0852582789319e))
-* **transition:** warn when readiness report is unreadable during NO-GO check ([69fba65](https://github.com/LarsCowe/bmalph/commit/69fba65b53ba80dce3046fc2690fab17343f9fb1))
-
-## [2.2.1](https://github.com/LarsCowe/bmalph/compare/v2.2.0...v2.2.1) (2026-02-21)
-
-
-### Bug Fixes
-
-* correct 4 Ralph integration bugs ([1fc394a](https://github.com/LarsCowe/bmalph/commit/1fc394ac2d7c5d3bcbdc38abc57fcee69354085b))
+* display execution progress in monitor dashboard (closes [#101](https://github.com/LarsCowe/bmax/issues/101)) ([#103](https://github.com/LarsCowe/bmax/issues/103)) ([0751b06](https://github.com/LarsCowe/bmax/commit/0751b06021274b05db2e726a20eb7819fea347b5))
+* handle permission denials in current loop ([8b1d967](https://github.com/LarsCowe/bmax/commit/8b1d96710a5dfe3350f15123f78aec04a147d443))
+* harden Ralph runtime state parsing ([16f53f4](https://github.com/LarsCowe/bmax/commit/16f53f4a454bf8c9d21a38288e02c2db729d408f))
+* harden Ralph session state recovery ([5a77d86](https://github.com/LarsCowe/bmax/commit/5a77d861ea0e6e058853af3fdf507affe338b6ed))
+* stabilize Claude permission mode for unattended loops ([e64d010](https://github.com/LarsCowe/bmax/commit/e64d01077e2249242a4e39d1c63437485609d6e8))
 
 
 ### Code Quality
 
-* remove Ralph upstream tracking ([a00a80b](https://github.com/LarsCowe/bmalph/commit/a00a80b7f9db5667ba1914a2a3d40daab72de481))
+* split installer into smaller modules ([2f5e3b1](https://github.com/LarsCowe/bmax/commit/2f5e3b18bef2624e1a921570dbf980e237cbc748))
+* split transition orchestration pipeline ([989dc50](https://github.com/LarsCowe/bmax/commit/989dc50f613e6ffc5a3307c37611d89f1f1d6fc6))
 
-## [2.2.0](https://github.com/LarsCowe/bmalph/compare/v2.1.0...v2.2.0) (2026-02-20)
+## [2.7.5](https://github.com/LarsCowe/bmax/compare/v2.7.4...v2.7.5) (2026-03-09)
+
+
+### Bug Fixes
+
+* harden Cursor runtime contract and docs ([ac1404a](https://github.com/LarsCowe/bmax/commit/ac1404aa211b435783e799d18008d2a62fa13d8f))
+* **installer:** restore _bmad after post-swap failures ([e3f6354](https://github.com/LarsCowe/bmax/commit/e3f635461c1d9afdf74184afcb6c648a7dcfa269)), closes [#83](https://github.com/LarsCowe/bmax/issues/83)
+* kill Ralph process tree on Windows ([c9f2327](https://github.com/LarsCowe/bmax/commit/c9f2327414f82bc9289090b93c1c2cfc50096bd8))
+* stabilize ci test runners ([28d9195](https://github.com/LarsCowe/bmax/commit/28d91950f3b79f1c81fe27e7e438edf8d4bc76b3))
+
+## [2.7.4](https://github.com/LarsCowe/bmax/compare/v2.7.3...v2.7.4) (2026-03-09)
+
+
+### Bug Fixes
+
+* handle malformed story IDs deterministically ([c7beddb](https://github.com/LarsCowe/bmax/commit/c7beddb6db5ccd96804704eb477d79264663051e))
+* parse Codex JSONL responses in Ralph loop ([#89](https://github.com/LarsCowe/bmax/issues/89)) ([90677d0](https://github.com/LarsCowe/bmax/commit/90677d060883f7efefd8f427e7250046f1e8e908))
+* preserve specs on transition swap failure ([208c2eb](https://github.com/LarsCowe/bmax/commit/208c2eb1b4cd86c0a1d35a3274d2acbbf3120bb5)), closes [#85](https://github.com/LarsCowe/bmax/issues/85)
+
+## [2.7.3](https://github.com/LarsCowe/bmax/compare/v2.7.2...v2.7.3) (2026-03-07)
+
+
+### Bug Fixes
+
+* harden BMAD transition artifact handling ([dbf298a](https://github.com/LarsCowe/bmax/commit/dbf298aa979315001a037ca8e1cc91552a1eaaf0))
+* resolve Windows Cursor driver compatibility ([62d0906](https://github.com/LarsCowe/bmax/commit/62d0906fb1e0b40ef6a5ee19522a1a15be092548)), closes [#72](https://github.com/LarsCowe/bmax/issues/72)
+
+## [2.7.2](https://github.com/LarsCowe/bmax/compare/v2.7.1...v2.7.2) (2026-03-05)
+
+
+### Bug Fixes
+
+* support BMAD-native transition artifacts ([450e7f3](https://github.com/LarsCowe/bmax/commit/450e7f32a73c09730ca3539dbed394b2693318ea))
+
+## [2.7.1](https://github.com/LarsCowe/bmax/compare/v2.7.0...v2.7.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* **doctor:** return non-zero exit for failed checks in json mode ([53801bd](https://github.com/LarsCowe/bmax/commit/53801bd136953ea5c5630b44817640f054673dd1))
+* **run:** propagate Ralph exit code ([176350d](https://github.com/LarsCowe/bmax/commit/176350d141eda413d1948ab38ff0e7b438282794))
+* **run:** use bash-safe relative ralph loop spawn path ([abc0627](https://github.com/LarsCowe/bmax/commit/abc0627f80de6738cb34113fd7c813bc76d0cf79))
+
+## [2.7.0](https://github.com/LarsCowe/bmax/compare/v2.6.0...v2.7.0) (2026-03-04)
 
 
 ### Features
 
-* **ts:** enable noUncheckedIndexedAccess for stricter type safety ([bd6d8dd](https://github.com/LarsCowe/bmalph/commit/bd6d8dd65afb70efe6fb0f8b02f4e42dfa44cb27))
+* add Codex skills delivery, promote Cursor to full tier, and add lite PRD workflow ([36c5c72](https://github.com/LarsCowe/bmax/commit/36c5c726ae887ff144e6fe464264904c7b1bb578))
+* promote Cursor to full tier with experimental flag ([1b3a9e6](https://github.com/LarsCowe/bmax/commit/1b3a9e69f6c55c5f06e074bc8eb828c1a6490177))
 
 
 ### Bug Fixes
 
-* **doctor:** use withErrorHandling for consistency with other commands ([edffd81](https://github.com/LarsCowe/bmalph/commit/edffd81ad364911510ec1af9da1dbf8dc8014e37))
-* **installer:** escape project names in YAML config ([6e10ad3](https://github.com/LarsCowe/bmalph/commit/6e10ad3de9e1f07cc95bc442931ac18025290c98))
-* **installer:** guard against empty CSV files in manifest generation ([3229d3e](https://github.com/LarsCowe/bmalph/commit/3229d3ee3368e2d2ae4fe63d03fc9e96476fa60a))
-* **state:** warn when Ralph status file is corrupted ([4016b17](https://github.com/LarsCowe/bmalph/commit/4016b170226d13238589631fdfc7e6c1da1649a8))
-* **transition:** surface non-ENOENT errors instead of silently swallowing ([786c659](https://github.com/LarsCowe/bmalph/commit/786c65984ae145cb9397f03ad9e018b3e984b4c0))
+* harden error handling, eliminate injection surfaces, and reduce duplication ([d5e169b](https://github.com/LarsCowe/bmax/commit/d5e169bb7bcc24a0a01f5eb82ebcd873d0d3e0bf))
+* harden process lifecycle, tighten artifact matching, and fill test gaps ([ebf75ac](https://github.com/LarsCowe/bmax/commit/ebf75ac2afe128eca70324b0bcadfaae71435c83))
 
 
 ### Code Quality
 
-* consolidate transition barrel exports into index.ts ([a8c2362](https://github.com/LarsCowe/bmalph/commit/a8c2362f3756cd0fbd452c3502b8bebae09b2814))
-* extract exists() helper to reduce try/access/catch boilerplate ([b0d043f](https://github.com/LarsCowe/bmalph/commit/b0d043fe9f7c53f442921de2a78d9b30086d559f))
-* **github:** extract SHA comparison and status building helpers ([b18c04f](https://github.com/LarsCowe/bmalph/commit/b18c04fbbcb3e7a2c1b1a1971773a19802907f90))
-* harden error handling, file operations, and input validation ([029ab22](https://github.com/LarsCowe/bmalph/commit/029ab2294295b243144f9209287eb8b120414bf6))
-* **installer:** use warn() instead of console.error for CSV mismatch ([c390be5](https://github.com/LarsCowe/bmalph/commit/c390be5a7204b32cd1702b37415d78d6772294c4))
-* move getSkipReason to github utility for reuse ([d7d9cd5](https://github.com/LarsCowe/bmalph/commit/d7d9cd5d918fb443ccfa764c01185be506355d2d))
-* resolve projectDir in CLI and make it required in commands ([51d576a](https://github.com/LarsCowe/bmalph/commit/51d576a849362b66c5e25f0af5eca03670f23bab))
-* **transition:** add progress logging to orchestration ([d156d87](https://github.com/LarsCowe/bmalph/commit/d156d876c5e3bdbbbeec1fb6780a3be7d5cb7429))
+* eliminate duplication, normalize patterns, and expand test coverage ([238a1d8](https://github.com/LarsCowe/bmax/commit/238a1d8c9f2f97f5dfb8b21e049a345d7aacbf84))
+
+## [2.6.0](https://github.com/LarsCowe/bmax/compare/v2.5.0...v2.6.0) (2026-02-28)
+
+
+### Features
+
+* add bmax run command to start Ralph loop with dashboard ([70bf737](https://github.com/LarsCowe/bmax/commit/70bf737c791582cef2d8caebf15ba8abe21b1e3d))
+* deprecate bmax watch in favor of bmax run ([4da6764](https://github.com/LarsCowe/bmax/commit/4da676466b5cac915d649f07dbf8870c99cd5bf7))
+* promote Copilot to full tier with experimental flag ([a776dc3](https://github.com/LarsCowe/bmax/commit/a776dc38d0fd2e1d3a032aaa9efd60dfc1083665))
+
+
+### Code Quality
+
+* simplify codebase and extract shared platform logic ([233f4be](https://github.com/LarsCowe/bmax/commit/233f4be6924e47fa79c7225b3e39041c8897bb73))
+
+## [2.5.0](https://github.com/LarsCowe/bmax/compare/v2.4.0...v2.5.0) (2026-02-27)
+
+
+### Features
+
+* **ralph:** add /bmax-watch slash command ([902376f](https://github.com/LarsCowe/bmax/commit/902376ff692b54caa2846984499507fb82a7f022))
+* **watch:** add live dashboard for Ralph loop monitoring ([be9ec34](https://github.com/LarsCowe/bmax/commit/be9ec344a11a34ed8112b64909f6e42ffd410a1d))
+
+
+### Bug Fixes
+
+* **ralph:** deduplicate PRD task extraction in task_sources ([add09fc](https://github.com/LarsCowe/bmax/commit/add09fcfcbc7fe3e94ad48e4c244329a7f715c23))
+* **ralph:** detect completion mismatch and deprecate legacy scripts ([1711aab](https://github.com/LarsCowe/bmax/commit/1711aabd2daab4616dfcc28b9694435b49fb2b6b))
+* **ralph:** prevent set -e leak and CWD pollution in ralph_loop tests ([2d0b98d](https://github.com/LarsCowe/bmax/commit/2d0b98d166fc6684f8f02a2dfd4d3504a41434cb))
+* **ralph:** resolve 3 known bugs in wizard_utils, enable_core, task_sources ([a311aaa](https://github.com/LarsCowe/bmax/commit/a311aaa461f9dc365bec10d4e6e9a0ce355dc739))
+* **ralph:** use jq for JSON generation to prevent injection from special characters ([1270f14](https://github.com/LarsCowe/bmax/commit/1270f1415fe4079ff297a66d07c3d1f3fd3aa63b))
+* **tests:** increase previewUpgrade timeout for Windows CI ([cdcd647](https://github.com/LarsCowe/bmax/commit/cdcd6471a2512e0b5fb72fe1e4998a0604b5642b))
+* **watch:** rename completionMismatch to ralphCompleted, fix status tests ([e679c9f](https://github.com/LarsCowe/bmax/commit/e679c9f3b7d2d7c9223c6c4593f01fef851ae040))
+
+
+### Code Quality
+
+* remove deprecated exports and update docs ([ee817d4](https://github.com/LarsCowe/bmax/commit/ee817d4c71bfc50ec7f2190e39423c6153581c8e))
+
+## [2.4.0](https://github.com/LarsCowe/bmax/compare/v2.3.0...v2.4.0) (2026-02-23)
+
+
+### Features
+
+* add bmax implement CLI command with pre-flight validation ([9932717](https://github.com/LarsCowe/bmax/commit/99327171e53afd2d0394611835e1d9c19ee1dfb6))
+* add slash commands and remove /bmax-reset reference ([a30d484](https://github.com/LarsCowe/bmax/commit/a30d484a26f8c29335ac6af97d7a01dc71fe8d4c))
+* **doctor:** add jq availability check ([19824dc](https://github.com/LarsCowe/bmax/commit/19824dc8d80577bc315b75982ee6943b23e8aa39))
+* **implement:** add re-run protection and file generation summary ([e53d0d4](https://github.com/LarsCowe/bmax/commit/e53d0d4597b910014da5631a81f106f2c557f66a))
+* **reset:** add bmax reset command ([3231b6a](https://github.com/LarsCowe/bmax/commit/3231b6add12135ebde5226cd172c19e2020e85a7))
+* **status:** detect phase from BMAD artifacts during phases 1-3 ([67593c4](https://github.com/LarsCowe/bmax/commit/67593c4dadfcece0b8606fce89c6f5e011e52971))
+* **transition:** improve artifact detection and progress preservation ([02709cc](https://github.com/LarsCowe/bmax/commit/02709ccf37c502fd1af5bf431a2582e563a24696))
+* **validate:** read task counts from Ralph status data ([329e8b5](https://github.com/LarsCowe/bmax/commit/329e8b5f0e86c5b1d404b909cc9c899ac9e32c7a))
+
+## [2.3.0](https://github.com/LarsCowe/bmax/compare/v2.2.1...v2.3.0) (2026-02-21)
+
+
+### Features
+
+* add multi-platform support for six AI coding assistants ([#54](https://github.com/LarsCowe/bmax/issues/54)) ([864316e](https://github.com/LarsCowe/bmax/commit/864316ed91aa329110bc0859e886b1cbd25f99e1))
+* **init:** detect existing BMAD installation during init ([42d0047](https://github.com/LarsCowe/bmax/commit/42d0047573f69484c84eff09fd0098a53332cec6)), closes [#52](https://github.com/LarsCowe/bmax/issues/52)
+
+
+### Bug Fixes
+
+* prevent data loss in atomic _bmad copy with rename-aside pattern ([b728a58](https://github.com/LarsCowe/bmax/commit/b728a58c96bd9707a04a7d4009fffe0da2b41bf4))
+* **transition:** handle unreadable new spec file in changelog generation ([2d3cb9e](https://github.com/LarsCowe/bmax/commit/2d3cb9e36d3bb04848078c416a0852582789319e))
+* **transition:** warn when readiness report is unreadable during NO-GO check ([69fba65](https://github.com/LarsCowe/bmax/commit/69fba65b53ba80dce3046fc2690fab17343f9fb1))
+
+## [2.2.1](https://github.com/LarsCowe/bmax/compare/v2.2.0...v2.2.1) (2026-02-21)
+
+
+### Bug Fixes
+
+* correct 4 Ralph integration bugs ([1fc394a](https://github.com/LarsCowe/bmax/commit/1fc394ac2d7c5d3bcbdc38abc57fcee69354085b))
+
+
+### Code Quality
+
+* remove Ralph upstream tracking ([a00a80b](https://github.com/LarsCowe/bmax/commit/a00a80b7f9db5667ba1914a2a3d40daab72de481))
+
+## [2.2.0](https://github.com/LarsCowe/bmax/compare/v2.1.0...v2.2.0) (2026-02-20)
+
+
+### Features
+
+* **ts:** enable noUncheckedIndexedAccess for stricter type safety ([bd6d8dd](https://github.com/LarsCowe/bmax/commit/bd6d8dd65afb70efe6fb0f8b02f4e42dfa44cb27))
+
+
+### Bug Fixes
+
+* **doctor:** use withErrorHandling for consistency with other commands ([edffd81](https://github.com/LarsCowe/bmax/commit/edffd81ad364911510ec1af9da1dbf8dc8014e37))
+* **installer:** escape project names in YAML config ([6e10ad3](https://github.com/LarsCowe/bmax/commit/6e10ad3de9e1f07cc95bc442931ac18025290c98))
+* **installer:** guard against empty CSV files in manifest generation ([3229d3e](https://github.com/LarsCowe/bmax/commit/3229d3ee3368e2d2ae4fe63d03fc9e96476fa60a))
+* **state:** warn when Ralph status file is corrupted ([4016b17](https://github.com/LarsCowe/bmax/commit/4016b170226d13238589631fdfc7e6c1da1649a8))
+* **transition:** surface non-ENOENT errors instead of silently swallowing ([786c659](https://github.com/LarsCowe/bmax/commit/786c65984ae145cb9397f03ad9e018b3e984b4c0))
+
+
+### Code Quality
+
+* consolidate transition barrel exports into index.ts ([a8c2362](https://github.com/LarsCowe/bmax/commit/a8c2362f3756cd0fbd452c3502b8bebae09b2814))
+* extract exists() helper to reduce try/access/catch boilerplate ([b0d043f](https://github.com/LarsCowe/bmax/commit/b0d043fe9f7c53f442921de2a78d9b30086d559f))
+* **github:** extract SHA comparison and status building helpers ([b18c04f](https://github.com/LarsCowe/bmax/commit/b18c04fbbcb3e7a2c1b1a1971773a19802907f90))
+* harden error handling, file operations, and input validation ([029ab22](https://github.com/LarsCowe/bmax/commit/029ab2294295b243144f9209287eb8b120414bf6))
+* **installer:** use warn() instead of console.error for CSV mismatch ([c390be5](https://github.com/LarsCowe/bmax/commit/c390be5a7204b32cd1702b37415d78d6772294c4))
+* move getSkipReason to github utility for reuse ([d7d9cd5](https://github.com/LarsCowe/bmax/commit/d7d9cd5d918fb443ccfa764c01185be506355d2d))
+* resolve projectDir in CLI and make it required in commands ([51d576a](https://github.com/LarsCowe/bmax/commit/51d576a849362b66c5e25f0af5eca03670f23bab))
+* **transition:** add progress logging to orchestration ([d156d87](https://github.com/LarsCowe/bmax/commit/d156d876c5e3bdbbbeec1fb6780a3be7d5cb7429))
 
 ## [2.0.0] - 2026-02-14
 
@@ -338,7 +338,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Simplified slash commands (removed redundant bmalph-status, bmalph-reset, etc.)
+- Simplified slash commands (removed redundant bmax-status, bmax-reset, etc.)
 - CLI reads version dynamically from package.json
 
 ## [0.8.x] - Previous releases
@@ -347,11 +347,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial BMAD + Ralph integration
 - CLI commands: init, upgrade, doctor
-- Transition workflow: /bmalph-implement
+- Transition workflow: /bmax-implement
 - 50+ BMAD slash commands
 - Ralph loop and lib installation
 - Automatic CLAUDE.md snippet merging
 - Version marker in ralph_loop.sh for upgrade tracking
 
-[2.0.0]: https://github.com/LarsCowe/bmalph/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/LarsCowe/bmalph/releases/tag/v1.0.0
+[2.0.0]: https://github.com/LarsCowe/bmax/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/LarsCowe/bmax/releases/tag/v1.0.0

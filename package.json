@@ -1,10 +1,10 @@
 {
-  "name": "bmalph",
+  "name": "bmax",
   "version": "2.11.0",
-  "description": "Unified AI Development Framework - BMAD phases with Ralph execution loop",
+  "description": "Solo SaaS Builder Framework - AI-powered planning, building, and launching for indie hackers",
   "type": "module",
   "bin": {
-    "bmalph": "./bin/bmalph.js"
+    "bmax": "./bin/bmax.js"
   },
   "scripts": {
     "build": "tsc",
@@ -29,25 +29,26 @@
     "update-bundled": "bash scripts/update-bundled.sh"
   },
   "keywords": [
+    "saas",
+    "solo-founder",
+    "indie-hacker",
+    "ai-agents",
     "claude",
-    "ai",
-    "development",
-    "framework",
-    "agents",
-    "bmad",
-    "ralph",
+    "codex",
     "autonomous",
-    "coding-assistant"
+    "stripe",
+    "launch",
+    "ralph"
   ],
-  "author": "Lars Cowe",
+  "author": "Max Klackl",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LarsCowe/bmalph.git"
+    "url": "https://github.com/mklackl/bmax.git"
   },
-  "homepage": "https://github.com/LarsCowe/bmalph#readme",
+  "homepage": "https://github.com/mklackl/bmax#readme",
   "bugs": {
-    "url": "https://github.com/LarsCowe/bmalph/issues"
+    "url": "https://github.com/mklackl/bmax/issues"
   },
   "engines": {
     "node": ">=20.0.0"

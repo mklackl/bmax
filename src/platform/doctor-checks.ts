@@ -22,11 +22,11 @@ export function createInstructionsFileCheck(platform: Platform): PlatformDoctorC
         return {
           passed: false,
           detail: `missing ${platform.instructionsSectionMarker} section`,
-          hint: "Run: bmalph init",
+          hint: "Run: bmax init",
         };
       } catch (err) {
         if (isEnoent(err)) {
-          return { passed: false, detail: `${file} not found`, hint: "Run: bmalph init" };
+          return { passed: false, detail: `${file} not found`, hint: "Run: bmax init" };
         }
         return { passed: false, detail: formatError(err), hint: "Check file permissions" };
       }
@@ -63,25 +63,25 @@ export function buildPlatformDoctorChecks(platform: Platform): PlatformDoctorChe
 
   if (platform.commandDelivery.kind === "directory") {
     const dir = platform.commandDelivery.dir;
-    checks.push(createFileExistsCheck("slash-command", `${dir}/bmalph.md`, "Run: bmalph init"));
+    checks.push(createFileExistsCheck("slash-command", `${dir}/bmax.md`, "Run: bmax init"));
   }
 
   if (platform.commandDelivery.kind === "index" || platform.commandDelivery.kind === "skills") {
-    checks.push(createFileExistsCheck("command-index", "_bmad/COMMANDS.md", "Run: bmalph upgrade"));
+    checks.push(createFileExistsCheck("command-index", "_bmad/COMMANDS.md", "Run: bmax upgrade"));
   }
 
   if (platform.commandDelivery.kind === "skills") {
     checks.push(
       createFileExistsCheck(
         "skills",
-        `${platform.commandDelivery.dir}/${SKILLS_PREFIX}analyst/SKILL.md`,
-        "Run: bmalph upgrade"
+        `${platform.commandDelivery.dir}/${SKILLS_PREFIX}researcher/SKILL.md`,
+        "Run: bmax upgrade"
       )
     );
   }
 
   checks.push(
-    createFileExistsCheck("lite-workflow", "_bmad/lite/create-prd.md", "Run: bmalph upgrade")
+    createFileExistsCheck("lite-workflow", "_bmad/lite/create-prd.md", "Run: bmax upgrade")
   );
   checks.push(createInstructionsFileCheck(platform));
 

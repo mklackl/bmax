@@ -36,9 +36,9 @@ async function executeRun(options: RunCommandOptions): Promise<void> {
   const config = await readConfig(projectDir);
   if (!config) {
     if (await isInitialized(projectDir)) {
-      throw new Error("Config file is corrupted. Run: bmalph doctor");
+      throw new Error("Config file is corrupted. Run: bmax doctor");
     }
-    throw new Error("Project not initialized. Run: bmalph init");
+    throw new Error("Project not initialized. Run: bmax init");
   }
 
   const platform = resolvePlatform(options.driver, config.platform);

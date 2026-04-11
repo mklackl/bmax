@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a new feature for bmalph
+about: Suggest a new feature for bmax
 title: ""
 labels: enhancement
 assignees: ""

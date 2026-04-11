@@ -3,7 +3,7 @@ import {
   readConfig,
   writeConfig,
   readBmadConfig,
-  type BmalphConfig,
+  type BmaxConfig,
 } from "../../src/utils/config.js";
 import { mkdir, rm, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -13,8 +13,8 @@ describe("config", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-test-${Date.now()}`);
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    testDir = join(tmpdir(), `bmax-test-${Date.now()}`);
+    await mkdir(join(testDir, "bmax"), { recursive: true });
   });
 
   afterEach(async () => {
@@ -27,7 +27,7 @@ describe("config", () => {
   });
 
   it("writes and reads config", async () => {
-    const config: BmalphConfig = {
+    const config: BmaxConfig = {
       name: "test-project",
       description: "A test",
       createdAt: "2025-01-01T00:00:00.000Z",
@@ -39,11 +39,11 @@ describe("config", () => {
     expect(result).toEqual(config);
   });
 
-  it("creates bmalph directory if it does not exist", async () => {
+  it("creates bmax directory if it does not exist", async () => {
     // Remove the directory created in beforeEach
-    await rm(join(testDir, "bmalph"), { recursive: true, force: true });
+    await rm(join(testDir, "bmax"), { recursive: true, force: true });
 
-    const config: BmalphConfig = {
+    const config: BmaxConfig = {
       name: "new-project",
       description: "Should create directory",
       createdAt: "2025-01-01T00:00:00.000Z",
@@ -56,7 +56,7 @@ describe("config", () => {
   });
 
   it("returns null and warns when config file has invalid structure", async () => {
-    await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ garbage: true }));
+    await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ garbage: true }));
 
     const warnSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -68,7 +68,7 @@ describe("config", () => {
   });
 
   it("leaves no temp files after write", async () => {
-    const config: BmalphConfig = {
+    const config: BmaxConfig = {
       name: "atomic-project",
       description: "Test atomic write",
       createdAt: "2025-01-01T00:00:00.000Z",
@@ -76,7 +76,7 @@ describe("config", () => {
 
     await writeConfig(testDir, config);
 
-    const files = await readdir(join(testDir, "bmalph"));
+    const files = await readdir(join(testDir, "bmax"));
     const tmpFiles = files.filter((f) => f.endsWith(".tmp"));
     expect(tmpFiles).toHaveLength(0);
   });
@@ -86,7 +86,7 @@ describe("readBmadConfig", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-bmad-config-test-${Date.now()}`);
+    testDir = join(tmpdir(), `bmax-bmad-config-test-${Date.now()}`);
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, "_bmad"), { recursive: true });
   });

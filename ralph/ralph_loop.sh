@@ -40,7 +40,7 @@ source "$SCRIPT_DIR/lib/metrics.sh"
 
 # Allowlist of known .ralphrc config keys (#76)
 # Space-delimited string (avoids declare -A scoping issues when sourced)
-RALPHRC_ALLOWED_KEYS=" PLATFORM_DRIVER PROJECT_NAME PROJECT_TYPE MAX_CALLS_PER_HOUR CLAUDE_TIMEOUT_MINUTES CLAUDE_OUTPUT_FORMAT WRITE_TIMEOUT_MINUTES ALLOWED_TOOLS CLAUDE_PERMISSION_MODE PERMISSION_DENIAL_MODE SESSION_CONTINUITY SESSION_EXPIRY_HOURS TASK_SOURCES GITHUB_TASK_LABEL BEADS_FILTER CB_NO_PROGRESS_THRESHOLD CB_SAME_ERROR_THRESHOLD CB_OUTPUT_DECLINE_THRESHOLD CB_READ_ONLY_TIMEOUT_THRESHOLD CB_COOLDOWN_MINUTES CB_AUTO_RESET TEST_COMMAND QUALITY_GATES QUALITY_GATE_MODE QUALITY_GATE_TIMEOUT QUALITY_GATE_ON_COMPLETION_ONLY REVIEW_MODE REVIEW_ENABLED REVIEW_INTERVAL CLAUDE_MIN_VERSION RALPH_VERBOSE PROMPT_FILE FIX_PLAN_FILE AGENT_FILE "
+RALPHRC_ALLOWED_KEYS=" PLATFORM_DRIVER PROJECT_NAME PROJECT_TYPE MAX_CALLS_PER_HOUR CLAUDE_TIMEOUT_MINUTES CLAUDE_OUTPUT_FORMAT WRITE_TIMEOUT_MINUTES ALLOWED_TOOLS CLAUDE_PERMISSION_MODE PERMISSION_DENIAL_MODE SESSION_CONTINUITY SESSION_EXPIRY_HOURS TASK_SOURCES GITHUB_TASK_LABEL BEADS_FILTER CB_NO_PROGRESS_THRESHOLD CB_SAME_ERROR_THRESHOLD CB_OUTPUT_DECLINE_THRESHOLD CB_READ_ONLY_TIMEOUT_THRESHOLD CB_COOLDOWN_MINUTES CB_AUTO_RESET TEST_COMMAND QUALITY_GATES QUALITY_GATE_MODE QUALITY_GATE_TIMEOUT QUALITY_GATE_ON_COMPLETION_ONLY REVIEW_MODE REVIEW_ENABLED REVIEW_INTERVAL CLAUDE_MIN_VERSION RALPH_VERBOSE PROMPT_FILE FIX_PLAN_FILE AGENT_FILE PROVIDER_CHAIN PROVIDER_FALLBACK_COOLDOWN_MINUTES "
 
 # parse_ralphrc - Safely parse .ralphrc as key=value config (#76)
 # Rejects command substitution ($(), backticks). Only sets allowlisted keys.
@@ -229,7 +229,7 @@ MAX_CONSECUTIVE_DONE_SIGNALS=2
 TEST_PERCENTAGE_THRESHOLD=30  # If more than 30% of recent loops are test-only, flag it
 
 # Ralph configuration file
-# bmalph installs .ralph/.ralphrc. Fall back to a project-root .ralphrc for
+# bmax installs .ralph/.ralphrc. Fall back to a project-root .ralphrc for
 # older standalone Ralph layouts.
 RALPHRC_FILE="$RALPH_DIR/.ralphrc"
 RALPHRC_LOADED=false
@@ -238,6 +238,13 @@ RALPHRC_LOADED=false
 PLATFORM_DRIVER="${PLATFORM_DRIVER:-claude-code}"
 RUNTIME_CONTEXT_LOADED=false
 AUTO_DRIVER_FALLBACK="${AUTO_DRIVER_FALLBACK:-true}"
+
+# Provider chain: comma-separated list of drivers to try in order.
+# When the current driver hits a rate limit or is unavailable,
+# the next driver in the chain is tried.
+# Example: PROVIDER_CHAIN="claude-code,codex,generic-api"
+PROVIDER_CHAIN="${PROVIDER_CHAIN:-}"
+PROVIDER_FALLBACK_COOLDOWN_MINUTES="${PROVIDER_FALLBACK_COOLDOWN_MINUTES:-5}"
 
 driver_is_available() {
     if declare -F driver_check_available >/dev/null; then
@@ -251,6 +258,33 @@ driver_is_available() {
 get_fallback_driver() {
     local driver=${1:-$PLATFORM_DRIVER}
 
+    # If PROVIDER_CHAIN is set, use chain-based fallback
+    if [[ -n "$PROVIDER_CHAIN" ]]; then
+        local IFS=','
+        local -a chain=($PROVIDER_CHAIN)
+        local chain_len=${#chain[@]}
+        local i
+        for i in "${!chain[@]}"; do
+            # Strip whitespace
+            local entry="${chain[$i]}"
+            entry="${entry#"${entry%%[![:space:]]*}"}"
+            entry="${entry%"${entry##*[![:space:]]}"}"
+            if [[ "$entry" == "$driver" ]]; then
+                local next_idx=$(( (i + 1) % chain_len ))
+                if [[ "$next_idx" -ne "$i" ]]; then
+                    local next="${chain[$next_idx]}"
+                    next="${next#"${next%%[![:space:]]*}"}"
+                    next="${next%"${next##*[![:space:]]}"}"
+                    echo "$next"
+                    return 0
+                fi
+            fi
+        done
+        echo ""
+        return 0
+    fi
+
+    # Legacy binary fallback
     case "$driver" in
         claude-code) echo "codex" ;;
         codex) echo "claude-code" ;;
@@ -595,9 +629,9 @@ setup_tmux_session() {
     tmux send-keys -t "$session_name:${base_win}.1" "tail -f '$project_dir/$LIVE_LOG_FILE'" Enter
 
     # Right-bottom pane (pane 2): Ralph status monitor
-    # Prefer bmalph watch (TypeScript, fully tested) over legacy ralph_monitor.sh
-    if command -v bmalph &> /dev/null; then
-        tmux send-keys -t "$session_name:${base_win}.2" "bmalph watch" Enter
+    # Prefer bmax watch (TypeScript, fully tested) over legacy ralph_monitor.sh
+    if command -v bmax &> /dev/null; then
+        tmux send-keys -t "$session_name:${base_win}.2" "bmax watch" Enter
     elif command -v ralph-monitor &> /dev/null; then
         tmux send-keys -t "$session_name:${base_win}.2" "ralph-monitor" Enter
     else
@@ -2912,18 +2946,18 @@ main() {
         
         # Check if this looks like a partial Ralph project
         if [[ -f "$RALPH_DIR/@fix_plan.md" ]] || [[ -d "$RALPH_DIR/specs" ]] || [[ -f "$RALPH_DIR/@AGENT.md" ]]; then
-            echo "This appears to be a bmalph/Ralph project but is missing .ralph/PROMPT.md."
+            echo "This appears to be a bmax/Ralph project but is missing .ralph/PROMPT.md."
             echo "You may need to create or restore the PROMPT.md file."
         else
-            echo "This directory is not a bmalph/Ralph project."
+            echo "This directory is not a bmax/Ralph project."
         fi
 
         echo ""
         echo "To fix this:"
-        echo "  1. Initialize bmalph in this project: bmalph init"
-        echo "  2. Restore bundled Ralph files in an existing project: bmalph upgrade"
-        echo "  3. Generate Ralph task files after planning: bmalph implement"
-        echo "  4. Navigate to an existing bmalph/Ralph project directory"
+        echo "  1. Initialize bmax in this project: bmax init"
+        echo "  2. Restore bundled Ralph files in an existing project: bmax upgrade"
+        echo "  3. Generate Ralph task files after planning: bmax implement"
+        echo "  4. Navigate to an existing bmax/Ralph project directory"
         echo "  5. Or create .ralph/PROMPT.md manually in this directory"
         echo ""
         echo "Ralph projects should contain: .ralph/PROMPT.md, .ralph/@fix_plan.md, .ralph/specs/, src/, etc."
@@ -2950,7 +2984,7 @@ main() {
         exit 1
     fi
 
-    # Clean stale heartbeat marker from previous bmalph run crash (#146)
+    # Clean stale heartbeat marker from previous bmax run crash (#146)
     rm -f "$RALPH_DIR/.write_heartbeat_triggered"
 
     # Initialize session tracking before entering the loop
@@ -3137,8 +3171,8 @@ Ralph Loop
 
 Usage: $0 [OPTIONS]
 
-IMPORTANT: This command must be run from a bmalph/Ralph project directory.
-           Use 'bmalph init' in your project first.
+IMPORTANT: This command must be run from a bmax/Ralph project directory.
+           Use 'bmax init' in your project first.
 
 Options:
     -h, --help              Show this help message
@@ -3173,12 +3207,12 @@ Files created:
 
 Example workflow:
     cd my-project              # Enter project directory
-    bmalph init                # Install bmalph + Ralph files
-    bmalph implement           # Generate Ralph task files
+    bmax init                # Install bmax + Ralph files
+    bmax implement           # Generate Ralph task files
     $0 --monitor               # Start Ralph with monitoring
 
 Examples:
-    bmalph run                 # Start Ralph via the bmalph CLI
+    bmax run                 # Start Ralph via the bmax CLI
     $0 --calls 50 --prompt my_prompt.md
     $0 --monitor               # Start with integrated tmux monitoring
     $0 --live                  # Show live driver output in real-time (streaming)

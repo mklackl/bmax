@@ -215,7 +215,7 @@ describe("checkCircuitBreaker", () => {
 
     const result = await checkCircuitBreaker("/projects/webapp");
 
-    expect(result.hint).toContain("bmalph status");
+    expect(result.hint).toContain("bmax status");
   });
 
   it("passes with 'not running' when state file does not exist", async () => {

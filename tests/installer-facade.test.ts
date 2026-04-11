@@ -47,18 +47,18 @@ describe("installer facade contract", () => {
       wouldPreserve: [".ralph/PROMPT.md"],
     };
     const classifiedCommand: ClassifiedCommand = {
-      name: "bmalph",
+      name: "bmax",
       description: "BMAD master agent",
-      invocation: "/bmalph",
+      invocation: "/bmax",
       body: "body",
-      kind: "bmalph",
-      howToRun: "Run `bmalph`",
+      kind: "bmax",
+      howToRun: "Run `bmax`",
     };
 
     expect(bundledVersions.bmadCommit).toBe("abc12345");
     expect(upgradeResult.updatedPaths).toEqual(["_bmad/"]);
     expect(previewInstall.wouldSkip).toEqual([]);
     expect(previewUpgrade.wouldPreserve).toEqual([".ralph/PROMPT.md"]);
-    expect(classifiedCommand.kind).toBe("bmalph");
+    expect(classifiedCommand.kind).toBe("bmax");
   });
 });

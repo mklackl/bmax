@@ -145,7 +145,7 @@ describe("checkGitignore", () => {
 
 describe("checkVersionMarker", () => {
   it("passes when version marker matches current package version", async () => {
-    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmalph-version: 1.5.0\nset -euo pipefail\n");
+    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmax-version: 1.5.0\nset -euo pipefail\n");
 
     const result = await checkVersionMarker("/projects/webapp");
 
@@ -153,7 +153,7 @@ describe("checkVersionMarker", () => {
   });
 
   it("shows current version in detail when marker matches", async () => {
-    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmalph-version: 1.5.0\nset -euo pipefail\n");
+    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmax-version: 1.5.0\nset -euo pipefail\n");
 
     const result = await checkVersionMarker("/projects/webapp");
 
@@ -161,7 +161,7 @@ describe("checkVersionMarker", () => {
   });
 
   it("fails when version marker does not match current version", async () => {
-    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmalph-version: 1.2.0\nset -euo pipefail\n");
+    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmax-version: 1.2.0\nset -euo pipefail\n");
 
     const result = await checkVersionMarker("/projects/webapp");
 
@@ -169,19 +169,19 @@ describe("checkVersionMarker", () => {
   });
 
   it("shows installed vs current version in detail on mismatch", async () => {
-    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmalph-version: 1.2.0\nset -euo pipefail\n");
+    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmax-version: 1.2.0\nset -euo pipefail\n");
 
     const result = await checkVersionMarker("/projects/webapp");
 
     expect(result.detail).toContain("1.2.0");
   });
 
-  it("suggests running bmalph upgrade on version mismatch", async () => {
-    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmalph-version: 0.9.0\nset -euo pipefail\n");
+  it("suggests running bmax upgrade on version mismatch", async () => {
+    mockReadFile.mockResolvedValue("#!/bin/bash\n# bmax-version: 0.9.0\nset -euo pipefail\n");
 
     const result = await checkVersionMarker("/projects/webapp");
 
-    expect(result.hint).toBe("Run: bmalph upgrade");
+    expect(result.hint).toBe("Run: bmax upgrade");
   });
 
   it("passes with note for pre-0.8.0 installs without a marker", async () => {
@@ -282,12 +282,12 @@ describe("checkUpstreamVersions", () => {
     expect(result.passed).toBe(false);
   });
 
-  it("suggests running bmalph init when config is missing", async () => {
+  it("suggests running bmax init when config is missing", async () => {
     mockReadConfig.mockResolvedValue(null);
 
     const result = await checkUpstreamVersions("/projects/webapp");
 
-    expect(result.hint).toBe("Run: bmalph init");
+    expect(result.hint).toBe("Run: bmax init");
   });
 
   it("passes with note for pre-1.2.0 installs without upstream tracking", async () => {

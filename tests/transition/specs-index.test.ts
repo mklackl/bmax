@@ -201,7 +201,7 @@ describe("specs-index", () => {
       expect(
         detectSpecFileType(
           "analysis.md",
-          "# Analysis\n\n## Market Analysis\n\nThe market is growing at 18%"
+          "# Research\n\n## Market Analysis\n\nThe market is growing at 18%"
         )
       ).toBe("research");
     });
@@ -284,7 +284,7 @@ describe("specs-index", () => {
     beforeEach(async () => {
       testDir = join(
         tmpdir(),
-        `bmalph-specs-index-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        `bmax-specs-index-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
       await mkdir(testDir, { recursive: true });
     });
@@ -546,7 +546,7 @@ describe("specs-index", () => {
       expect(md).toContain("### Medium Priority (Reference as Needed)");
       expect(md).toContain("### Low Priority (Optional)");
       expect(md).not.toContain("Always Read First");
-      expect(md).not.toContain("Read for Implementation");
+      expect(md).not.toContain("Read for Build");
     });
 
     it("numbers files in reading order", () => {

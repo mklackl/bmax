@@ -10,7 +10,7 @@ describe("artifacts", () => {
   beforeEach(async () => {
     testDir = join(
       tmpdir(),
-      `bmalph-artifacts-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-artifacts-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
     await mkdir(testDir, { recursive: true });
   });

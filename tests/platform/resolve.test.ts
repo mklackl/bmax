@@ -7,7 +7,7 @@ describe("resolveProjectPlatform", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-resolve-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-resolve-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
   });
 
@@ -35,9 +35,9 @@ describe("resolveProjectPlatform", () => {
   });
 
   it("returns claude-code when config has no platform field", async () => {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         name: "legacy-project",
         description: "No platform field",
@@ -51,9 +51,9 @@ describe("resolveProjectPlatform", () => {
   });
 
   it("returns codex when config specifies codex", async () => {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         name: "codex-project",
         description: "A codex project",
@@ -68,9 +68,9 @@ describe("resolveProjectPlatform", () => {
   });
 
   it("returns cursor when config specifies cursor", async () => {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         name: "cursor-project",
         description: "A cursor project",
@@ -85,9 +85,9 @@ describe("resolveProjectPlatform", () => {
   });
 
   it("uses platform from partial config without requiring unrelated fields", async () => {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         platform: "cursor",
       })
@@ -105,9 +105,9 @@ describe("resolveProjectPlatform", () => {
   });
 
   it("does not warn when legacy config is missing createdAt", async () => {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         name: "legacy-project",
       })
@@ -125,8 +125,8 @@ describe("resolveProjectPlatform", () => {
   });
 
   it("falls back to claude-code when config.json is corrupt", async () => {
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
-    await writeFile(join(testDir, "bmalph/config.json"), "not valid json{{{");
+    await mkdir(join(testDir, "bmax"), { recursive: true });
+    await writeFile(join(testDir, "bmax/config.json"), "not valid json{{{");
 
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 

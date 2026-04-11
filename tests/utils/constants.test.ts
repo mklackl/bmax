@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   RALPH_DIR,
   BMAD_DIR,
-  BMALPH_DIR,
+  BMAX_DIR,
   BMAD_OUTPUT_DIR,
   SECTION_EXTRACT_MAX_LENGTH,
 } from "../../src/utils/constants.js";
@@ -24,8 +24,8 @@ describe("constants", () => {
       expect(BMAD_DIR).toBe("_bmad");
     });
 
-    it("defines BMALPH_DIR as bmalph", () => {
-      expect(BMALPH_DIR).toBe("bmalph");
+    it("defines BMAX_DIR as bmax", () => {
+      expect(BMAX_DIR).toBe("bmax");
     });
 
     it("defines BMAD_OUTPUT_DIR as _bmad-output", () => {

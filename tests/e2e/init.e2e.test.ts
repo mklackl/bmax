@@ -9,14 +9,14 @@ import {
   type TestProject,
 } from "./helpers/project-scaffold.js";
 import {
-  expectBmalphInitialized,
+  expectBmaxInitialized,
   expectFileExists,
   expectFileContains,
   expectFileNotExists,
   expectValidJson,
 } from "./helpers/assertions.js";
 
-describe("bmalph init e2e", { timeout: 60000 }, () => {
+describe("bmax init e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -32,10 +32,10 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
     const result = await runInit(project.path, "my-project", "My description");
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("bmalph initialized successfully");
+    expect(result.stdout).toContain("bmax initialized successfully");
     expect(result.stdout).toContain("my-project");
 
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("creates config.json with correct values", async () => {
@@ -43,7 +43,7 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
 
     await runInit(project.path, "test-name", "test-desc");
 
-    const config = (await expectValidJson(join(project.path, "bmalph/config.json"))) as Record<
+    const config = (await expectValidJson(join(project.path, "bmax/config.json"))) as Record<
       string,
       unknown
     >;
@@ -61,7 +61,7 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
     expect(result.stdout).toContain("[dry-run]");
 
     // No files should be created
-    await expectFileNotExists(join(project.path, "bmalph/config.json"));
+    await expectFileNotExists(join(project.path, "bmax/config.json"));
     await expectFileNotExists(join(project.path, "_bmad"));
     await expectFileNotExists(join(project.path, ".ralph"));
   });
@@ -79,7 +79,7 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
     expect(secondResult.stdout).toContain("already initialized");
 
     // Original structure should be intact
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("appends to existing CLAUDE.md instead of overwriting", async () => {
@@ -104,7 +104,7 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
 
     const gitignore = await readFile(join(project.path, ".gitignore"), "utf-8");
 
-    // Should contain both existing entries and new bmalph entries
+    // Should contain both existing entries and new bmax entries
     expect(gitignore).toContain("node_modules/");
     expect(gitignore).toContain(".env");
     expect(gitignore).toContain(".ralph/logs/");
@@ -116,19 +116,19 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
 
     await runInit(project.path);
 
-    await expectFileExists(join(project.path, ".claude/commands/bmalph.md"));
+    await expectFileExists(join(project.path, ".claude/commands/bmax.md"));
     await expectFileContains(
-      join(project.path, ".claude/commands/bmalph.md"),
+      join(project.path, ".claude/commands/bmax.md"),
       "bmad-help/workflow.md"
     );
   });
 
-  it("installs bmalph-implement slash command", async () => {
+  it("installs bmax-implement slash command", async () => {
     project = await createTestProject();
 
     await runInit(project.path);
 
-    await expectFileExists(join(project.path, ".claude/commands/bmalph-implement.md"));
+    await expectFileExists(join(project.path, ".claude/commands/bmax-implement.md"));
   });
 
   it("creates _bmad directory with BMAD agents", async () => {
@@ -137,8 +137,8 @@ describe("bmalph init e2e", { timeout: 60000 }, () => {
     await runInit(project.path);
 
     await expectFileExists(join(project.path, "_bmad/config.yaml"));
-    await expectFileExists(join(project.path, "_bmad/bmm/agents/analyst.agent.yaml"));
-    await expectFileExists(join(project.path, "_bmad/bmm/agents/pm.agent.yaml"));
+    await expectFileExists(join(project.path, "_bmad/bmm/agents/researcher.agent.yaml"));
+    await expectFileExists(join(project.path, "_bmad/bmm/agents/product-designer.agent.yaml"));
     await expectFileExists(join(project.path, "_bmad/bmm/agents/architect.agent.yaml"));
   });
 

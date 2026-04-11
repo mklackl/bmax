@@ -2,7 +2,7 @@
 
 This reference guide provides essential information for troubleshooting and understanding Ralph's autonomous development loop.
 
-In bmalph-managed projects, start Ralph with `bmalph run`. For parallel execution across multiple epics, use `bmalph run --swarm [N]`. When you need direct loop flags such as `--reset-circuit` or `--live`, invoke `bash .ralph/ralph_loop.sh ...` from the project root.
+In bmax-managed projects, start Ralph with `bmax run`. For parallel execution across multiple epics, use `bmax run --swarm [N]`. When you need direct loop flags such as `--reset-circuit` or `--live`, invoke `bash .ralph/ralph_loop.sh ...` from the project root.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ Ralph uses several files within the `.ralph/` directory, plus an optional legacy
 | `.ralph/.circuit_breaker_state` | Circuit breaker state |
 | `.ralph/live.log` | Live streaming output file for monitoring |
 | `.ralph/.loop_start_sha` | Git HEAD SHA captured at loop start for progress detection |
-| `.ralph/.ralphrc` | Project-specific configuration installed by bmalph |
+| `.ralph/.ralphrc` | Project-specific configuration installed by bmax |
 | `.ralphrc` (project root, legacy fallback) | Optional legacy configuration for older standalone Ralph layouts |
 
 ### Rate Limiting
@@ -45,7 +45,7 @@ Ralph uses several files within the `.ralph/` directory, plus an optional legacy
 
 ## Project Configuration (.ralph/.ralphrc)
 
-In bmalph-managed projects, Ralph reads `.ralph/.ralphrc` for per-project settings.
+In bmax-managed projects, Ralph reads `.ralph/.ralphrc` for per-project settings.
 For backward compatibility with older standalone Ralph layouts, it also falls back to a project-root `.ralphrc` when the bundled config file is missing.
 
 ### Precedence
@@ -76,7 +76,7 @@ Environment variables > Ralph config file > script defaults
 
 ### Generation
 
-bmalph copies `ralphrc.template` to `.ralph/.ralphrc` during `bmalph init`. Untouched managed configs are updated on upgrade, while customized `.ralph/.ralphrc` files are preserved.
+bmax copies `ralphrc.template` to `.ralph/.ralphrc` during `bmax init`. Untouched managed configs are updated on upgrade, while customized `.ralph/.ralphrc` files are preserved.
 
 ---
 
@@ -291,13 +291,13 @@ bash .ralph/ralph_loop.sh --monitor --live # Live streaming with tmux monitoring
 When using `--monitor` with `--live`, tmux creates a 3-pane layout:
 - **Left pane:** Ralph loop with live streaming
 - **Right-top pane:** `tail -f .ralph/live.log` (live driver output)
-- **Right-bottom pane:** status dashboard (`bmalph watch` when available)
+- **Right-bottom pane:** status dashboard (`bmax watch` when available)
 
 ---
 
 ## Swarm Mode
 
-`bmalph run --swarm [N]` runs N parallel Ralph loops in isolated git worktrees, each working on different epics. This is orchestrated by the TypeScript layer (`src/swarm/`); `ralph_loop.sh` runs unmodified in each worktree.
+`bmax run --swarm [N]` runs N parallel Ralph loops in isolated git worktrees, each working on different epics. This is orchestrated by the TypeScript layer (`src/swarm/`); `ralph_loop.sh` runs unmodified in each worktree.
 
 ### How it works
 
@@ -400,7 +400,7 @@ When using `--monitor` with `--live`, tmux creates a 3-pane layout:
 
 #### Cursor preflight fails
 
-**Symptoms:** `bmalph doctor` or `bmalph run --driver cursor` fails before the loop starts
+**Symptoms:** `bmax doctor` or `bmax run --driver cursor` fails before the loop starts
 
 **Causes:**
 - `command -v jq` fails in the bash environment Ralph uses
@@ -460,7 +460,7 @@ Loop execution logs are stored in `.ralph/logs/`:
 }
 ```
 
-`bmalph status` normalizes these raw bash values to `running`, `blocked`, `completed`, `not_started`, or `unknown`.
+`bmax status` normalizes these raw bash values to `running`, `blocked`, `completed`, `not_started`, or `unknown`.
 
 ---
 

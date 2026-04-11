@@ -10,7 +10,7 @@ describe("specs-sync", () => {
   beforeEach(async () => {
     testDir = join(
       tmpdir(),
-      `bmalph-specs-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-specs-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
     await mkdir(testDir, { recursive: true });
   });

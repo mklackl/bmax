@@ -12,7 +12,7 @@ describe("specs-changelog", () => {
   beforeEach(async () => {
     testDir = join(
       tmpdir(),
-      `bmalph-changelog-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      `bmax-changelog-${Date.now()}-${Math.random().toString(36).slice(2)}`
     );
     oldSpecsDir = join(testDir, "old-specs");
     newSourceDir = join(testDir, "new-source");

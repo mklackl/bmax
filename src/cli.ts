@@ -7,6 +7,8 @@ import { doctorCommand } from "./commands/doctor.js";
 import { checkUpdatesCommand } from "./commands/check-updates.js";
 import { statusCommand } from "./commands/status.js";
 import { implementCommand } from "./commands/implement.js";
+import { launchCommand } from "./commands/launch.js";
+import { quickCommand } from "./commands/quick.js";
 import { resetCommand } from "./commands/reset.js";
 import { watchCommand } from "./commands/watch.js";
 import { runCommand } from "./commands/run.js";
@@ -17,8 +19,8 @@ import { isEnoent } from "./utils/errors.js";
 const program = new Command();
 
 program
-  .name("bmalph")
-  .description("BMAD-METHOD + Ralph integration — structured planning to autonomous implementation")
+  .name("bmax")
+  .description("Solo SaaS Builder — AI-powered planning, building, and launching")
   .version(await getPackageVersion())
   .option("--verbose", "Enable debug logging")
   .option("--no-color", "Disable colored output")
@@ -60,7 +62,7 @@ async function resolveAndValidateProjectDir(): Promise<string> {
 
 program
   .command("init")
-  .description("Initialize bmalph in the current project")
+  .description("Initialize bmax in the current project")
   .option("-n, --name <name>", "Project name")
   .option("-d, --description <desc>", "Project description")
   .option(
@@ -113,8 +115,18 @@ program
   );
 
 program
+  .command("launch")
+  .description("Transition to Phase 5 (Launch) — SEO, legal, analytics, go-to-market")
+  .action(async () => launchCommand({ projectDir: await resolveAndValidateProjectDir() }));
+
+program
+  .command("quick")
+  .description("Skip to Quick Flow — go straight to Builder agent")
+  .action(async () => quickCommand({ projectDir: await resolveAndValidateProjectDir() }));
+
+program
   .command("reset")
-  .description("Remove all bmalph files from the project")
+  .description("Remove all bmax files from the project")
   .option("--dry-run", "Preview changes without removing files")
   .option("--force", "Skip confirmation prompt")
   .action(async (opts: { dryRun?: boolean; force?: boolean }) =>
@@ -123,7 +135,7 @@ program
 
 program
   .command("watch")
-  .description("[deprecated] Use 'bmalph run' instead")
+  .description("[deprecated] Use 'bmax run' instead")
   .option("--interval <ms>", "Refresh interval in milliseconds (default: 2000)")
   .action(async (opts: { interval?: string }) =>
     watchCommand({ ...opts, projectDir: await resolveAndValidateProjectDir() })
@@ -134,7 +146,7 @@ program
   .description("Start Ralph loop with live dashboard")
   .option(
     "--driver <platform>",
-    "Override platform driver (claude-code, codex, opencode, copilot, cursor)"
+    "Override platform driver (claude-code, codex, opencode, copilot, cursor, generic-api)"
   )
   .option("--interval <ms>", "Dashboard refresh interval in milliseconds (default: 2000)")
   .option("--no-dashboard", "Run Ralph without the dashboard overlay")

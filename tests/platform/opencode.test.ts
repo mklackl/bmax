@@ -26,7 +26,7 @@ describe("opencodePlatform", () => {
   it("generateInstructionsSnippet contains OpenCode-native skill guidance", () => {
     const snippet = opencodePlatform.generateInstructionsSnippet();
     expect(snippet).toContain(".opencode/skills");
-    expect(snippet).toContain("bmad-analyst");
+    expect(snippet).toContain("bmad-researcher");
     expect(snippet).toContain("question tool");
     expect(snippet).not.toContain("$command-name");
   });
@@ -48,7 +48,7 @@ describe("opencodePlatform", () => {
     beforeEach(async () => {
       testDir = join(
         tmpdir(),
-        `bmalph-opencode-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        `bmax-opencode-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
       await mkdir(testDir, { recursive: true });
     });
@@ -62,7 +62,7 @@ describe("opencodePlatform", () => {
     });
 
     it("instructions-file check passes when AGENTS.md has marker", async () => {
-      await writeFile(join(testDir, "AGENTS.md"), "## BMAD-METHOD Integration\nContent here");
+      await writeFile(join(testDir, "AGENTS.md"), "## bmax\nContent here");
       const checks = opencodePlatform.getDoctorChecks();
       const instrCheck = checks.find((c) => c.id === "instructions-file")!;
       const result = await instrCheck.check(testDir);

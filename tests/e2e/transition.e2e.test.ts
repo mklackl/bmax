@@ -71,7 +71,7 @@ This is a sample PRD for testing the transition functionality.
 See epics-and-stories.md for detailed user stories.
 `;
 
-describe("bmalph transition e2e", { timeout: 60000 }, () => {
+describe("bmax transition e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {

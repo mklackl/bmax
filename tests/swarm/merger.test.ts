@@ -42,7 +42,7 @@ describe("merger", () => {
   const workerIds: number[] = [];
 
   beforeEach(async () => {
-    project = await createTestProject("bmalph-merger");
+    project = await createTestProject("bmax-merger");
     // Set up a project with .ralph/@fix_plan.md
     await mkdir(join(project.path, ".ralph"), { recursive: true });
     await createFile(

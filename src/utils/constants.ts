@@ -1,8 +1,8 @@
 /**
- * Centralized constants for bmalph.
+ * Centralized constants for bmax.
  *
  * Path constants define the standard directory names used throughout
- * the bmalph project for BMAD, Ralph, and Claude Code integration.
+ * the bmax project for BMAD, Ralph, and Claude Code integration.
  *
  * Numeric thresholds are used for validation, file processing, and health checks.
  */
@@ -50,8 +50,8 @@ export const RALPH_DIR = ".ralph";
 /** BMAD agents and workflows directory */
 export const BMAD_DIR = "_bmad";
 
-/** bmalph state directory (config, phase tracking) */
-export const BMALPH_DIR = "bmalph";
+/** bmax state directory (config, phase tracking) */
+export const BMAX_DIR = "bmax";
 
 /** BMAD output directory (planning artifacts) */
 export const BMAD_OUTPUT_DIR = "_bmad-output";
@@ -62,14 +62,14 @@ export const CODEX_SKILLS_DIR = ".agents/skills";
 /** Skills directory used by the OpenCode platform */
 export const OPENCODE_SKILLS_DIR = ".opencode/skills";
 
-/** Prefix for bmalph-managed skill directories */
+/** Prefix for bmax-managed skill directories */
 export const SKILLS_PREFIX = "bmad-";
 
-/** bmalph state subdirectory (inside BMALPH_DIR) */
-export const STATE_DIR = "bmalph/state";
+/** bmax state subdirectory (inside BMAX_DIR) */
+export const STATE_DIR = "bmax/state";
 
-/** bmalph config file path */
-export const CONFIG_FILE = "bmalph/config.json";
+/** bmax config file path */
+export const CONFIG_FILE = "bmax/config.json";
 
 /** BMAD config file path */
 export const BMAD_CONFIG_FILE = "_bmad/config.yaml";
@@ -100,10 +100,10 @@ export const RALPH_STATUS_MAP = {
 } as const;
 
 // =============================================================================
-// Gitignore entries managed by bmalph
+// Gitignore entries managed by bmax
 // =============================================================================
 
-/** Entries bmalph adds to .gitignore during init and checks during doctor */
+/** Entries bmax adds to .gitignore during init and checks during doctor */
 export const GITIGNORE_ENTRIES = [".ralph/logs/", "_bmad-output/", ".swarm/"] as const;
 
 // =============================================================================

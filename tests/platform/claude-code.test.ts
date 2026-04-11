@@ -22,22 +22,22 @@ describe("claudeCodePlatform", () => {
     });
   });
 
-  it("generateInstructionsSnippet contains BMAD-METHOD Integration", () => {
+  it("generateInstructionsSnippet contains Solo SaaS Builder heading", () => {
     const snippet = claudeCodePlatform.generateInstructionsSnippet();
-    expect(snippet).toContain("BMAD-METHOD Integration");
+    expect(snippet).toContain("Solo SaaS Builder");
   });
 
   it("generateInstructionsSnippet contains slash command references", () => {
     const snippet = claudeCodePlatform.generateInstructionsSnippet();
-    expect(snippet).toContain("/bmalph");
-    expect(snippet).toContain("/analyst");
+    expect(snippet).toContain("/bmax");
+    expect(snippet).toContain("/researcher");
     expect(snippet).toContain("/architect");
-    expect(snippet).toContain("/pm");
+    expect(snippet).toContain("/product-designer");
   });
 
-  it("generateInstructionsSnippet does not contain phantom /bmalph-reset", () => {
+  it("generateInstructionsSnippet does not contain phantom /bmax-reset", () => {
     const snippet = claudeCodePlatform.generateInstructionsSnippet();
-    expect(snippet).not.toContain("/bmalph-reset");
+    expect(snippet).not.toContain("/bmax-reset");
   });
 
   it("getDoctorChecks returns 3 checks (slash-command, lite-workflow, instructions-file)", () => {
@@ -56,7 +56,7 @@ describe("claudeCodePlatform", () => {
     beforeEach(async () => {
       testDir = join(
         tmpdir(),
-        `bmalph-claude-code-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        `bmax-claude-code-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
       await mkdir(testDir, { recursive: true });
     });
@@ -71,7 +71,7 @@ describe("claudeCodePlatform", () => {
 
     it("slash-command check passes when file exists", async () => {
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
       const checks = claudeCodePlatform.getDoctorChecks();
       const slashCheck = checks.find((c) => c.id === "slash-command")!;
       const result = await slashCheck.check(testDir);
@@ -83,11 +83,11 @@ describe("claudeCodePlatform", () => {
       const slashCheck = checks.find((c) => c.id === "slash-command")!;
       const result = await slashCheck.check(testDir);
       expect(result.passed).toBe(false);
-      expect(result.hint).toContain("bmalph init");
+      expect(result.hint).toContain("bmax init");
     });
 
     it("instructions-file check passes when CLAUDE.md has marker", async () => {
-      await writeFile(join(testDir, "CLAUDE.md"), "## BMAD-METHOD Integration\nContent here");
+      await writeFile(join(testDir, "CLAUDE.md"), "## bmax\nContent here");
       const checks = claudeCodePlatform.getDoctorChecks();
       const instrCheck = checks.find((c) => c.id === "instructions-file")!;
       const result = await instrCheck.check(testDir);

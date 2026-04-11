@@ -21,11 +21,13 @@ paths:
 | `check-updates` | `--json`                                                                                                        |
 | `status`        | `--json`                                                                                                        |
 | `implement`     | `--force`                                                                                                       |
+| `launch`        | _(none)_                                                                                                        |
+| `quick`         | _(none)_                                                                                                        |
 | `reset`         | `--dry-run`, `--force`                                                                                          |
 | `run`           | `--driver <platform>`, `--interval <ms>`, `--no-dashboard`, `--review [mode]`, `--no-review`, `--swarm [count]` |
 | `watch`         | `--interval <ms>` _(deprecated)_                                                                                |
 
-## `bmalph run` features
+## `bmax run` features
 
 - **Periodic code review** — runs between implementation loops. Modes: `enhanced` (~10-14% extra tokens) or `ultimate` (~20-30%). Disable with `--no-review`.
 - **Task injection** — injects the next unchecked task into each loop's context

@@ -176,7 +176,7 @@ Construir uma ferramenta CLI para equipes de produto.
 - Must work offline
 - Node.js 20+ required
 
-## Implementation
+## Build
 `,
         ],
       ]);

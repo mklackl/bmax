@@ -265,7 +265,7 @@ describe("installer", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
   });
 
@@ -283,8 +283,8 @@ describe("installer", () => {
     });
 
     it("returns true when config exists", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), "{}");
+      await mkdir(join(testDir, "bmax"), { recursive: true });
+      await writeFile(join(testDir, "bmax/config.json"), "{}");
       expect(await isInitialized(testDir)).toBe(true);
     });
   });
@@ -307,9 +307,9 @@ describe("installer", () => {
   });
 
   describe("installProject", { timeout: 30000 }, () => {
-    it("creates bmalph state directory", async () => {
+    it("creates bmax state directory", async () => {
       await installProject(testDir);
-      await expect(access(join(testDir, "bmalph/state"))).resolves.toBeUndefined();
+      await expect(access(join(testDir, "bmax/state"))).resolves.toBeUndefined();
     });
 
     it("copies BMAD files to _bmad/", async () => {
@@ -378,9 +378,9 @@ describe("installer", () => {
   });
 
   describe("installSlashCommand", { timeout: 30000 }, () => {
-    it("copies slash command to .claude/commands/bmalph.md", async () => {
+    it("copies slash command to .claude/commands/bmax.md", async () => {
       await installProject(testDir);
-      await expect(access(join(testDir, ".claude/commands/bmalph.md"))).resolves.toBeUndefined();
+      await expect(access(join(testDir, ".claude/commands/bmax.md"))).resolves.toBeUndefined();
     });
 
     it("creates .claude/commands/ directory", async () => {
@@ -390,13 +390,13 @@ describe("installer", () => {
 
     it("slash command loads BMAD help skill", async () => {
       await installProject(testDir);
-      const content = await readFile(join(testDir, ".claude/commands/bmalph.md"), "utf-8");
+      const content = await readFile(join(testDir, ".claude/commands/bmax.md"), "utf-8");
       expect(content).toContain("_bmad/core/skills/bmad-help/workflow.md");
     });
 
     it("slash command does not contain hardcoded phase logic", async () => {
       await installProject(testDir);
-      const content = await readFile(join(testDir, ".claude/commands/bmalph.md"), "utf-8");
+      const content = await readFile(join(testDir, ".claude/commands/bmax.md"), "utf-8");
       expect(content).not.toContain("current-phase.json");
       expect(content).not.toContain("Phase 1");
       expect(content).not.toContain("Phase 2");
@@ -409,14 +409,13 @@ describe("installer", () => {
         f.endsWith(".md")
       ).length;
       expect(files.length).toBe(expectedCount);
-      expect(files).toContain("bmalph.md");
-      expect(files).toContain("analyst.md");
+      expect(files).toContain("bmax.md");
+      expect(files).toContain("researcher.md");
       expect(files).toContain("architect.md");
       expect(files).toContain("create-prd.md");
-      expect(files).toContain("sprint-planning.md");
-      expect(files).toContain("qa.md");
-      expect(files).toContain("qa-automate.md");
-      expect(files).toContain("generate-project-context.md");
+      expect(files).toContain("builder.md");
+      expect(files).toContain("launcher.md");
+      expect(files).toContain("product-designer.md");
     });
 
     it("does not include removed TEA, testarch, or excalidraw commands", async () => {
@@ -453,14 +452,11 @@ describe("installer", () => {
     it("agent slash commands reference correct YAML paths", async () => {
       await installProject(testDir);
       const agents = [
-        { file: "analyst.md", path: "_bmad/bmm/agents/analyst.agent.yaml" },
+        { file: "researcher.md", path: "_bmad/bmm/agents/researcher.agent.yaml" },
         { file: "architect.md", path: "_bmad/bmm/agents/architect.agent.yaml" },
-        { file: "dev.md", path: "_bmad/bmm/agents/dev.agent.yaml" },
-        { file: "pm.md", path: "_bmad/bmm/agents/pm.agent.yaml" },
-        { file: "sm.md", path: "_bmad/bmm/agents/sm.agent.yaml" },
-        { file: "qa.md", path: "_bmad/bmm/agents/qa.agent.yaml" },
-        { file: "ux-designer.md", path: "_bmad/bmm/agents/ux-designer.agent.yaml" },
-        { file: "quick-flow-solo-dev.md", path: "_bmad/bmm/agents/quick-flow-solo-dev.agent.yaml" },
+        { file: "product-designer.md", path: "_bmad/bmm/agents/product-designer.agent.yaml" },
+        { file: "builder.md", path: "_bmad/bmm/agents/builder.agent.yaml" },
+        { file: "launcher.md", path: "_bmad/bmm/agents/launcher.agent.yaml" },
       ];
       for (const { file, path } of agents) {
         const content = await readFile(join(testDir, ".claude/commands", file), "utf-8");
@@ -471,7 +467,7 @@ describe("installer", () => {
     it("workflow slash command adopts agent role and executes workflow", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".claude/commands/create-prd.md"), "utf-8");
-      expect(content).toContain("_bmad/bmm/agents/pm.agent.yaml");
+      expect(content).toContain("_bmad/bmm/agents/product-designer.agent.yaml");
       expect(content).toContain("_bmad/core/tasks/bmad-create-prd/workflow.md");
       expect(content).toMatch(/[Cc]reate/);
     });
@@ -498,8 +494,10 @@ describe("installer", () => {
       await expect(access(join(testDir, ".ralph/lib"))).resolves.toBeUndefined();
       await expect(access(join(testDir, ".ralph/PROMPT.md"))).resolves.toBeUndefined();
       await expect(access(join(testDir, ".ralph/@AGENT.md"))).resolves.toBeUndefined();
-      await expect(access(join(testDir, ".claude/commands/bmalph.md"))).resolves.toBeUndefined();
-      await expect(access(join(testDir, ".claude/commands/analyst.md"))).resolves.toBeUndefined();
+      await expect(access(join(testDir, ".claude/commands/bmax.md"))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, ".claude/commands/researcher.md"))
+      ).resolves.toBeUndefined();
       expect(result.updatedPaths.length).toBeGreaterThan(0);
     });
 
@@ -544,12 +542,12 @@ describe("installer", () => {
       expect(manifest).toContain("Code Review");
     });
 
-    it("does NOT create bmalph/state/ or .ralph/logs/", async () => {
+    it("does NOT create bmax/state/ or .ralph/logs/", async () => {
       const result = await copyBundledAssets(testDir);
 
-      await expect(access(join(testDir, "bmalph/state"))).rejects.toThrow();
+      await expect(access(join(testDir, "bmax/state"))).rejects.toThrow();
       await expect(access(join(testDir, ".ralph/logs"))).rejects.toThrow();
-      expect(result.updatedPaths).not.toContain("bmalph/state/");
+      expect(result.updatedPaths).not.toContain("bmax/state/");
     });
 
     it("preserves existing .ralph/@fix_plan.md", async () => {
@@ -572,16 +570,16 @@ describe("installer", () => {
       expect(content).toBe("log content");
     });
 
-    it("preserves existing bmalph/config.json", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+    it("preserves existing bmax/config.json", async () => {
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({ name: "my-project", description: "test" })
       );
 
       await copyBundledAssets(testDir);
 
-      const config = JSON.parse(await readFile(join(testDir, "bmalph/config.json"), "utf-8"));
+      const config = JSON.parse(await readFile(join(testDir, "bmax/config.json"), "utf-8"));
       expect(config.name).toBe("my-project");
     });
 
@@ -794,7 +792,7 @@ describe("installer", () => {
         access(join(testDir, ".claude/commands/my-custom-cmd.md"))
       ).resolves.toBeUndefined();
       // Fresh bundled commands should still be present
-      await expect(access(join(testDir, ".claude/commands/bmalph.md"))).resolves.toBeUndefined();
+      await expect(access(join(testDir, ".claude/commands/bmax.md"))).resolves.toBeUndefined();
     });
 
     it("is idempotent (twice = same result)", async () => {
@@ -884,14 +882,14 @@ describe("installer", () => {
     it("replaces existing version marker correctly", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
-      expect(content).toMatch(/# bmalph-version: \d+\.\d+\.\d+/);
+      expect(content).toMatch(/# bmax-version: \d+\.\d+\.\d+/);
 
       // Run again to verify replacement works
       await copyBundledAssets(testDir);
       const content2 = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
 
       // Should still have exactly one version marker
-      const matches = content2.match(/# bmalph-version:/g);
+      const matches = content2.match(/# bmax-version:/g);
       expect(matches).toHaveLength(1);
     });
 
@@ -900,7 +898,7 @@ describe("installer", () => {
 
       // Manually corrupt the version marker to have empty value
       let content = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
-      content = content.replace(/# bmalph-version: .+/, "# bmalph-version:");
+      content = content.replace(/# bmax-version: .+/, "# bmax-version:");
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), content);
 
       // Run copyBundledAssets - should properly replace the corrupted marker
@@ -908,9 +906,9 @@ describe("installer", () => {
       const updated = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
 
       // Should have proper version now
-      expect(updated).toMatch(/# bmalph-version: \d+\.\d+\.\d+/);
+      expect(updated).toMatch(/# bmax-version: \d+\.\d+\.\d+/);
       // Should NOT have the corrupted empty marker
-      expect(updated).not.toContain("# bmalph-version:\n");
+      expect(updated).not.toContain("# bmax-version:\n");
     });
 
     it("handles version marker at end of file without newline", async () => {
@@ -918,7 +916,7 @@ describe("installer", () => {
 
       // Modify to have marker at EOF without newline
       let content = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
-      content = content.trimEnd() + "\n# bmalph-version: 1.0.0"; // No trailing newline
+      content = content.trimEnd() + "\n# bmax-version: 1.0.0"; // No trailing newline
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), content);
 
       // Run copyBundledAssets
@@ -926,7 +924,7 @@ describe("installer", () => {
       const updated = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
 
       // Should have proper version
-      expect(updated).toMatch(/# bmalph-version: \d+\.\d+\.\d+/);
+      expect(updated).toMatch(/# bmax-version: \d+\.\d+\.\d+/);
     });
   });
 
@@ -940,14 +938,14 @@ describe("installer", () => {
     it("ralph_loop.sh contains version marker", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
-      expect(content).toContain("# bmalph-version:");
-      expect(content).toMatch(/# bmalph-version: \d+\.\d+\.\d+/);
+      expect(content).toContain("# bmax-version:");
+      expect(content).toMatch(/# bmax-version: \d+\.\d+\.\d+/);
     });
 
     it("ralph_loop.sh references @fix_plan.md for completion detection", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".ralph/ralph_loop.sh"), "utf-8");
-      // bmalph writes .ralph/@fix_plan.md (with @ prefix)
+      // bmax writes .ralph/@fix_plan.md (with @ prefix)
       // ralph_loop.sh must check @fix_plan.md, not fix_plan.md
       expect(content).toContain('"$RALPH_DIR/@fix_plan.md"');
     });
@@ -968,10 +966,10 @@ describe("installer", () => {
       expect(config).toContain(`project_name: "${dirName}"`);
     });
 
-    it("config.yaml derives project_name from bmalph/config.json when present", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+    it("config.yaml derives project_name from bmax/config.json when present", async () => {
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({ name: "my-cool-project", description: "test" })
       );
       await copyBundledAssets(testDir);
@@ -980,9 +978,9 @@ describe("installer", () => {
     });
 
     it("config.yaml escapes special YAML characters in project_name", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await writeFile(
-        join(testDir, "bmalph/config.json"),
+        join(testDir, "bmax/config.json"),
         JSON.stringify({ name: 'Lars\'s Project #1: "The Best" & More', description: "test" })
       );
       await copyBundledAssets(testDir);
@@ -992,7 +990,7 @@ describe("installer", () => {
 
     it("slash command delegates to BMAD help skill", async () => {
       await installProject(testDir);
-      const content = await readFile(join(testDir, ".claude/commands/bmalph.md"), "utf-8");
+      const content = await readFile(join(testDir, ".claude/commands/bmax.md"), "utf-8");
       expect(content).toContain("_bmad/core/skills/bmad-help/workflow.md");
     });
 
@@ -1114,17 +1112,17 @@ describe("installer", () => {
       expect(content).toContain(".ralph/.ralphrc");
     });
 
-    it("ralph_import.sh points deprecated users to bmalph and @fix_plan.md", async () => {
+    it("ralph_import.sh points deprecated users to bmax and @fix_plan.md", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".ralph/ralph_import.sh"), "utf-8");
-      expect(content).toContain("bmalph implement");
+      expect(content).toContain("bmax implement");
       expect(content).toContain(".ralph/@fix_plan.md");
     });
 
-    it("ralph_monitor.sh deprecation guidance points to bmalph run", async () => {
+    it("ralph_monitor.sh deprecation guidance points to bmax run", async () => {
       await installProject(testDir);
       const content = await readFile(join(testDir, ".ralph/ralph_monitor.sh"), "utf-8");
-      expect(content).toContain("Use `bmalph run` instead");
+      expect(content).toContain("Use `bmax run` instead");
     });
   });
 
@@ -1132,7 +1130,7 @@ describe("installer", () => {
     it("creates CLAUDE.md if it does not exist", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
     });
 
     it("appends to existing CLAUDE.md", async () => {
@@ -1140,49 +1138,50 @@ describe("installer", () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).toContain("# My Project");
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
     });
 
     it("does not duplicate on second run", async () => {
       await mergeInstructionsFile(testDir);
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      const matches = content.match(/## BMAD-METHOD Integration/g);
+      const matches = content.match(/## bmax/g);
       expect(matches).toHaveLength(1);
     });
 
-    it("references /bmalph slash command", async () => {
+    it("references /bmax slash command", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      expect(content).toContain("/bmalph");
+      expect(content).toContain("/bmax");
     });
 
     it("does not reference deprecated plan --phase command", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       expect(content).not.toContain("--phase");
-      expect(content).not.toContain("bmalph plan");
+      expect(content).not.toContain("bmax plan");
     });
 
-    it("references /bmalph-status slash command", async () => {
+    it("references /bmax-status slash command", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      expect(content).toContain("/bmalph-status");
+      expect(content).toContain("/bmax-status");
     });
 
-    it("references /bmalph-implement for transition", async () => {
+    it("references /bmax-implement for transition", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      expect(content).toContain("/bmalph-implement");
+      expect(content).toContain("/bmax-implement");
     });
 
-    it("documents all 4 phases", async () => {
+    it("documents all 5 phases", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      expect(content).toContain("Analysis");
-      expect(content).toContain("Planning");
-      expect(content).toContain("Solutioning");
-      expect(content).toContain("Implementation");
+      expect(content).toContain("Research");
+      expect(content).toContain("Design");
+      expect(content).toContain("Architect");
+      expect(content).toContain("Build");
+      expect(content).toContain("Launch");
     });
 
     it("references /bmad-help for command discovery", async () => {
@@ -1194,13 +1193,11 @@ describe("installer", () => {
     it("lists available agent slash commands", async () => {
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-      expect(content).toContain("/analyst");
+      expect(content).toContain("/researcher");
       expect(content).toContain("/architect");
-      expect(content).toContain("/pm");
-      expect(content).toContain("/sm");
-      expect(content).toContain("/dev");
-      expect(content).toContain("/ux-designer");
-      expect(content).toContain("/qa");
+      expect(content).toContain("/product-designer");
+      expect(content).toContain("/builder");
+      expect(content).toContain("/launcher");
       expect(content).not.toContain("/tea");
     });
 
@@ -1209,7 +1206,7 @@ describe("installer", () => {
 
 Some project info.
 
-## BMAD-METHOD Integration
+## bmax
 
 Old BMAD content that will be replaced.
 
@@ -1230,9 +1227,9 @@ More user content here.
       expect(content).toContain("Some project info.");
 
       // BMAD section replaced with fresh content
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
       expect(content).not.toContain("Old BMAD content");
-      expect(content).toContain("/qa");
+      expect(content).toContain("/launcher");
 
       // User content after BMAD section preserved
       expect(content).toContain("## My Custom Section");
@@ -1241,7 +1238,7 @@ More user content here.
       expect(content).toContain("More user content here.");
 
       // Exactly one BMAD section
-      const matches = content.match(/## BMAD-METHOD Integration/g);
+      const matches = content.match(/## bmax/g);
       expect(matches).toHaveLength(1);
     });
 
@@ -1249,7 +1246,7 @@ More user content here.
       // Simulate stale CLAUDE.md with old TEA reference
       const staleSection = `# My Project
 
-## BMAD-METHOD Integration
+## bmax
 
 Old stale content with /tea agent reference.
 `;
@@ -1257,12 +1254,12 @@ Old stale content with /tea agent reference.
       await mergeInstructionsFile(testDir);
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
       // Section should be refreshed with new content
-      expect(content).toContain("/qa");
+      expect(content).toContain("/launcher");
       expect(content).not.toContain("Old stale content");
       // Should still have project header
       expect(content).toContain("# My Project");
       // Should have exactly one integration section
-      const matches = content.match(/## BMAD-METHOD Integration/g);
+      const matches = content.match(/## bmax/g);
       expect(matches).toHaveLength(1);
     });
   });
@@ -1272,22 +1269,22 @@ Old stale content with /tea agent reference.
       const { codexPlatform } = await import("../src/platform/codex.js");
       await mergeInstructionsFile(testDir, codexPlatform);
       const content = await readFile(join(testDir, "AGENTS.md"), "utf-8");
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
     });
 
     it("codex snippet does not contain slash command syntax", async () => {
       const { codexPlatform } = await import("../src/platform/codex.js");
       await mergeInstructionsFile(testDir, codexPlatform);
       const content = await readFile(join(testDir, "AGENTS.md"), "utf-8");
-      expect(content).not.toMatch(/\/bmalph\b/);
-      expect(content).not.toMatch(/\/analyst\b/);
+      expect(content).not.toMatch(/\/bmax\b/);
+      expect(content).not.toMatch(/\/researcher\b/);
     });
 
     it("creates CONVENTIONS.md for aider platform", async () => {
       const { aiderPlatform } = await import("../src/platform/aider.js");
       await mergeInstructionsFile(testDir, aiderPlatform);
       const content = await readFile(join(testDir, "CONVENTIONS.md"), "utf-8");
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
     });
 
     it("does not create CLAUDE.md for codex platform", async () => {
@@ -1301,7 +1298,7 @@ Old stale content with /tea agent reference.
       await mergeInstructionsFile(testDir, codexPlatform);
       await mergeInstructionsFile(testDir, codexPlatform);
       const content = await readFile(join(testDir, "AGENTS.md"), "utf-8");
-      const matches = content.match(/## BMAD-METHOD Integration/g);
+      const matches = content.match(/## bmax/g);
       expect(matches).toHaveLength(1);
     });
 
@@ -1311,7 +1308,7 @@ Old stale content with /tea agent reference.
       await mergeInstructionsFile(testDir, codexPlatform);
       const content = await readFile(join(testDir, "AGENTS.md"), "utf-8");
       expect(content).toContain("# My Agents");
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
     });
   });
 
@@ -1319,14 +1316,14 @@ Old stale content with /tea agent reference.
     it("returns wouldCreate for new project", async () => {
       const result = await previewInstall(testDir);
 
-      expect(result.wouldCreate).toContain("bmalph/state/");
+      expect(result.wouldCreate).toContain("bmax/state/");
       expect(result.wouldCreate).toContain(".ralph/specs/");
       expect(result.wouldCreate).toContain(".ralph/logs/");
       expect(result.wouldCreate).toContain("_bmad/");
       expect(result.wouldCreate).toContain(".claude/commands/");
       expect(result.wouldCreate).toContain(".ralph/PROMPT.md");
       expect(result.wouldCreate).toContain(".ralph/.ralphrc");
-      expect(result.wouldCreate).toContain("bmalph/config.json");
+      expect(result.wouldCreate).toContain("bmax/config.json");
       expect(result.wouldCreate).toContain(".gitignore");
       expect(result.wouldCreate).toContain("CLAUDE.md");
     });
@@ -1376,10 +1373,7 @@ Old stale content with /tea agent reference.
     });
 
     it("returns wouldSkip for CLAUDE.md with existing integration", async () => {
-      await writeFile(
-        join(testDir, "CLAUDE.md"),
-        "# My Project\n## BMAD-METHOD Integration\nContent"
-      );
+      await writeFile(join(testDir, "CLAUDE.md"), "# My Project\n## bmax\nContent");
 
       const result = await previewInstall(testDir);
 
@@ -1391,14 +1385,14 @@ Old stale content with /tea agent reference.
     it("does not include non-template files in wouldModify when they exist", async () => {
       await mkdir(join(testDir, ".ralph"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash");
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), "{}");
+      await mkdir(join(testDir, "bmax"), { recursive: true });
+      await writeFile(join(testDir, "bmax/config.json"), "{}");
 
       const result = await previewInstall(testDir);
 
       // Non-template files should not appear in wouldModify
       expect(result.wouldModify).not.toContain(".ralph/ralph_loop.sh");
-      expect(result.wouldModify).not.toContain("bmalph/config.json");
+      expect(result.wouldModify).not.toContain("bmax/config.json");
     });
 
     it("includes .agents/skills/ for skills-based platforms", async () => {
@@ -1595,12 +1589,12 @@ Old stale content with /tea agent reference.
     it("stale command cleanup ignores ENOENT but propagates other errors", async () => {
       // A successful install should work even when .claude/commands doesn't exist yet
       await copyBundledAssets(testDir);
-      await expect(access(join(testDir, ".claude/commands/bmalph.md"))).resolves.toBeUndefined();
+      await expect(access(join(testDir, ".claude/commands/bmax.md"))).resolves.toBeUndefined();
     });
 
     it("deriveProjectName warns on non-ENOENT errors but does not throw", async () => {
       // Create a config.json that is a directory (will cause non-ENOENT read error)
-      await mkdir(join(testDir, "bmalph/config.json"), { recursive: true });
+      await mkdir(join(testDir, "bmax/config.json"), { recursive: true });
 
       // Should fall through to basename without crashing
       await expect(copyBundledAssets(testDir)).resolves.not.toThrow();
@@ -1703,7 +1697,7 @@ Old stale content with /tea agent reference.
     it("preserves content after BMAD section when no next ## heading exists", async () => {
       const claudeMd = `# My Project
 
-## BMAD-METHOD Integration
+## bmax
 
 Old BMAD content here.
 
@@ -1715,7 +1709,7 @@ This must be preserved.
       const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
 
       // BMAD section should be refreshed
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
       expect(content).not.toContain("Old BMAD content");
 
       // Trailing content after the BMAD section (no next heading) should NOT be preserved
@@ -1732,7 +1726,7 @@ Some intro.
 
 Important user notes.
 
-## BMAD-METHOD Integration
+## bmax
 
 Old BMAD stuff.
 `;
@@ -1743,14 +1737,14 @@ Old BMAD stuff.
       expect(content).toContain("# My Project");
       expect(content).toContain("## My Custom Section");
       expect(content).toContain("Important user notes.");
-      expect(content).toContain("## BMAD-METHOD Integration");
+      expect(content).toContain("## bmax");
       expect(content).not.toContain("Old BMAD stuff");
     });
 
     it("preserves all content between BMAD section and next heading", async () => {
       const claudeMd = `# My Project
 
-## BMAD-METHOD Integration
+## bmax
 
 Old content.
 
@@ -1805,16 +1799,15 @@ Content B.
       await copyBundledAssets(testDir);
       const content = await readFile(join(testDir, "_bmad/COMMANDS.md"), "utf-8");
       expect(content).toContain("# BMAD Commands");
-      expect(content).toContain("Auto-generated by bmalph");
+      expect(content).toContain("Auto-generated by bmax");
     });
 
     it("groups commands by phase with correct section headings", async () => {
       await copyBundledAssets(testDir);
       const content = await readFile(join(testDir, "_bmad/COMMANDS.md"), "utf-8");
-      expect(content).toContain("## Phase 1: Analysis");
-      expect(content).toContain("## Phase 2: Planning");
-      expect(content).toContain("## Phase 3: Solutioning");
-      expect(content).toContain("## Phase 4: Implementation");
+      expect(content).toContain("## Phase 1: Research");
+      expect(content).toContain("## Phase 2: Design");
+      expect(content).toContain("## Phase 3: Architect");
       expect(content).toContain("## Utilities");
     });
 
@@ -1822,17 +1815,17 @@ Content B.
       await copyBundledAssets(testDir);
       const content = await readFile(join(testDir, "_bmad/COMMANDS.md"), "utf-8");
       expect(content).toContain("## Agents");
-      expect(content).toContain("analyst");
+      expect(content).toContain("researcher");
       expect(content).toContain("architect");
-      expect(content).toContain("pm");
+      expect(content).toContain("product-designer");
     });
 
-    it("includes bmalph CLI section", async () => {
+    it("includes bmax CLI section", async () => {
       await copyBundledAssets(testDir);
       const content = await readFile(join(testDir, "_bmad/COMMANDS.md"), "utf-8");
-      expect(content).toContain("## bmalph CLI");
-      expect(content).toContain("bmalph-implement");
-      expect(content).toContain("bmalph-status");
+      expect(content).toContain("## bmax CLI");
+      expect(content).toContain("bmax-implement");
+      expect(content).toContain("bmax-status");
     });
 
     it("includes invocation column with file references", async () => {
@@ -1861,22 +1854,22 @@ Content B.
     it("generates SKILL.md files with correct frontmatter", async () => {
       await setupSkills();
       const content = await readFile(
-        join(testDir, ".agents/skills/bmad-analyst/SKILL.md"),
+        join(testDir, ".agents/skills/bmad-researcher/SKILL.md"),
         "utf-8"
       );
-      expect(content).toContain("name: analyst");
-      expect(content).toContain("managed-by: bmalph");
+      expect(content).toContain("name: researcher");
+      expect(content).toContain("managed-by: bmax");
       expect(content).toContain("description:");
     });
 
     it("generates skill body from slash command content", async () => {
       await setupSkills();
       const content = await readFile(
-        join(testDir, ".agents/skills/bmad-analyst/SKILL.md"),
+        join(testDir, ".agents/skills/bmad-researcher/SKILL.md"),
         "utf-8"
       );
       // Body should contain the slash command content
-      expect(content).toContain("_bmad/bmm/agents/analyst.agent.yaml");
+      expect(content).toContain("_bmad/bmm/agents/researcher.agent.yaml");
     });
 
     it("generates skill for workflow commands", async () => {
@@ -1886,24 +1879,24 @@ Content B.
         "utf-8"
       );
       expect(content).toContain("name: create-prd");
-      expect(content).toContain("managed-by: bmalph");
+      expect(content).toContain("managed-by: bmax");
       expect(content).toContain("bmad-create-prd/workflow.md");
     });
 
-    it("generates skill for bmalph master agent command", async () => {
+    it("generates skill for bmax master agent command", async () => {
       await setupSkills();
-      const content = await readFile(join(testDir, ".agents/skills/bmad-bmalph/SKILL.md"), "utf-8");
-      expect(content).toContain("name: bmalph");
-      expect(content).toContain("managed-by: bmalph");
+      const content = await readFile(join(testDir, ".agents/skills/bmad-bmax/SKILL.md"), "utf-8");
+      expect(content).toContain("name: bmax");
+      expect(content).toContain("managed-by: bmax");
     });
 
     it("skips CLI pointer commands", async () => {
       await setupSkills();
-      await expect(access(join(testDir, ".agents/skills/bmad-bmalph-implement"))).rejects.toThrow();
-      await expect(access(join(testDir, ".agents/skills/bmad-bmalph-status"))).rejects.toThrow();
-      await expect(access(join(testDir, ".agents/skills/bmad-bmalph-upgrade"))).rejects.toThrow();
-      await expect(access(join(testDir, ".agents/skills/bmad-bmalph-doctor"))).rejects.toThrow();
-      await expect(access(join(testDir, ".agents/skills/bmad-bmalph-watch"))).rejects.toThrow();
+      await expect(access(join(testDir, ".agents/skills/bmad-bmax-implement"))).rejects.toThrow();
+      await expect(access(join(testDir, ".agents/skills/bmad-bmax-status"))).rejects.toThrow();
+      await expect(access(join(testDir, ".agents/skills/bmad-bmax-upgrade"))).rejects.toThrow();
+      await expect(access(join(testDir, ".agents/skills/bmad-bmax-doctor"))).rejects.toThrow();
+      await expect(access(join(testDir, ".agents/skills/bmad-bmax-watch"))).rejects.toThrow();
     });
 
     it("uses bmad- prefix for folder names", async () => {
@@ -1930,7 +1923,7 @@ Content B.
       await expect(access(join(testDir, ".agents/skills/bmad-removed-command"))).rejects.toThrow();
       // But real skills should still exist
       await expect(
-        access(join(testDir, ".agents/skills/bmad-analyst/SKILL.md"))
+        access(join(testDir, ".agents/skills/bmad-researcher/SKILL.md"))
       ).resolves.toBeUndefined();
     });
 
@@ -1957,11 +1950,17 @@ Content B.
 
     it("is idempotent", async () => {
       await setupSkills();
-      const first = await readFile(join(testDir, ".agents/skills/bmad-analyst/SKILL.md"), "utf-8");
+      const first = await readFile(
+        join(testDir, ".agents/skills/bmad-researcher/SKILL.md"),
+        "utf-8"
+      );
 
       const classified = await classifyCommands(testDir, getSlashCommandsDir());
       await generateSkills(testDir, classified);
-      const second = await readFile(join(testDir, ".agents/skills/bmad-analyst/SKILL.md"), "utf-8");
+      const second = await readFile(
+        join(testDir, ".agents/skills/bmad-researcher/SKILL.md"),
+        "utf-8"
+      );
 
       expect(second).toBe(first);
     });
@@ -2006,18 +2005,18 @@ Content B.
       expect(utility!.phase).toBe("anytime");
     });
 
-    it("classifies unknown bmalph-* commands with fallback description", async () => {
+    it("classifies unknown bmax-* commands with fallback description", async () => {
       const csv = [CSV_HEADER].join("\n");
 
       const classified = await setupWithCsv(csv, {
-        "bmalph-newcmd.md": "A brand new bmalph command.",
+        "bmax-newcmd.md": "A brand new bmax command.",
       });
 
-      const cmd = classified.find((c) => c.name === "bmalph-newcmd");
+      const cmd = classified.find((c) => c.name === "bmax-newcmd");
       expect(cmd).toBeDefined();
-      expect(cmd!.kind).toBe("bmalph");
-      expect(cmd!.description).toBe("bmalph newcmd");
-      expect(cmd!.howToRun).toBe("Run `bmalph newcmd`");
+      expect(cmd!.kind).toBe("bmax");
+      expect(cmd!.description).toBe("bmax newcmd");
+      expect(cmd!.howToRun).toBe("Run `bmax newcmd`");
     });
 
     it("classifies workflow command as utility when CSV lookup misses", async () => {

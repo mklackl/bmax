@@ -13,7 +13,7 @@ export const opencodePlatform: Platform = {
     dir: OPENCODE_SKILLS_DIR,
     frontmatterName: "directory",
   },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => generateOpencodeSkillsTierSnippet(),
   getDoctorChecks() {
     return buildPlatformDoctorChecks(this);

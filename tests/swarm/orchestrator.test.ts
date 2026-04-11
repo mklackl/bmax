@@ -36,7 +36,7 @@ describe("orchestrator", () => {
   let project: TestProject | null = null;
 
   beforeEach(async () => {
-    project = await createTestProject("bmalph-orchestrator");
+    project = await createTestProject("bmax-orchestrator");
   });
 
   afterEach(async () => {

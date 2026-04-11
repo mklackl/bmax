@@ -2,7 +2,7 @@
 
 # Ralph Status Monitor - Live terminal dashboard for the Ralph loop
 #
-# DEPRECATED: Use `bmalph run` instead, which starts Ralph and shows the
+# DEPRECATED: Use `bmax run` instead, which starts Ralph and shows the
 # supported live dashboard.
 # This script is kept for backward compatibility in tmux sessions.
 set -e

@@ -43,10 +43,10 @@ export async function checkGitignore(projectDir: string): Promise<CheckResult> {
 
 export async function checkVersionMarker(projectDir: string): Promise<CheckResult> {
   const label = "version marker matches";
-  const hint = "Run: bmalph upgrade";
+  const hint = "Run: bmax upgrade";
   try {
     const content = await readFile(join(projectDir, ".ralph/ralph_loop.sh"), "utf-8");
-    const match = content.match(/# bmalph-version: (.+)/);
+    const match = content.match(/# bmax-version: (.+)/);
     if (!match) {
       return { label, passed: true, detail: "no marker (pre-0.8.0 install)" };
     }
@@ -71,11 +71,11 @@ export async function checkVersionMarker(projectDir: string): Promise<CheckResul
 
 export async function checkUpstreamVersions(projectDir: string): Promise<CheckResult> {
   const label = "upstream versions tracked";
-  const hint = "Run: bmalph upgrade";
+  const hint = "Run: bmax upgrade";
   try {
     const config = await readConfig(projectDir);
     if (!config) {
-      return { label, passed: false, detail: "config not found", hint: "Run: bmalph init" };
+      return { label, passed: false, detail: "config not found", hint: "Run: bmax init" };
     }
     if (!config.upstreamVersions) {
       return { label, passed: true, detail: "not tracked (pre-1.2.0 install)" };

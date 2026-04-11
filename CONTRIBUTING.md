@@ -1,11 +1,11 @@
-# Contributing to bmalph
+# Contributing to bmax
 
 ## Development Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/LarsCowe/bmalph.git
-cd bmalph
+git clone https://github.com/LarsCowe/bmax.git
+cd bmax
 
 # Install dependencies
 npm install
@@ -29,7 +29,7 @@ npm run ci
 ## Project Structure
 
 ```text
-bmalph/
+bmax/
 ├── src/                           # TypeScript source
 │   ├── cli.ts                     # Commander.js CLI entry point
 │   ├── installer/                 # Asset copying, command delivery, skills generation
@@ -131,13 +131,13 @@ npm run test:all
 
 ## Updating Bundled Assets
 
-bmalph bundles BMAD-METHOD from its upstream repository. Ralph is maintained in-tree in this repo.
+bmax bundles BMAD-METHOD from its upstream repository. Ralph is maintained in-tree in this repo.
 
 ### Check for Updates
 
 ```bash
 # Check if bundled versions are up to date
-bmalph check-updates
+bmax check-updates
 ```
 
 ### Update Process
@@ -218,4 +218,4 @@ npm run ci
 
 ## Questions?
 
-Open an issue at [github.com/LarsCowe/bmalph/issues](https://github.com/LarsCowe/bmalph/issues)
+Open an issue at [github.com/LarsCowe/bmax/issues](https://github.com/LarsCowe/bmax/issues)

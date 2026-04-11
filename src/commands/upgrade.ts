@@ -26,7 +26,7 @@ async function runUpgrade(options: UpgradeOptions): Promise<void> {
   const projectDir = options.projectDir;
 
   if (!(await isInitialized(projectDir))) {
-    console.log(chalk.red("bmalph is not initialized. Run 'bmalph init' first."));
+    console.log(chalk.red("bmax is not initialized. Run 'bmax init' first."));
     return;
   }
 
@@ -77,8 +77,8 @@ async function runUpgrade(options: UpgradeOptions): Promise<void> {
   }
 
   console.log(chalk.dim("\nPreserved:"));
-  console.log("  bmalph/config.json");
-  console.log("  bmalph/state/");
+  console.log("  bmax/config.json");
+  console.log("  bmax/state/");
   console.log("  .ralph/logs/");
   console.log("  .ralph/@fix_plan.md");
   console.log("  .ralph/docs/");

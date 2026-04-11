@@ -20,7 +20,7 @@ async function runReset(options: ResetOptions): Promise<void> {
   const projectDir = options.projectDir;
 
   if (!(await isInitialized(projectDir))) {
-    console.log(chalk.red("bmalph is not initialized. Nothing to reset."));
+    console.log(chalk.red("bmax is not initialized. Nothing to reset."));
     return;
   }
 
@@ -59,7 +59,7 @@ async function runReset(options: ResetOptions): Promise<void> {
       throw new Error("Non-interactive mode requires --force flag for reset");
     }
     const confirmed = await confirm({
-      message: "This will remove all bmalph files from the project. Continue?",
+      message: "This will remove all bmax files from the project. Continue?",
       default: false,
     });
     if (!confirmed) {

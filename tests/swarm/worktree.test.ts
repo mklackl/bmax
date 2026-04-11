@@ -30,7 +30,7 @@ describe("worktree", () => {
   let project: TestProject | null = null;
 
   beforeEach(async () => {
-    project = await createTestProject("bmalph-worktree");
+    project = await createTestProject("bmax-worktree");
     // Create a tracked file so worktrees have content
     await createFile(project.path, "src/index.ts", 'export const main = "hello";');
     execFileSync("git", ["add", "-A"], { cwd: project.path, stdio: "ignore" });

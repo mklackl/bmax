@@ -27,7 +27,7 @@ vi.mock("../../src/platform/resolve.js", () => ({
     tier: "full",
     instructionsFile: "CLAUDE.md",
     commandDelivery: { kind: "directory", dir: ".claude/commands" },
-    instructionsSectionMarker: "## BMAD-METHOD Integration",
+    instructionsSectionMarker: "## bmax",
     generateInstructionsSnippet: () => "",
     getDoctorChecks: () => [],
   })),
@@ -36,9 +36,9 @@ vi.mock("../../src/platform/resolve.js", () => ({
 import type { ResetPlan } from "../../src/reset.js";
 
 const fullPlan: ResetPlan = {
-  directories: ["_bmad", ".ralph", "bmalph"],
-  commandFiles: [".claude/commands/bmalph.md"],
-  instructionsCleanup: { path: "CLAUDE.md", sectionsToRemove: ["## BMAD-METHOD Integration"] },
+  directories: ["_bmad", ".ralph", "bmax"],
+  commandFiles: [".claude/commands/bmax.md"],
+  instructionsCleanup: { path: "CLAUDE.md", sectionsToRemove: ["## bmax"] },
   gitignoreLines: [".ralph/logs/", "_bmad-output/"],
   warnings: [{ path: "_bmad-output/", message: "user artifacts" }],
 };

@@ -17,7 +17,7 @@ describe("repository .gitignore", () => {
     expect(lines).toContain(".ralph/");
     expect(lines).toContain(".ralphrc");
     expect(lines).toContain("_bmad/");
-    expect(lines).toContain("bmalph/");
+    expect(lines).toContain("bmax/");
     expect(lines).toContain(".claude/skills/");
     expect(lines).toContain(".claude/scheduled_tasks.lock");
   });

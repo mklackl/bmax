@@ -72,7 +72,7 @@ describe("doctor command", { timeout: 15000 }, () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-doctor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-doctor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
     vi.resetModules();
     consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -92,9 +92,9 @@ describe("doctor command", { timeout: 15000 }, () => {
 
   async function setupFullProject(): Promise<void> {
     // Create minimal valid project structure
-    await mkdir(join(testDir, "bmalph"), { recursive: true });
+    await mkdir(join(testDir, "bmax"), { recursive: true });
     await writeFile(
-      join(testDir, "bmalph/config.json"),
+      join(testDir, "bmax/config.json"),
       JSON.stringify({
         name: "test",
         description: "test desc",
@@ -109,10 +109,10 @@ describe("doctor command", { timeout: 15000 }, () => {
     await writeFile(join(testDir, "_bmad/lite/create-prd.md"), "# PRD Generator");
     await mkdir(join(testDir, ".claude/commands"), { recursive: true });
     await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\necho hello\n");
-    await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
+    await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
     await writeFile(
       join(testDir, "CLAUDE.md"),
-      "# Project\n\n## BMAD-METHOD Integration\n\nSome content"
+      "# Project\n\n## bmax\n\nSome content"
     );
     await writeFile(join(testDir, ".gitignore"), ".ralph/logs/\n_bmad-output/\n.swarm/\n");
   }
@@ -211,7 +211,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       await doctorCommand({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph/config.json exists and valid");
+      expect(output).toContain("bmax/config.json exists and valid");
       expect(output).not.toContain("file not found");
     });
 
@@ -227,14 +227,14 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when config.json contains invalid JSON", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), "{ invalid json!!!");
+      await mkdir(join(testDir, "bmax"), { recursive: true });
+      await writeFile(join(testDir, "bmax/config.json"), "{ invalid json!!!");
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph/config.json");
+      expect(output).toContain("bmax/config.json");
       // Should indicate an error/failure
     });
   });
@@ -250,8 +250,8 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when _bmad/ directory does not exist", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await mkdir(join(testDir, "bmax"), { recursive: true });
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -273,10 +273,10 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when ralph_loop.sh does not exist", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -287,11 +287,11 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when ralph_loop.sh is empty", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -312,11 +312,11 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when .ralph/lib/ directory does not exist", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -328,27 +328,27 @@ describe("doctor command", { timeout: 15000 }, () => {
   });
 
   describe("slash command check", () => {
-    it("passes when .claude/commands/bmalph.md exists", async () => {
+    it("passes when .claude/commands/bmax.md exists", async () => {
       await setupFullProject();
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain(".claude/commands/bmalph.md present");
+      expect(output).toContain(".claude/commands/bmax.md present");
     });
 
-    it("fails when .claude/commands/bmalph.md does not exist", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+    it("fails when .claude/commands/bmax.md does not exist", async () => {
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain(".claude/commands/bmalph.md present");
+      expect(output).toContain(".claude/commands/bmax.md present");
       expect(output).toContain("not found");
     });
   });
@@ -364,13 +364,13 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when CLAUDE.md does not exist", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -381,14 +381,14 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when CLAUDE.md exists but lacks BMAD snippet", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
       await writeFile(join(testDir, "CLAUDE.md"), "# Project\n\nNo BMAD here.");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -410,14 +410,14 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when .gitignore is missing", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
-      await writeFile(join(testDir, "CLAUDE.md"), "## BMAD-METHOD Integration\n");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
+      await writeFile(join(testDir, "CLAUDE.md"), "## bmax\n");
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -428,15 +428,15 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when .gitignore lacks .ralph/logs/ entry", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
-      await writeFile(join(testDir, "CLAUDE.md"), "## BMAD-METHOD Integration\n");
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
+      await writeFile(join(testDir, "CLAUDE.md"), "## bmax\n");
       await writeFile(join(testDir, ".gitignore"), "_bmad-output/\n");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -446,15 +446,15 @@ describe("doctor command", { timeout: 15000 }, () => {
     });
 
     it("fails when .gitignore lacks _bmad-output/ entry", async () => {
-      await mkdir(join(testDir, "bmalph"), { recursive: true });
+      await mkdir(join(testDir, "bmax"), { recursive: true });
       await mkdir(join(testDir, "_bmad"), { recursive: true });
       await mkdir(join(testDir, ".ralph/lib"), { recursive: true });
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
       await writeFile(join(testDir, ".ralph/ralph_loop.sh"), "#!/bin/bash\n");
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "# bmalph");
-      await writeFile(join(testDir, "CLAUDE.md"), "## BMAD-METHOD Integration\n");
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "# bmax");
+      await writeFile(join(testDir, "CLAUDE.md"), "## bmax\n");
       await writeFile(join(testDir, ".gitignore"), ".ralph/logs/\n");
-      await writeFile(join(testDir, "bmalph/config.json"), JSON.stringify({ name: "test" }));
+      await writeFile(join(testDir, "bmax/config.json"), JSON.stringify({ name: "test" }));
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
       await doctorCommand({ projectDir: testDir });
@@ -472,7 +472,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       const version = await getPackageVersion();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        `#!/bin/bash\n# bmalph-version: ${version}\necho hello\n`
+        `#!/bin/bash\n# bmax-version: ${version}\necho hello\n`
       );
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
@@ -500,7 +500,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       await setupFullProject();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        "#!/bin/bash\n# bmalph-version: 0.1.0\necho hello\n"
+        "#!/bin/bash\n# bmax-version: 0.1.0\necho hello\n"
       );
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
@@ -519,7 +519,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       await doctorCommand({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph doctor");
+      expect(output).toContain("bmax doctor");
     });
 
     it("outputs summary with pass count", async () => {
@@ -529,7 +529,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       const version = await getPackageVersion();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        `#!/bin/bash\n# bmalph-version: ${version}\necho hello\n`
+        `#!/bin/bash\n# bmax-version: ${version}\necho hello\n`
       );
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
@@ -554,7 +554,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       const version = await getPackageVersion();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        `#!/bin/bash\n# bmalph-version: ${version}\necho hello\n`
+        `#!/bin/bash\n# bmax-version: ${version}\necho hello\n`
       );
 
       const { doctorCommand } = await import("../../src/commands/doctor.js");
@@ -618,7 +618,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       const version = await getPackageVersion();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        `#!/bin/bash\n# bmalph-version: ${version}\necho hello\n`
+        `#!/bin/bash\n# bmax-version: ${version}\necho hello\n`
       );
 
       // Mock checkUpstream to return success
@@ -660,7 +660,7 @@ describe("doctor command", { timeout: 15000 }, () => {
       const version = await getPackageVersion();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        `#!/bin/bash\n# bmalph-version: ${version}\necho hello\n`
+        `#!/bin/bash\n# bmax-version: ${version}\necho hello\n`
       );
 
       const { checkUpstream } = await import("../../src/utils/github.js");
@@ -1010,14 +1010,14 @@ describe("doctor command", { timeout: 15000 }, () => {
       const version = await getPackageVersion();
       await writeFile(
         join(testDir, ".ralph/ralph_loop.sh"),
-        `#!/bin/bash\n# bmalph-version: ${version}\necho hello\n`
+        `#!/bin/bash\n# bmax-version: ${version}\necho hello\n`
       );
 
       const { runDoctor } = await import("../../src/commands/doctor.js");
       const result = await runDoctor({ projectDir: testDir });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph/config.json exists and valid");
+      expect(output).toContain("bmax/config.json exists and valid");
       expect(result.failed).toBeLessThanOrEqual(2); // upstream checks may vary
     });
   });

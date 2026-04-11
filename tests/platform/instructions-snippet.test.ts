@@ -18,17 +18,18 @@ describe("generateFullTierSnippet", () => {
     expect(snippet).not.toContain("Run the BMAD master agent");
   });
 
-  it("includes the BMAD-METHOD Integration heading", () => {
+  it("includes the bmax heading", () => {
     const snippet = generateFullTierSnippet("Run");
-    expect(snippet).toContain("## BMAD-METHOD Integration");
+    expect(snippet).toContain("## bmax");
   });
 
-  it("includes all four phases", () => {
+  it("includes all five phases", () => {
     const snippet = generateFullTierSnippet("Run");
-    expect(snippet).toContain("1. Analysis");
-    expect(snippet).toContain("2. Planning");
-    expect(snippet).toContain("3. Solutioning");
-    expect(snippet).toContain("4. Implementation");
+    expect(snippet).toContain("1. Research");
+    expect(snippet).toContain("2. Design");
+    expect(snippet).toContain("3. Architect");
+    expect(snippet).toContain("4. Build");
+    expect(snippet).toContain("5. Launch");
   });
 
   it("includes Phase 4 Ralph reference", () => {
@@ -36,19 +37,14 @@ describe("generateFullTierSnippet", () => {
     expect(snippet).toContain("Ralph autonomous loop");
   });
 
-  it("includes the bmalph-implement transition step", () => {
+  it("includes the bmax-implement transition step", () => {
     const snippet = generateFullTierSnippet("Run");
-    expect(snippet).toContain("bmalph-implement");
+    expect(snippet).toContain("bmax-implement");
   });
 
   it("references COMMANDS.md for command discovery", () => {
     const snippet = generateFullTierSnippet("Run");
     expect(snippet).toContain("_bmad/COMMANDS.md");
-  });
-
-  it("references lite workflow for PRD creation", () => {
-    const snippet = generateFullTierSnippet("Run");
-    expect(snippet).toContain("_bmad/lite/create-prd.md");
   });
 
   it("includes command reference section", () => {
@@ -59,17 +55,18 @@ describe("generateFullTierSnippet", () => {
 });
 
 describe("generateSkillsTierSnippet", () => {
-  it("includes the BMAD-METHOD Integration heading", () => {
+  it("includes the bmax heading", () => {
     const snippet = generateSkillsTierSnippet();
-    expect(snippet).toContain("## BMAD-METHOD Integration");
+    expect(snippet).toContain("## bmax");
   });
 
-  it("includes all four phases", () => {
+  it("includes all five phases", () => {
     const snippet = generateSkillsTierSnippet();
-    expect(snippet).toContain("1. Analysis");
-    expect(snippet).toContain("2. Planning");
-    expect(snippet).toContain("3. Solutioning");
-    expect(snippet).toContain("4. Implementation");
+    expect(snippet).toContain("1. Research");
+    expect(snippet).toContain("2. Design");
+    expect(snippet).toContain("3. Architect");
+    expect(snippet).toContain("4. Build");
+    expect(snippet).toContain("5. Launch");
   });
 
   it("includes Phase 4 Ralph reference", () => {
@@ -77,16 +74,16 @@ describe("generateSkillsTierSnippet", () => {
     expect(snippet).toContain("Ralph autonomous loop");
   });
 
-  it("includes the bmalph-implement transition step", () => {
+  it("includes the bmax-implement transition step", () => {
     const snippet = generateSkillsTierSnippet();
-    expect(snippet).toContain("bmalph-implement");
+    expect(snippet).toContain("bmax-implement");
   });
 
   it("references $command-name invocation syntax", () => {
     const snippet = generateSkillsTierSnippet();
     expect(snippet).toContain("$command-name");
     expect(snippet).toContain("$create-prd");
-    expect(snippet).toContain("$analyst");
+    expect(snippet).toContain("$researcher");
   });
 
   it("references COMMANDS.md as supplementary reference", () => {
@@ -99,11 +96,6 @@ describe("generateSkillsTierSnippet", () => {
     expect(snippet).toContain("Codex Skills");
   });
 
-  it("references lite workflow for PRD creation", () => {
-    const snippet = generateSkillsTierSnippet();
-    expect(snippet).toContain("_bmad/lite/create-prd.md");
-  });
-
   it("does not contain look-it-up-in-COMMANDS phrasing", () => {
     const snippet = generateSkillsTierSnippet();
     expect(snippet).not.toContain("look it up in");
@@ -111,23 +103,24 @@ describe("generateSkillsTierSnippet", () => {
 });
 
 describe("generateOpencodeSkillsTierSnippet", () => {
-  it("includes the BMAD-METHOD Integration heading", () => {
+  it("includes the bmax heading", () => {
     const snippet = generateOpencodeSkillsTierSnippet();
-    expect(snippet).toContain("## BMAD-METHOD Integration");
+    expect(snippet).toContain("## bmax");
   });
 
-  it("includes all four phases", () => {
+  it("includes all five phases", () => {
     const snippet = generateOpencodeSkillsTierSnippet();
-    expect(snippet).toContain("1. Analysis");
-    expect(snippet).toContain("2. Planning");
-    expect(snippet).toContain("3. Solutioning");
-    expect(snippet).toContain("4. Implementation");
+    expect(snippet).toContain("1. Research");
+    expect(snippet).toContain("2. Design");
+    expect(snippet).toContain("3. Architect");
+    expect(snippet).toContain("4. Build");
+    expect(snippet).toContain("5. Launch");
   });
 
   it("references native OpenCode skills without Codex dollar syntax", () => {
     const snippet = generateOpencodeSkillsTierSnippet();
     expect(snippet).toContain(".opencode/skills");
-    expect(snippet).toContain("bmad-analyst");
+    expect(snippet).toContain("bmad-researcher");
     expect(snippet).not.toContain("$command-name");
     expect(snippet).not.toContain("Codex Skills");
   });
@@ -139,9 +132,9 @@ describe("generateOpencodeSkillsTierSnippet", () => {
 });
 
 describe("generateInstructionsOnlySnippet", () => {
-  it("includes the BMAD-METHOD Integration heading", () => {
+  it("includes the bmax heading", () => {
     const snippet = generateInstructionsOnlySnippet();
-    expect(snippet).toContain("## BMAD-METHOD Integration");
+    expect(snippet).toContain("## bmax");
   });
 
   it("uses Ask as the verb", () => {
@@ -151,21 +144,21 @@ describe("generateInstructionsOnlySnippet", () => {
 
   it("includes phases 1 through 3 only", () => {
     const snippet = generateInstructionsOnlySnippet();
-    expect(snippet).toContain("1. Analysis");
-    expect(snippet).toContain("2. Planning");
-    expect(snippet).toContain("3. Solutioning");
-    expect(snippet).not.toContain("4. Implementation");
+    expect(snippet).toContain("1. Research");
+    expect(snippet).toContain("2. Design");
+    expect(snippet).toContain("3. Architect");
+    expect(snippet).not.toContain("4. Build");
   });
 
   it("does not mention Ralph or Phase 4 in workflow", () => {
     const snippet = generateInstructionsOnlySnippet();
     expect(snippet).not.toContain("Ralph autonomous loop");
-    expect(snippet).not.toContain("bmalph-implement");
+    expect(snippet).not.toContain("bmax-implement");
   });
 
   it("includes the unsupported platform note", () => {
     const snippet = generateInstructionsOnlySnippet();
-    expect(snippet).toContain("Ralph (Phase 4");
+    expect(snippet).toContain("Ralph (Phases 4-5");
     expect(snippet).toContain("not supported on this platform");
   });
 

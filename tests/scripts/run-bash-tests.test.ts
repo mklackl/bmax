@@ -55,11 +55,11 @@ if (!command.startsWith("bats ")) {
 const parsedArgs = Array.from(command.matchAll(/'([^']*)'|"([^"]*)"|(\\S+)/g), (match) => match[1] ?? match[2] ?? match[3]);
 parsedArgs.shift();
 
-if (process.env.BMALPH_BATS_LOG) {
-  appendFileSync(process.env.BMALPH_BATS_LOG, parsedArgs.join(" ") + "\\n");
+if (process.env.BMAX_BATS_LOG) {
+  appendFileSync(process.env.BMAX_BATS_LOG, parsedArgs.join(" ") + "\\n");
 }
 
-process.exit(Number(process.env.BMALPH_FAKE_BATS_EXIT_CODE ?? "0"));
+process.exit(Number(process.env.BMAX_FAKE_BATS_EXIT_CODE ?? "0"));
 `,
     "utf8"
   );
@@ -88,7 +88,7 @@ async function createFakeBats(binDir: string, exitCode: number): Promise<void> {
   if (process.platform === "win32") {
     await writeFile(
       filePath,
-      `@echo off\r\nif "%~1"=="--version" exit /b 0\r\nif not "%BMALPH_BATS_LOG%"=="" echo %*>>"%BMALPH_BATS_LOG%"\r\nexit /b ${exitCode}\r\n`,
+      `@echo off\r\nif "%~1"=="--version" exit /b 0\r\nif not "%BMAX_BATS_LOG%"=="" echo %*>>"%BMAX_BATS_LOG%"\r\nexit /b ${exitCode}\r\n`,
       "utf8"
     );
     return;
@@ -100,8 +100,8 @@ async function createFakeBats(binDir: string, exitCode: number): Promise<void> {
 if [ "$1" = "--version" ]; then
   exit 0
 fi
-if [ -n "$BMALPH_BATS_LOG" ]; then
-  echo "$*" >> "$BMALPH_BATS_LOG"
+if [ -n "$BMAX_BATS_LOG" ]; then
+  echo "$*" >> "$BMAX_BATS_LOG"
 fi
 exit ${exitCode}
 `,
@@ -167,7 +167,7 @@ describe("run-bash-tests script", () => {
   let batsLogPath: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-bash-tests-${Date.now()}`);
+    testDir = join(tmpdir(), `bmax-bash-tests-${Date.now()}`);
     fakeBinDir = join(testDir, "bin");
     batsLogPath = join(testDir, "bats.log");
 
@@ -214,8 +214,8 @@ describe("run-bash-tests script", () => {
 
     const result = await runScript(testDir, {
       ...process.env,
-      BMALPH_BATS_LOG: batsLogPath,
-      BMALPH_FAKE_BATS_EXIT_CODE: "17",
+      BMAX_BATS_LOG: batsLogPath,
+      BMAX_FAKE_BATS_EXIT_CODE: "17",
       PATH: fakeBinDir,
     });
 
@@ -248,8 +248,8 @@ describe("run-bash-tests script", () => {
 
     const result = await runScript(testDir, {
       ...process.env,
-      BMALPH_BATS_LOG: batsLogPath,
-      BMALPH_FAKE_BATS_EXIT_CODE: "23",
+      BMAX_BATS_LOG: batsLogPath,
+      BMAX_FAKE_BATS_EXIT_CODE: "23",
       PATH: fakeBinDir,
     });
 

@@ -68,7 +68,7 @@ driver_permission_denial_help() {
     echo ""
     echo "After updating $RALPHRC_FILE:"
     echo "  bash .ralph/ralph_loop.sh --reset-session  # Clear stale session state"
-    echo "  bmalph run                                 # Restart the loop"
+    echo "  bmax run                                 # Restart the loop"
 }
 
 # Build the CLI command arguments

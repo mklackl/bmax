@@ -15,7 +15,7 @@ describe("doctor-checks", () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `bmalph-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = join(tmpdir(), `bmax-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(testDir, { recursive: true });
   });
 
@@ -25,7 +25,7 @@ describe("doctor-checks", () => {
 
   describe("createInstructionsFileCheck", () => {
     it("passes when instructions file contains BMAD snippet", async () => {
-      await writeFile(join(testDir, "CONVENTIONS.md"), "## BMAD-METHOD Integration\n\nContent.");
+      await writeFile(join(testDir, "CONVENTIONS.md"), "## bmax\n\nContent.");
       const check = createInstructionsFileCheck(aiderPlatform);
       const result = await check.check(testDir);
       expect(result.passed).toBe(true);
@@ -101,7 +101,7 @@ describe("doctor-checks", () => {
 
     it("slash-command check passes when file exists", async () => {
       await mkdir(join(testDir, ".claude/commands"), { recursive: true });
-      await writeFile(join(testDir, ".claude/commands/bmalph.md"), "content");
+      await writeFile(join(testDir, ".claude/commands/bmax.md"), "content");
       const checks = buildPlatformDoctorChecks(claudeCodePlatform);
       const slashCheck = checks.find((c) => c.id === "slash-command")!;
       const result = await slashCheck.check(testDir);
@@ -125,9 +125,9 @@ describe("doctor-checks", () => {
     });
 
     it("skills check passes when skill directory exists", async () => {
-      await mkdir(join(testDir, ".agents/skills/bmad-analyst"), { recursive: true });
+      await mkdir(join(testDir, ".agents/skills/bmad-researcher"), { recursive: true });
       await writeFile(
-        join(testDir, ".agents/skills/bmad-analyst/SKILL.md"),
+        join(testDir, ".agents/skills/bmad-researcher/SKILL.md"),
         "---\nname: analyst\n---\nContent"
       );
       const checks = buildPlatformDoctorChecks(codexPlatform);
@@ -145,10 +145,10 @@ describe("doctor-checks", () => {
     });
 
     it("skills check uses the OpenCode skills root for opencode", async () => {
-      await mkdir(join(testDir, ".opencode/skills/bmad-analyst"), { recursive: true });
+      await mkdir(join(testDir, ".opencode/skills/bmad-researcher"), { recursive: true });
       await writeFile(
-        join(testDir, ".opencode/skills/bmad-analyst/SKILL.md"),
-        "---\nname: bmad-analyst\n---\nContent"
+        join(testDir, ".opencode/skills/bmad-researcher/SKILL.md"),
+        "---\nname: bmad-researcher\n---\nContent"
       );
       const checks = buildPlatformDoctorChecks(opencodePlatform);
       const skillsCheck = checks.find((c) => c.id === "skills")!;

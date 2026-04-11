@@ -293,7 +293,7 @@ describe("implement command", () => {
       await implementCommand({ projectDir: "/test/project" });
 
       const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-      expect(output).toContain("bmalph run");
+      expect(output).toContain("bmax run");
     });
 
     it("shows requires full-tier message for instructions-only platform", async () => {

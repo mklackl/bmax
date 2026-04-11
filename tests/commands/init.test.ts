@@ -50,8 +50,8 @@ vi.mock("../../src/platform/registry.js", () => ({
           : id === "opencode"
             ? { kind: "skills", dir: ".opencode/skills", frontmatterName: "directory" }
             : { kind: "index" },
-    instructionsSectionMarker: "## BMAD-METHOD Integration",
-    generateInstructionsSnippet: () => "## BMAD-METHOD Integration\n\nSnippet content",
+    instructionsSectionMarker: "## bmax",
+    generateInstructionsSnippet: () => "## bmax\n\nSnippet content",
     getDoctorChecks: () => [],
   })),
   getAllPlatforms: vi.fn(() => [
@@ -109,7 +109,7 @@ describe("init command", () => {
     await initCommand({ projectDir: process.cwd() });
 
     const output = consoleSpy.mock.calls.map((c) => c[0]).join("\n");
-    expect(output).toContain("bmalph upgrade");
+    expect(output).toContain("bmax upgrade");
   });
 
   it("installs and writes config with CLI options", async () => {
@@ -196,7 +196,7 @@ describe("init command", () => {
     vi.mocked(mergeInstructionsFile).mockResolvedValue(undefined);
     vi.mocked(writeConfig).mockResolvedValue(undefined);
     vi.mocked(previewInstall).mockResolvedValue({
-      wouldCreate: ["bmalph/state/", ".ralph/"],
+      wouldCreate: ["bmax/state/", ".ralph/"],
       wouldModify: [".gitignore"],
       wouldSkip: [],
     });
@@ -219,7 +219,7 @@ describe("init command", () => {
 
     vi.mocked(isInitialized).mockResolvedValue(false);
     vi.mocked(previewInstall).mockResolvedValue({
-      wouldCreate: ["bmalph/state/", ".ralph/specs/"],
+      wouldCreate: ["bmax/state/", ".ralph/specs/"],
       wouldModify: [".gitignore"],
       wouldSkip: [],
     });

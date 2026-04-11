@@ -48,9 +48,9 @@ export async function runStatus(options: StatusOptions): Promise<void> {
   const config = await readConfig(projectDir);
   if (!config) {
     if (await isInitialized(projectDir)) {
-      console.log(chalk.red("Config file is corrupted. Run: bmalph doctor"));
+      console.log(chalk.red("Config file is corrupted. Run: bmax doctor"));
     } else {
-      console.log(chalk.red("Project not initialized. Run: bmalph init"));
+      console.log(chalk.red("Project not initialized. Run: bmax init"));
     }
     return;
   }
@@ -91,7 +91,7 @@ export async function runStatus(options: StatusOptions): Promise<void> {
       ? artifactScan.nextAction
       : getNextAction(phase, status, ralphStatus, platform);
 
-  // Detect when Ralph completed but bmalph state hasn't caught up
+  // Detect when Ralph completed but bmax state hasn't caught up
   const completionMismatch =
     phase === 4 &&
     status === "implementing" &&
@@ -136,7 +136,7 @@ export async function runStatus(options: StatusOptions): Promise<void> {
   }
 
   // Human-readable output
-  console.log(chalk.bold("bmalph status\n"));
+  console.log(chalk.bold("bmax status\n"));
 
   const phaseLabel = phaseDetected
     ? `${phase} - ${phaseName} (detected from artifacts)`
@@ -217,16 +217,16 @@ function getNextAction(
     case 2:
       return getPlatformPrdHint(platform);
     case 3:
-      return "Run: bmalph implement";
+      return "Run: bmax implement";
     case 4:
       if (!ralphStatus || ralphStatus.status === "not_started") {
         if (platform.tier === "full") {
-          return "Start Ralph loop with: bmalph run";
+          return "Start Ralph loop with: bmax run";
         }
         return `Ralph requires a full-tier platform (${getFullTierPlatformNames()})`;
       }
       if (ralphStatus.status === "blocked") {
-        return "Review Ralph logs: bmalph doctor";
+        return "Review Ralph logs: bmax doctor";
       }
       if (ralphStatus.status === "running") {
         return "Ralph is running. Check logs in .ralph/logs/";

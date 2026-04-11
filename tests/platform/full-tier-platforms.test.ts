@@ -30,23 +30,23 @@ describe("full-tier experimental platforms", () => {
         expect(platform.instructionsFile).toBe(expectedFile);
       });
 
-      it("generateInstructionsSnippet contains BMAD-METHOD Integration", () => {
+      it("generateInstructionsSnippet contains bmax", () => {
         const snippet = platform.generateInstructionsSnippet();
-        expect(snippet).toContain("BMAD-METHOD Integration");
+        expect(snippet).toContain("bmax");
       });
 
       it("generateInstructionsSnippet references Phase 4 and Ralph", () => {
         const snippet = platform.generateInstructionsSnippet();
-        expect(snippet).toContain("4. Implementation");
+        expect(snippet).toContain("4. Build");
         expect(snippet).toContain("Ralph");
       });
 
       it("generateInstructionsSnippet does not contain slash command syntax", () => {
         const snippet = platform.generateInstructionsSnippet();
-        expect(snippet).not.toMatch(/\/bmalph\b/);
-        expect(snippet).not.toMatch(/\/analyst\b/);
+        expect(snippet).not.toMatch(/\/bmax\b/);
+        expect(snippet).not.toMatch(/\/researcher\b/);
         expect(snippet).not.toMatch(/\/architect\b/);
-        expect(snippet).not.toMatch(/\/pm\b/);
+        expect(snippet).not.toMatch(/\/product-designer\b/);
       });
 
       it("generateInstructionsSnippet does not say platform unsupported", () => {
@@ -65,7 +65,7 @@ describe("full-tier experimental platforms", () => {
     let testDir: string;
 
     beforeEach(async () => {
-      testDir = join(tmpdir(), `bmalph-full-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      testDir = join(tmpdir(), `bmax-full-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await mkdir(testDir, { recursive: true });
     });
 
@@ -81,7 +81,7 @@ describe("full-tier experimental platforms", () => {
       it(`${platform.displayName} check passes when instructions file has marker`, async () => {
         const filePath = join(testDir, expectedFile);
         await mkdir(join(filePath, ".."), { recursive: true });
-        await writeFile(filePath, "## BMAD-METHOD Integration\nContent here");
+        await writeFile(filePath, "## bmax\nContent here");
         const checks = platform.getDoctorChecks();
         const instrCheck = checks.find((c) => c.id === "instructions-file")!;
         const result = await instrCheck.check(testDir);
@@ -105,7 +105,7 @@ describe("full-tier experimental platforms", () => {
       expect(snippet.startsWith("---\n")).toBe(true);
       expect(snippet).toContain("description:");
       expect(snippet).toContain("alwaysApply: true");
-      expect(snippet).toContain("## BMAD-METHOD Integration");
+      expect(snippet).toContain("## bmax");
     });
   });
 });

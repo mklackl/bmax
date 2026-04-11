@@ -38,7 +38,7 @@ const mockClaudeCodePlatform: Platform = {
   tier: "full",
   instructionsFile: "CLAUDE.md",
   commandDelivery: { kind: "directory", dir: ".claude/commands" },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => "",
   getDoctorChecks: () => [],
 };
@@ -53,7 +53,7 @@ const mockCodexPlatform: Platform = {
     dir: ".agents/skills",
     frontmatterName: "command",
   },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => "",
   getDoctorChecks: () => [],
 };
@@ -71,7 +71,7 @@ describe("reset", () => {
     it("identifies existing directories for deletion", async () => {
       existsMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
-        return p.endsWith("/_bmad") || p.endsWith("/.ralph") || p.endsWith("/bmalph");
+        return p.endsWith("/_bmad") || p.endsWith("/.ralph") || p.endsWith("/bmax");
       });
       readdirMock.mockResolvedValue([]);
       readFileMock.mockRejectedValue(enoent());
@@ -81,7 +81,7 @@ describe("reset", () => {
 
       expect(plan.directories).toContain("_bmad");
       expect(plan.directories).toContain(".ralph");
-      expect(plan.directories).toContain("bmalph");
+      expect(plan.directories).toContain("bmax");
     });
 
     it("skips non-existent directories", async () => {
@@ -102,8 +102,8 @@ describe("reset", () => {
       });
       readdirMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
-        if (p.includes("slash-commands")) return ["bmalph.md", "analyst.md"];
-        if (p.includes(".claude/commands")) return ["bmalph.md", "analyst.md"];
+        if (p.includes("slash-commands")) return ["bmax.md", "researcher.md"];
+        if (p.includes(".claude/commands")) return ["bmax.md", "researcher.md"];
         return [];
       });
       readFileMock.mockRejectedValue(enoent());
@@ -111,8 +111,8 @@ describe("reset", () => {
       const { buildResetPlan } = await import("../src/reset.js");
       const plan = await buildResetPlan("/project", mockClaudeCodePlatform);
 
-      expect(plan.commandFiles).toContain(".claude/commands/bmalph.md");
-      expect(plan.commandFiles).toContain(".claude/commands/analyst.md");
+      expect(plan.commandFiles).toContain(".claude/commands/bmax.md");
+      expect(plan.commandFiles).toContain(".claude/commands/researcher.md");
     });
 
     it("preserves user-created commands", async () => {
@@ -122,8 +122,8 @@ describe("reset", () => {
       });
       readdirMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
-        if (p.includes("slash-commands")) return ["bmalph.md"];
-        if (p.includes(".claude/commands")) return ["bmalph.md", "my-custom.md"];
+        if (p.includes("slash-commands")) return ["bmax.md"];
+        if (p.includes(".claude/commands")) return ["bmax.md", "my-custom.md"];
         return [];
       });
       readFileMock.mockRejectedValue(enoent());
@@ -131,7 +131,7 @@ describe("reset", () => {
       const { buildResetPlan } = await import("../src/reset.js");
       const plan = await buildResetPlan("/project", mockClaudeCodePlatform);
 
-      expect(plan.commandFiles).toContain(".claude/commands/bmalph.md");
+      expect(plan.commandFiles).toContain(".claude/commands/bmax.md");
       expect(plan.commandFiles).not.toContain(".claude/commands/my-custom.md");
     });
 
@@ -141,7 +141,7 @@ describe("reset", () => {
       readFileMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
         if (p.endsWith("/CLAUDE.md")) {
-          return "# Project\n\n## BMAD-METHOD Integration\n\nContent\n";
+          return "# Project\n\n## bmax\n\nContent\n";
         }
         throw enoent();
       });
@@ -151,7 +151,7 @@ describe("reset", () => {
 
       expect(plan.instructionsCleanup).not.toBeNull();
       expect(plan.instructionsCleanup!.path).toBe("CLAUDE.md");
-      expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## BMAD-METHOD Integration");
+      expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## bmax");
     });
 
     it("detects BMAD section for index platforms", async () => {
@@ -160,7 +160,7 @@ describe("reset", () => {
       readFileMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
         if (p.endsWith("/AGENTS.md")) {
-          return "# Agents\n\n## BMAD-METHOD Integration\n\nContent\n";
+          return "# Agents\n\n## bmax\n\nContent\n";
         }
         throw enoent();
       });
@@ -169,7 +169,7 @@ describe("reset", () => {
       const plan = await buildResetPlan("/project", mockCodexPlatform);
 
       expect(plan.instructionsCleanup).not.toBeNull();
-      expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## BMAD-METHOD Integration");
+      expect(plan.instructionsCleanup!.sectionsToRemove).toContain("## bmax");
     });
 
     it("detects gitignore entries to remove", async () => {
@@ -210,7 +210,7 @@ describe("reset", () => {
       readdirMock.mockImplementation(async (path: string) => {
         const p = path.replace(/\\/g, "/");
         if (p.includes(".agents/skills")) {
-          return ["bmad-analyst", "bmad-create-prd", "my-custom-skill"];
+          return ["bmad-researcher", "bmad-create-prd", "my-custom-skill"];
         }
         return [];
       });
@@ -219,7 +219,7 @@ describe("reset", () => {
       const { buildResetPlan } = await import("../src/reset.js");
       const plan = await buildResetPlan("/project", mockCodexPlatform);
 
-      expect(plan.commandFiles).toContain(".agents/skills/bmad-analyst");
+      expect(plan.commandFiles).toContain(".agents/skills/bmad-researcher");
       expect(plan.commandFiles).toContain(".agents/skills/bmad-create-prd");
       expect(plan.commandFiles).not.toContain(".agents/skills/my-custom-skill");
     });
@@ -269,7 +269,7 @@ describe("reset", () => {
 
       const { executeResetPlan } = await import("../src/reset.js");
       const plan: ResetPlan = {
-        directories: ["_bmad", ".ralph", "bmalph"],
+        directories: ["_bmad", ".ralph", "bmax"],
         commandFiles: [],
         instructionsCleanup: null,
         gitignoreLines: [],
@@ -286,7 +286,7 @@ describe("reset", () => {
         recursive: true,
         force: true,
       });
-      expect(rmMock).toHaveBeenCalledWith(expect.stringMatching(/[/\\]bmalph$/), {
+      expect(rmMock).toHaveBeenCalledWith(expect.stringMatching(/[/\\]bmax$/), {
         recursive: true,
         force: true,
       });
@@ -298,7 +298,7 @@ describe("reset", () => {
       const { executeResetPlan } = await import("../src/reset.js");
       const plan: ResetPlan = {
         directories: [],
-        commandFiles: [".claude/commands/bmalph.md", ".claude/commands/analyst.md"],
+        commandFiles: [".claude/commands/bmax.md", ".claude/commands/researcher.md"],
         instructionsCleanup: null,
         gitignoreLines: [],
         warnings: [],
@@ -307,11 +307,11 @@ describe("reset", () => {
       await executeResetPlan("/project", plan);
 
       expect(rmMock).toHaveBeenCalledWith(
-        expect.stringMatching(/[/\\]\.claude[/\\]commands[/\\]bmalph\.md$/),
+        expect.stringMatching(/[/\\]\.claude[/\\]commands[/\\]bmax\.md$/),
         { recursive: true, force: true }
       );
       expect(rmMock).toHaveBeenCalledWith(
-        expect.stringMatching(/[/\\]\.claude[/\\]commands[/\\]analyst\.md$/),
+        expect.stringMatching(/[/\\]\.claude[/\\]commands[/\\]researcher\.md$/),
         { recursive: true, force: true }
       );
     });
@@ -319,7 +319,7 @@ describe("reset", () => {
     it("removes sections from instructions file", async () => {
       rmMock.mockResolvedValue(undefined);
       readFileMock.mockResolvedValue(
-        "# My Project\n\nUser content.\n\n## BMAD-METHOD Integration\n\nBMAD stuff\n\n## Other Section\n\nMore content\n"
+        "# My Project\n\nUser content.\n\n## bmax\n\nBMAD stuff\n\n## Other Section\n\nMore content\n"
       );
       atomicWriteFileMock.mockResolvedValue(undefined);
 
@@ -329,7 +329,7 @@ describe("reset", () => {
         commandFiles: [],
         instructionsCleanup: {
           path: "CLAUDE.md",
-          sectionsToRemove: ["## BMAD-METHOD Integration"],
+          sectionsToRemove: ["## bmax"],
         },
         gitignoreLines: [],
         warnings: [],
@@ -342,13 +342,13 @@ describe("reset", () => {
         expect.stringContaining("# My Project")
       );
       const writtenContent = atomicWriteFileMock.mock.calls[0][1] as string;
-      expect(writtenContent).not.toContain("BMAD-METHOD Integration");
+      expect(writtenContent).not.toContain("bmax");
       expect(writtenContent).toContain("## Other Section");
     });
 
     it("deletes empty instructions file after section removal", async () => {
       rmMock.mockResolvedValue(undefined);
-      readFileMock.mockResolvedValue("## BMAD-METHOD Integration\n\nOnly BMAD content here\n");
+      readFileMock.mockResolvedValue("## bmax\n\nOnly BMAD content here\n");
       atomicWriteFileMock.mockResolvedValue(undefined);
 
       const { executeResetPlan } = await import("../src/reset.js");
@@ -357,7 +357,7 @@ describe("reset", () => {
         commandFiles: [],
         instructionsCleanup: {
           path: "CLAUDE.md",
-          sectionsToRemove: ["## BMAD-METHOD Integration"],
+          sectionsToRemove: ["## bmax"],
         },
         gitignoreLines: [],
         warnings: [],
@@ -403,10 +403,10 @@ describe("reset", () => {
       const { executeResetPlan } = await import("../src/reset.js");
       const plan: ResetPlan = {
         directories: ["_bmad"],
-        commandFiles: [".claude/commands/bmalph.md"],
+        commandFiles: [".claude/commands/bmax.md"],
         instructionsCleanup: {
           path: "CLAUDE.md",
-          sectionsToRemove: ["## BMAD-METHOD Integration"],
+          sectionsToRemove: ["## bmax"],
         },
         gitignoreLines: [".ralph/logs/"],
         warnings: [],
@@ -438,7 +438,7 @@ describe("reset", () => {
       const { planToDryRunActions } = await import("../src/reset.js");
       const plan: ResetPlan = {
         directories: [],
-        commandFiles: [".claude/commands/bmalph.md"],
+        commandFiles: [".claude/commands/bmax.md"],
         instructionsCleanup: null,
         gitignoreLines: [],
         warnings: [],
@@ -446,7 +446,7 @@ describe("reset", () => {
 
       const actions = planToDryRunActions(plan);
 
-      expect(actions).toContainEqual({ type: "delete", path: ".claude/commands/bmalph.md" });
+      expect(actions).toContainEqual({ type: "delete", path: ".claude/commands/bmax.md" });
     });
 
     it("converts instructions cleanup to modify action", async () => {
@@ -456,7 +456,7 @@ describe("reset", () => {
         commandFiles: [],
         instructionsCleanup: {
           path: "CLAUDE.md",
-          sectionsToRemove: ["## BMAD-METHOD Integration"],
+          sectionsToRemove: ["## bmax"],
         },
         gitignoreLines: [],
         warnings: [],

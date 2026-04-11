@@ -11,7 +11,7 @@ export interface TestProject {
 /**
  * Create a unique temporary directory for testing
  */
-export async function createTestProject(prefix = "bmalph-e2e"): Promise<TestProject> {
+export async function createTestProject(prefix = "bmax-e2e"): Promise<TestProject> {
   const path = join(tmpdir(), `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   await mkdir(path, { recursive: true });
   initGitRepo(path);
@@ -40,8 +40,8 @@ export async function createTestProject(prefix = "bmalph-e2e"): Promise<TestProj
 
 function initGitRepo(cwd: string): void {
   execFileSync("git", ["init", "--quiet"], { cwd, stdio: "ignore" });
-  execFileSync("git", ["config", "user.email", "test@bmalph.dev"], { cwd, stdio: "ignore" });
-  execFileSync("git", ["config", "user.name", "bmalph-test"], { cwd, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@bmax.dev"], { cwd, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "bmax-test"], { cwd, stdio: "ignore" });
   execFileSync("git", ["commit", "--quiet", "--allow-empty", "-m", "initial"], {
     cwd,
     stdio: "ignore",

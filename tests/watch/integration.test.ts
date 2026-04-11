@@ -20,7 +20,7 @@ import { readDashboardState } from "../../src/watch/state-reader.js";
 import { renderDashboard } from "../../src/watch/renderer.js";
 
 function makeTmpDir(): string {
-  return join(tmpdir(), `bmalph-watch-int-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  return join(tmpdir(), `bmax-watch-int-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 }
 
 async function writeJson(path: string, data: unknown): Promise<void> {

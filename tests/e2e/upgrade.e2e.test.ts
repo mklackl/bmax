@@ -4,13 +4,13 @@ import { join } from "node:path";
 import { runInit, runUpgrade, runUpgradeDryRun } from "./helpers/cli-runner.js";
 import { createTestProject, type TestProject } from "./helpers/project-scaffold.js";
 import {
-  expectBmalphInitialized,
+  expectBmaxInitialized,
   expectFileExists,
   expectFileContains,
   expectValidJson,
 } from "./helpers/assertions.js";
 
-describe("bmalph upgrade e2e", { timeout: 60000 }, () => {
+describe("bmax upgrade e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -28,24 +28,24 @@ describe("bmalph upgrade e2e", { timeout: 60000 }, () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Upgrade complete");
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
-  it("upgrade preserves bmalph/config.json", async () => {
+  it("upgrade preserves bmax/config.json", async () => {
     project = await createTestProject();
 
     await runInit(project.path, "preserved-name", "preserved-desc");
 
     // Verify config exists with our values
     const configBefore = (await expectValidJson(
-      join(project.path, "bmalph/config.json")
+      join(project.path, "bmax/config.json")
     )) as Record<string, unknown>;
     expect(configBefore.name).toBe("preserved-name");
 
     await runUpgrade(project.path);
 
     // Config should still have original values
-    const configAfter = (await expectValidJson(join(project.path, "bmalph/config.json"))) as Record<
+    const configAfter = (await expectValidJson(join(project.path, "bmax/config.json"))) as Record<
       string,
       unknown
     >;
@@ -116,7 +116,7 @@ describe("bmalph upgrade e2e", { timeout: 60000 }, () => {
     await runInit(project.path);
     await runUpgrade(project.path);
 
-    await expectFileContains(join(project.path, ".ralph/ralph_loop.sh"), "# bmalph-version:");
+    await expectFileContains(join(project.path, ".ralph/ralph_loop.sh"), "# bmax-version:");
   });
 
   it("upgrade refreshes BMAD agents", async () => {
@@ -127,8 +127,8 @@ describe("bmalph upgrade e2e", { timeout: 60000 }, () => {
     // Verify agent files exist after upgrade
     await runUpgrade(project.path);
 
-    await expectFileExists(join(project.path, "_bmad/bmm/agents/analyst.agent.yaml"));
-    await expectFileExists(join(project.path, "_bmad/bmm/agents/pm.agent.yaml"));
+    await expectFileExists(join(project.path, "_bmad/bmm/agents/researcher.agent.yaml"));
+    await expectFileExists(join(project.path, "_bmad/bmm/agents/product-designer.agent.yaml"));
     await expectFileExists(join(project.path, "_bmad/bmm/agents/architect.agent.yaml"));
   });
 
@@ -151,6 +151,6 @@ describe("bmalph upgrade e2e", { timeout: 60000 }, () => {
     expect(afterMultiple).toBe(userContent);
 
     // Project should still be valid
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 });

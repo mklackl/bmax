@@ -61,9 +61,9 @@ export async function installRalphAssets(
 
   // Copy Ralph loop and lib → .ralph/
   const loopContent = await readFile(join(ralphDir, "ralph_loop.sh"), "utf-8");
-  const markerLine = `# bmalph-version: ${packageVersion}`;
-  const markedContent = loopContent.includes("# bmalph-version:")
-    ? loopContent.replace(/# bmalph-version:.*/, markerLine)
+  const markerLine = `# bmax-version: ${packageVersion}`;
+  const markedContent = loopContent.includes("# bmax-version:")
+    ? loopContent.replace(/# bmax-version:.*/, markerLine)
     : loopContent.replace(/^(#!.+\r?\n)/, `$1${markerLine}\n`);
   await atomicWriteFile(join(projectDir, ".ralph/ralph_loop.sh"), markedContent);
   await chmod(join(projectDir, ".ralph/ralph_loop.sh"), 0o755);

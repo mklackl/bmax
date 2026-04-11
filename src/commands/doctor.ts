@@ -92,7 +92,7 @@ export async function runDoctor(
     return { passed, failed };
   }
 
-  console.log(chalk.bold("bmalph doctor\n"));
+  console.log(chalk.bold("bmax doctor\n"));
 
   for (const r of results) {
     const icon = r.passed ? chalk.green("\u2713") : chalk.red("\u2717");

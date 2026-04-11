@@ -24,7 +24,7 @@ vi.mock("../../src/utils/errors.js", () => ({
 }));
 
 vi.mock("../../src/utils/constants.js", () => ({
-  CONFIG_FILE: "bmalph/config.json",
+  CONFIG_FILE: "bmax/config.json",
 }));
 
 vi.mock("../../src/run/ralph-process.js", () => ({
@@ -252,7 +252,7 @@ describe("checkDir", () => {
     const result = await checkDir(
       "/projects/webapp/_bmad",
       "directory present",
-      "Run: bmalph init"
+      "Run: bmax init"
     );
 
     expect(result.detail).toBe("not found");
@@ -264,10 +264,10 @@ describe("checkDir", () => {
     const result = await checkDir(
       "/projects/webapp/_bmad",
       "directory present",
-      "Run: bmalph init"
+      "Run: bmax init"
     );
 
-    expect(result.hint).toBe("Run: bmalph init");
+    expect(result.hint).toBe("Run: bmax init");
   });
 
   it("reports the error message for non-ENOENT errors", async () => {
@@ -276,7 +276,7 @@ describe("checkDir", () => {
     const result = await checkDir(
       "/projects/webapp/_bmad",
       "directory present",
-      "Run: bmalph init"
+      "Run: bmax init"
     );
 
     expect(result.detail).toContain("error:");
@@ -304,12 +304,12 @@ describe("checkBmadDir", () => {
     expect(result.passed).toBe(false);
   });
 
-  it("has hint directing to bmalph init", async () => {
+  it("has hint directing to bmax init", async () => {
     mockStat.mockRejectedValue(enoentError());
 
     const result = await checkBmadDir("/projects/webapp");
 
-    expect(result.hint).toBe("Run: bmalph init");
+    expect(result.hint).toBe("Run: bmax init");
   });
 });
 
@@ -338,12 +338,12 @@ describe("checkRalphLoop", () => {
     expect(result.passed).toBe(false);
   });
 
-  it("suggests running bmalph upgrade when missing", async () => {
+  it("suggests running bmax upgrade when missing", async () => {
     mockReadFile.mockRejectedValue(enoentError());
 
     const result = await checkRalphLoop("/projects/webapp");
 
-    expect(result.hint).toBe("Run: bmalph upgrade");
+    expect(result.hint).toBe("Run: bmax upgrade");
   });
 });
 
@@ -409,7 +409,7 @@ describe("checkFileHasContent", () => {
     const result = await checkFileHasContent(
       "/projects/webapp/.ralph/ralph_loop.sh",
       "script present",
-      "Run: bmalph upgrade"
+      "Run: bmax upgrade"
     );
 
     expect(result.detail).toBe("not found");
@@ -421,10 +421,10 @@ describe("checkFileHasContent", () => {
     const result = await checkFileHasContent(
       "/projects/webapp/.ralph/ralph_loop.sh",
       "script present",
-      "Run: bmalph upgrade"
+      "Run: bmax upgrade"
     );
 
-    expect(result.hint).toBe("Run: bmalph upgrade");
+    expect(result.hint).toBe("Run: bmax upgrade");
   });
 
   it("reports error detail for non-ENOENT errors", async () => {
@@ -472,11 +472,11 @@ describe("checkConfig", () => {
 
     const result = await checkConfig("/projects/webapp");
 
-    expect(result.hint).toBe("Run: bmalph init");
+    expect(result.hint).toBe("Run: bmax init");
   });
 
   it("fails when config file contains invalid JSON", async () => {
-    mockReadJsonFile.mockRejectedValue(new Error("Invalid JSON in bmalph/config.json"));
+    mockReadJsonFile.mockRejectedValue(new Error("Invalid JSON in bmax/config.json"));
 
     const result = await checkConfig("/projects/webapp");
 
@@ -484,11 +484,11 @@ describe("checkConfig", () => {
   });
 
   it("includes the parse error message in detail", async () => {
-    mockReadJsonFile.mockRejectedValue(new Error("Invalid JSON in bmalph/config.json"));
+    mockReadJsonFile.mockRejectedValue(new Error("Invalid JSON in bmax/config.json"));
 
     const result = await checkConfig("/projects/webapp");
 
-    expect(result.detail).toBe("Invalid JSON in bmalph/config.json");
+    expect(result.detail).toBe("Invalid JSON in bmax/config.json");
   });
 });
 

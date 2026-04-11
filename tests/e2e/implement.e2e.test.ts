@@ -135,7 +135,7 @@ const BMAD_NATIVE_PRD = `# Product Requirements Document
 - Out of scope: billing and subscription management
 `;
 
-describe("bmalph implement CLI", { timeout: 60000 }, () => {
+describe("bmax implement CLI", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -175,7 +175,7 @@ describe("bmalph implement CLI", { timeout: 60000 }, () => {
     const result = await runImplement(project.path);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("bmalph run");
+    expect(result.stdout).toContain("bmax run");
   });
 
   it("succeeds with --force when readiness report says NO-GO", async () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { runCli } from "./helpers/cli-runner.js";
 
-describe("bmalph check-updates e2e", { timeout: 60000 }, () => {
+describe("bmax check-updates e2e", { timeout: 60000 }, () => {
   it("check-updates --json outputs valid JSON", async () => {
     const result = await runCli(["check-updates", "--json"]);
 

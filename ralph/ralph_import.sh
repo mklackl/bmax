@@ -4,7 +4,7 @@
 # Version: 0.9.8 - Modern CLI support with JSON output parsing
 #
 # DEPRECATED: This script is from standalone Ralph and references `ralph-setup`
-# which does not exist in bmalph. Use `bmalph implement` for PRD-to-Ralph
+# which does not exist in bmax. Use `bmax implement` for PRD-to-Ralph
 # transition instead. This file is bundled for backward compatibility only.
 set -e
 
@@ -279,7 +279,7 @@ Supported formats:
     - Any text-based format
 
 This legacy helper is kept for standalone Ralph compatibility.
-If you are using bmalph, use `bmalph implement` instead.
+If you are using bmax, use `bmax implement` instead.
 
 The command will:
 1. Create a new Ralph project
@@ -294,8 +294,8 @@ HELPEOF
 # Check dependencies
 check_dependencies() {
     if ! command -v ralph-setup &> /dev/null; then
-        log "WARN" "ralph-setup not found. If using bmalph, run 'bmalph init' instead."
-        log "WARN" "This script is deprecated — use 'bmalph implement' for PRD conversion."
+        log "WARN" "ralph-setup not found. If using bmax, run 'bmax init' instead."
+        log "WARN" "This script is deprecated — use 'bmax implement' for PRD conversion."
         return 1
     fi
 
@@ -653,7 +653,7 @@ main() {
     echo "     - .ralph/specs/requirements.md (technical specs)"
     echo "  2. Start autonomous development:"
     echo "     ralph --monitor   # standalone Ralph"
-    echo "     bmalph run       # bmalph-managed projects"
+    echo "     bmax run       # bmax-managed projects"
     echo ""
     echo "Project created in: $(pwd)"
 }

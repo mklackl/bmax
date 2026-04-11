@@ -206,9 +206,9 @@ Only `opencode` implements this (queries `opencode session list --format json`).
 
 ## Conventional Metadata Hooks
 
-Present in every driver but NOT called by `ralph_loop.sh`. Consumed by bmalph's TypeScript
+Present in every driver but NOT called by `ralph_loop.sh`. Consumed by bmax's TypeScript
 doctor/preflight checks in `src/platform/`. A new driver should implement these for
-`bmalph doctor` compatibility.
+`bmax doctor` compatibility.
 
 ### `driver_min_version()`
 
@@ -372,7 +372,7 @@ driver_permission_denial_help() {
 }
 
 # ---------------------------------------------------------------------------
-# Metadata hooks (2) -- used by bmalph doctor, not called by ralph_loop.sh
+# Metadata hooks (2) -- used by bmax doctor, not called by ralph_loop.sh
 # ---------------------------------------------------------------------------
 
 # Minimum required CLI version (semver).
@@ -395,8 +395,8 @@ driver_check_available() {
       (`prompt_file`, `loop_context`, `session_id`)
 - [ ] `driver_check_available` returns `0` only when the CLI is installed
 - [ ] File named `${platform_id}.sh` matching the `PLATFORM_DRIVER` value in `.ralphrc`
-- [ ] Register corresponding platform definition in `src/platform/` for bmalph CLI integration
-- [ ] Tested with `bmalph doctor`
+- [ ] Register corresponding platform definition in `src/platform/` for bmax CLI integration
+- [ ] Tested with `bmax doctor`
 
 ---
 

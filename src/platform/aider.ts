@@ -8,7 +8,7 @@ export const aiderPlatform: Platform = {
   tier: "instructions-only",
   instructionsFile: "CONVENTIONS.md",
   commandDelivery: { kind: "index" },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: generateInstructionsOnlySnippet,
   getDoctorChecks() {
     return buildPlatformDoctorChecks(this);

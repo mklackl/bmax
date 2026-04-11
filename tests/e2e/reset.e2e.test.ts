@@ -8,7 +8,7 @@ import {
   type TestProject,
 } from "./helpers/project-scaffold.js";
 import {
-  expectBmalphInitialized,
+  expectBmaxInitialized,
   expectFileExists,
   expectFileNotExists,
   expectFileContains,
@@ -16,7 +16,7 @@ import {
   expectDirectoryExists,
 } from "./helpers/assertions.js";
 
-describe("bmalph reset e2e", { timeout: 60000 }, () => {
+describe("bmax reset e2e", { timeout: 60000 }, () => {
   let project: TestProject | null = null;
 
   afterEach(async () => {
@@ -26,28 +26,28 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
     }
   });
 
-  it("reset removes all bmalph directories after init", async () => {
+  it("reset removes all bmax directories after init", async () => {
     project = await createTestProject();
 
     await runInit(project.path);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
 
     const result = await runReset(project.path);
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Reset complete");
 
-    // All bmalph directories should be gone
+    // All bmax directories should be gone
     await expectFileNotExists(join(project.path, "_bmad"));
     await expectFileNotExists(join(project.path, ".ralph"));
-    await expectFileNotExists(join(project.path, "bmalph"));
+    await expectFileNotExists(join(project.path, "bmax"));
   });
 
   it("reset removes slash commands but preserves user commands", async () => {
     project = await createTestProject();
 
     await runInit(project.path);
-    await expectFileExists(join(project.path, ".claude/commands/bmalph.md"));
+    await expectFileExists(join(project.path, ".claude/commands/bmax.md"));
 
     // Create a user command
     await writeFile(
@@ -58,8 +58,8 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
     await runReset(project.path);
 
     // Bundled commands should be gone
-    await expectFileNotExists(join(project.path, ".claude/commands/bmalph.md"));
-    await expectFileNotExists(join(project.path, ".claude/commands/bmalph-implement.md"));
+    await expectFileNotExists(join(project.path, ".claude/commands/bmax.md"));
+    await expectFileNotExists(join(project.path, ".claude/commands/bmax-implement.md"));
 
     // User command should be preserved
     await expectFileExists(join(project.path, ".claude/commands/my-custom.md"));
@@ -92,7 +92,7 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
     // Init
     const initResult = await runInit(project.path);
     expect(initResult.exitCode).toBe(0);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
 
     // Reset
     const resetResult = await runReset(project.path);
@@ -101,7 +101,7 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
     // Init again
     const reinitResult = await runInit(project.path);
     expect(reinitResult.exitCode).toBe(0);
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("reset --dry-run shows preview without removing files", async () => {
@@ -115,7 +115,7 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
     expect(result.stdout).toContain("[dry-run]");
 
     // Files should still exist
-    await expectBmalphInitialized(project.path);
+    await expectBmaxInitialized(project.path);
   });
 
   it("reset on non-initialized project shows appropriate message", async () => {
@@ -134,14 +134,14 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
     await runInit(project.path);
 
     // Verify BMAD section was added
-    await expectFileContains(join(project.path, "CLAUDE.md"), "BMAD-METHOD Integration");
+    await expectFileContains(join(project.path, "CLAUDE.md"), "bmax");
 
     await runReset(project.path);
 
     // CLAUDE.md should still exist but without BMAD section
     await expectFileExists(join(project.path, "CLAUDE.md"));
     await expectFileContains(join(project.path, "CLAUDE.md"), "My Project");
-    await expectFileNotContains(join(project.path, "CLAUDE.md"), "BMAD-METHOD Integration");
+    await expectFileNotContains(join(project.path, "CLAUDE.md"), "bmax");
   });
 
   it("reset deletes instructions file if it only contained BMAD content", async () => {
@@ -166,13 +166,13 @@ describe("bmalph reset e2e", { timeout: 60000 }, () => {
 
     await runInit(project.path);
 
-    // Verify bmalph entries were added
+    // Verify bmax entries were added
     await expectFileContains(join(project.path, ".gitignore"), ".ralph/logs/");
     await expectFileContains(join(project.path, ".gitignore"), "_bmad-output/");
 
     await runReset(project.path);
 
-    // bmalph entries should be gone, user entries preserved
+    // bmax entries should be gone, user entries preserved
     const gitignore = await readFile(join(project.path, ".gitignore"), "utf-8");
     expect(gitignore).toContain("node_modules/");
     expect(gitignore).toContain(".env");

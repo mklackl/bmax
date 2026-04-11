@@ -49,7 +49,7 @@ export async function checkCircuitBreaker(projectDir: string): Promise<CheckResu
     label,
     passed: false,
     detail,
-    hint: "Ralph detected stagnation. Review logs with: bmalph status",
+    hint: "Ralph detected stagnation. Review logs with: bmax status",
   };
 }
 

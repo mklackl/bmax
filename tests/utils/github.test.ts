@@ -64,7 +64,7 @@ describe("github utilities", () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             Accept: "application/vnd.github.v3+json",
-            "User-Agent": "bmalph-cli",
+            "User-Agent": "bmax-cli",
           }),
         })
       );

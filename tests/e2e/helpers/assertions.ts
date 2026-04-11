@@ -51,26 +51,26 @@ export async function expectValidJson(path: string): Promise<unknown> {
 }
 
 /**
- * Composite check: assert that bmalph is properly initialized in a directory
+ * Composite check: assert that bmax is properly initialized in a directory
  */
-export async function expectBmalphInitialized(projectPath: string): Promise<void> {
+export async function expectBmaxInitialized(projectPath: string): Promise<void> {
   // Core directories
   await expectDirectoryExists(join(projectPath, "_bmad"));
   await expectDirectoryExists(join(projectPath, ".ralph"));
-  await expectDirectoryExists(join(projectPath, "bmalph"));
+  await expectDirectoryExists(join(projectPath, "bmax"));
   await expectDirectoryExists(join(projectPath, ".claude/commands"));
 
   // Key files
-  await expectFileExists(join(projectPath, "bmalph/config.json"));
+  await expectFileExists(join(projectPath, "bmax/config.json"));
   await expectFileExists(join(projectPath, ".ralph/ralph_loop.sh"));
-  await expectFileExists(join(projectPath, ".claude/commands/bmalph.md"));
+  await expectFileExists(join(projectPath, ".claude/commands/bmax.md"));
   await expectFileExists(join(projectPath, "CLAUDE.md"));
 
   // CLAUDE.md contains BMAD snippet
   await expectFileContains(join(projectPath, "CLAUDE.md"), "BMAD-METHOD");
 
   // Config is valid JSON
-  await expectValidJson(join(projectPath, "bmalph/config.json"));
+  await expectValidJson(join(projectPath, "bmax/config.json"));
 }
 
 /**
@@ -115,23 +115,23 @@ export interface PlatformAssertionConfig {
 }
 
 /**
- * Composite check: assert that bmalph is properly initialized for a specific platform
+ * Composite check: assert that bmax is properly initialized for a specific platform
  */
-export async function expectBmalphInitializedForPlatform(
+export async function expectBmaxInitializedForPlatform(
   projectPath: string,
   platform: PlatformAssertionConfig
 ): Promise<void> {
   // Core directories (all platforms)
   await expectDirectoryExists(join(projectPath, "_bmad"));
   await expectDirectoryExists(join(projectPath, ".ralph"));
-  await expectDirectoryExists(join(projectPath, "bmalph"));
+  await expectDirectoryExists(join(projectPath, "bmax"));
 
   // Key files (all platforms)
-  await expectFileExists(join(projectPath, "bmalph/config.json"));
+  await expectFileExists(join(projectPath, "bmax/config.json"));
   await expectFileExists(join(projectPath, ".ralph/ralph_loop.sh"));
 
   // Config has correct platform
-  const config = (await expectValidJson(join(projectPath, "bmalph/config.json"))) as Record<
+  const config = (await expectValidJson(join(projectPath, "bmax/config.json"))) as Record<
     string,
     unknown
   >;
@@ -144,7 +144,7 @@ export async function expectBmalphInitializedForPlatform(
   // Command delivery structure
   if (platform.commandDelivery === "directory") {
     await expectDirectoryExists(join(projectPath, ".claude/commands"));
-    await expectFileExists(join(projectPath, ".claude/commands/bmalph.md"));
+    await expectFileExists(join(projectPath, ".claude/commands/bmax.md"));
   } else {
     await expectFileNotExists(join(projectPath, ".claude/commands"));
   }
@@ -152,8 +152,8 @@ export async function expectBmalphInitializedForPlatform(
   // Skills structure
   if (platform.commandDelivery === "skills") {
     const skillsDir = platform.skillsDir ?? ".agents/skills";
-    await expectDirectoryExists(join(projectPath, skillsDir, "bmad-analyst"));
-    await expectFileExists(join(projectPath, skillsDir, "bmad-analyst", "SKILL.md"));
+    await expectDirectoryExists(join(projectPath, skillsDir, "bmad-researcher"));
+    await expectFileExists(join(projectPath, skillsDir, "bmad-researcher", "SKILL.md"));
   }
 }
 

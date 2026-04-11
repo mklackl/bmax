@@ -49,7 +49,7 @@ export async function validateSwarmPrerequisites(
     fixPlanContent = await readFile(fixPlanPath, "utf-8");
   } catch {
     throw new Error(
-      `No fix plan found at ${RALPH_DIR}/${RALPH_FIX_PLAN_FILE}. Run: bmalph implement`
+      `No fix plan found at ${RALPH_DIR}/${RALPH_FIX_PLAN_FILE}. Run: bmax implement`
     );
   }
 

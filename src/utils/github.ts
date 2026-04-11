@@ -203,7 +203,7 @@ export class GitHubClient {
       const response = await fetch(url, {
         headers: {
           Accept: "application/vnd.github.v3+json",
-          "User-Agent": "bmalph-cli",
+          "User-Agent": "bmax-cli",
         },
         signal: controller.signal,
       });

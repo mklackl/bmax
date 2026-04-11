@@ -9,7 +9,7 @@ export const copilotPlatform: Platform = {
   experimental: true,
   instructionsFile: ".github/copilot-instructions.md",
   commandDelivery: { kind: "index" },
-  instructionsSectionMarker: "## BMAD-METHOD Integration",
+  instructionsSectionMarker: "## bmax",
   generateInstructionsSnippet: () => generateFullTierSnippet("Ask"),
   getDoctorChecks() {
     return buildPlatformDoctorChecks(this);

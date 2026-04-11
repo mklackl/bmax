@@ -7,7 +7,7 @@ export function mockPlatform(overrides?: Partial<Platform>): Platform {
     tier: "full",
     instructionsFile: "CLAUDE.md",
     commandDelivery: { kind: "directory", dir: ".claude/commands" },
-    instructionsSectionMarker: "## BMAD-METHOD Integration",
+    instructionsSectionMarker: "## bmax",
     generateInstructionsSnippet: () => "snippet",
     getDoctorChecks: () => [],
     ...overrides,

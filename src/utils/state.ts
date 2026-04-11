@@ -9,9 +9,17 @@ import { warn } from "./logger.js";
 import { formatError } from "./errors.js";
 import { readRalphRuntimeStatus } from "./ralph-runtime-state.js";
 
-export interface BmalphState {
+export interface BmaxState {
   currentPhase: number;
-  status: "planning" | "implementing" | "completed";
+  status:
+    | "researching"
+    | "designing"
+    | "architecting"
+    | "building"
+    | "launching"
+    | "completed"
+    | "planning"
+    | "implementing";
   startedAt: string;
   lastUpdated: string;
 }
@@ -30,7 +38,7 @@ export interface PhaseInfo {
   commands: PhaseCommand[];
 }
 
-export async function readState(projectDir: string): Promise<BmalphState | null> {
+export async function readState(projectDir: string): Promise<BmaxState | null> {
   const data = await readJsonFile<unknown>(join(projectDir, STATE_DIR, "current-phase.json"));
   if (data === null) return null;
   try {
@@ -41,7 +49,7 @@ export async function readState(projectDir: string): Promise<BmalphState | null>
   }
 }
 
-export async function writeState(projectDir: string, state: BmalphState): Promise<void> {
+export async function writeState(projectDir: string, state: BmaxState): Promise<void> {
   await mkdir(join(projectDir, STATE_DIR), { recursive: true });
   const target = join(projectDir, STATE_DIR, "current-phase.json");
   await atomicWriteFile(target, JSON.stringify(state, null, 2) + "\n");
@@ -49,10 +57,11 @@ export async function writeState(projectDir: string, state: BmalphState): Promis
 
 export function getPhaseLabel(phase: number): string {
   const labels: Record<number, string> = {
-    1: "Analysis",
-    2: "Planning",
-    3: "Solutioning",
-    4: "Implementation",
+    1: "Research",
+    2: "Design",
+    3: "Architect",
+    4: "Build",
+    5: "Launch",
   };
   return labels[phase] ?? "Unknown";
 }
@@ -60,139 +69,173 @@ export function getPhaseLabel(phase: number): string {
 export function getPhaseInfo(phase: number): PhaseInfo {
   const info: Record<number, PhaseInfo> = {
     1: {
-      name: "Analysis",
-      agent: "Analyst",
+      name: "Research",
+      agent: "Scout",
       commands: [
         {
-          code: "BP",
-          name: "Brainstorm Project",
-          agent: "analyst",
-          description: "Expert guided facilitation through brainstorming techniques",
+          code: "CR",
+          name: "Competitor Research",
+          agent: "researcher",
+          description: "Structured competitor analysis — features, pricing, weaknesses",
           required: false,
         },
         {
           code: "MR",
           name: "Market Research",
-          agent: "analyst",
-          description: "Market analysis, competitive landscape, customer needs",
+          agent: "researcher",
+          description: "Market size, trends, customer segments, demand signals",
           required: false,
         },
         {
           code: "DR",
           name: "Domain Research",
-          agent: "analyst",
-          description: "Industry domain deep dive, subject matter expertise",
+          agent: "researcher",
+          description: "Industry deep dive — terminology, regulations, landscape",
           required: false,
         },
         {
           code: "TR",
           name: "Technical Research",
-          agent: "analyst",
-          description: "Technical feasibility, architecture options",
+          agent: "researcher",
+          description: "Feasibility check — APIs, tech stack options",
+          required: false,
+        },
+        {
+          code: "BP",
+          name: "Brainstorm",
+          agent: "researcher",
+          description: "Guided ideation — problem exploration and differentiation",
           required: false,
         },
         {
           code: "CB",
           name: "Create Brief",
-          agent: "analyst",
-          description: "Guided experience to nail down your product idea",
-          required: false,
-        },
-        {
-          code: "VB",
-          name: "Validate Brief",
-          agent: "analyst",
-          description: "Validates product brief completeness",
+          agent: "researcher",
+          description: "Nail down your product idea into a lean brief",
           required: false,
         },
       ],
     },
     2: {
-      name: "Planning",
-      agent: "PM (John)",
+      name: "Design",
+      agent: "Ada",
       commands: [
         {
           code: "CP",
           name: "Create PRD",
-          agent: "pm",
-          description: "Expert led facilitation to produce your PRD",
+          agent: "product-designer",
+          description: "Product requirements with pricing strategy baked in",
           required: true,
         },
         {
           code: "VP",
           name: "Validate PRD",
-          agent: "pm",
-          description: "Validate PRD is comprehensive and cohesive",
+          agent: "product-designer",
+          description: "Check PRD for gaps and missing monetization plan",
           required: false,
         },
         {
           code: "CU",
           name: "Create UX",
-          agent: "ux-designer",
-          description: "Guidance through realizing the plan for your UX",
+          agent: "product-designer",
+          description: "User flows, key screens, and interaction design",
           required: false,
         },
         {
           code: "VU",
           name: "Validate UX",
-          agent: "ux-designer",
-          description: "Validates UX design deliverables",
+          agent: "product-designer",
+          description: "Review UX design for usability and conversion",
           required: false,
         },
       ],
     },
     3: {
-      name: "Solutioning",
-      agent: "Architect",
+      name: "Architect",
+      agent: "Kit",
       commands: [
         {
           code: "CA",
           name: "Create Architecture",
           agent: "architect",
-          description: "Guided workflow to document technical decisions",
+          description: "SaaS architecture — auth, billing, multi-tenancy",
           required: true,
-        },
-        {
-          code: "VA",
-          name: "Validate Architecture",
-          agent: "architect",
-          description: "Validates architecture completeness",
-          required: false,
         },
         {
           code: "CE",
           name: "Create Epics and Stories",
-          agent: "pm",
-          description: "Create the epics and stories listing",
+          agent: "builder",
+          description: "Break down PRD into epics and stories",
           required: true,
         },
         {
           code: "VE",
           name: "Validate Epics and Stories",
-          agent: "pm",
-          description: "Validates epics and stories completeness",
-          required: false,
-        },
-        {
-          code: "QA",
-          name: "QA Automation Test",
-          agent: "qa",
-          description: "Generate automated API and E2E tests for implemented code",
+          agent: "builder",
+          description: "Check story completeness and consistency",
           required: false,
         },
         {
           code: "IR",
           name: "Implementation Readiness",
           agent: "architect",
-          description: "Ensure PRD, UX, architecture, and stories are aligned",
+          description: "Verify PRD, UX, and architecture are aligned",
           required: true,
         },
       ],
     },
     4: {
-      name: "Implementation",
-      agent: "Developer (Amelia)",
+      name: "Build",
+      agent: "Max",
       commands: [],
+    },
+    5: {
+      name: "Launch",
+      agent: "Pip",
+      commands: [
+        {
+          code: "WR",
+          name: "Wire & Verify",
+          agent: "launcher",
+          description: "Connect services, deploy, and smoke test",
+          required: true,
+        },
+        {
+          code: "DR",
+          name: "Design Review",
+          agent: "launcher",
+          description: "Evaluate UI/UX quality against references",
+          required: false,
+        },
+        {
+          code: "LC",
+          name: "Launch Checklist",
+          agent: "launcher",
+          description: "Pre-launch audit — SEO, legal, analytics, payments",
+          required: true,
+        },
+        {
+          code: "SS",
+          name: "Stripe Setup",
+          agent: "launcher",
+          description: "Stripe integration — products, prices, webhooks",
+          required: false,
+        },
+        {
+          code: "LG",
+          name: "Legal Compliance",
+          agent: "launcher",
+          description: "DSGVO, Impressum, cookie consent, AGB",
+          required: false,
+        },
+        {
+          code: "GM",
+          name: "Growth Metrics",
+          agent: "launcher",
+          description: "SaaS metrics — MRR, churn, LTV, CAC",
+          required: false,
+        },
+      ],
     },
   };
   return info[phase] ?? { name: "Unknown", agent: "Unknown", commands: [] };
