@@ -43,7 +43,7 @@ Each agent guides you to the next phase when done.
 ## Quick Start
 
 ```bash
-npm install -g bmax
+npm install -g github:mklackl/bmax
 ```
 
 ```bash
