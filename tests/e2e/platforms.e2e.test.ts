@@ -132,7 +132,7 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
       expect(config.platform).toBe(platform.id);
 
       // Instructions file still contains BMAD snippet
-      await expectFileContains(join(project.path, platform.instructionsFile), "BMAD-METHOD");
+      await expectFileContains(join(project.path, platform.instructionsFile), "## bmax");
     });
 
     it("init → upgrade → doctor workflow", async () => {
@@ -301,7 +301,7 @@ describe("multi-platform e2e", { timeout: 60000 }, () => {
 
         // Should mention phases 1-3
         expect(content).toContain("Research");
-        expect(content).toContain("Planning");
+        expect(content).toContain("Design");
         expect(content).toContain("Architect");
 
         // Should not mention Phase 4 / Build phase row

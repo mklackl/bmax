@@ -67,7 +67,7 @@ export async function expectBmaxInitialized(projectPath: string): Promise<void> 
   await expectFileExists(join(projectPath, "CLAUDE.md"));
 
   // CLAUDE.md contains BMAD snippet
-  await expectFileContains(join(projectPath, "CLAUDE.md"), "BMAD-METHOD");
+  await expectFileContains(join(projectPath, "CLAUDE.md"), "## bmax");
 
   // Config is valid JSON
   await expectValidJson(join(projectPath, "bmax/config.json"));
@@ -139,7 +139,7 @@ export async function expectBmaxInitializedForPlatform(
 
   // Instructions file exists and contains BMAD snippet
   await expectFileExists(join(projectPath, platform.instructionsFile));
-  await expectFileContains(join(projectPath, platform.instructionsFile), "BMAD-METHOD");
+  await expectFileContains(join(projectPath, platform.instructionsFile), "## bmax");
 
   // Command delivery structure
   if (platform.commandDelivery === "directory") {

@@ -93,7 +93,7 @@ describe("bmax init e2e", { timeout: 60000 }, () => {
     // Should contain both existing content and BMAD snippet
     expect(claudeMd).toContain("My Existing Project");
     expect(claudeMd).toContain("Some documentation");
-    expect(claudeMd).toContain("BMAD-METHOD");
+    expect(claudeMd).toContain("## bmax");
   });
 
   it("appends to existing .gitignore instead of overwriting", async () => {
